@@ -16,8 +16,8 @@
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
     "grrspppppppgsrrg",
-    "grrsppppppppsrrg",
-    "grrsgpppppppsrrg",
+    "rrrsppppppppsrrg",
+    "rrrsgpppppppsrrg",
     "grrspppppppgsrrg",
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
@@ -185,7 +185,7 @@
       "id": "tree-9",
       "kind": "tree",
       "gx": 0,
-      "gy": 8,
+      "gy": 10,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -270,6 +270,47 @@
       "d": 1,
       "h": 2,
       "color": "leaf"
+    }
+  ],
+  "markers": {},
+  "props": [
+    {
+      "id": "cone-p1",
+      "kind": "cone",
+      "gx": 6.5,
+      "gy": 13.7
+    },
+    {
+      "id": "can-p1",
+      "kind": "trashcan",
+      "gx": 14.85,
+      "gy": 9.5
+    }
+  ],
+  "walkers": [
+    {
+      "id": "walker-3",
+      "look": "walkerBlue",
+      "from": {
+        "gx": 3.5,
+        "gy": 4
+      },
+      "to": {
+        "gx": 3.5,
+        "gy": 11.5
+      }
+    },
+    {
+      "id": "walker-4",
+      "look": "walkerPurple",
+      "from": {
+        "gx": 4,
+        "gy": 12.5
+      },
+      "to": {
+        "gx": 11.5,
+        "gy": 12.5
+      }
     }
   ]
 }

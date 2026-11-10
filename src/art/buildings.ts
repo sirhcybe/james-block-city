@@ -4,7 +4,8 @@ import type { BuildingDef } from '../content/schema';
 import { darken, lighten } from './color';
 import { bakeParts, type BakedMeta, type Part } from './blocks';
 import type { BlockGeom } from './isoShapes';
-import { project } from './isoShapes';
+import { facePoint, project } from './isoShapes';
+import { drawDonut, drawStar } from './shapes2d';
 
 function windowsOn(
   body: BlockGeom,
@@ -215,6 +216,65 @@ function treeParts(b: BuildingDef): Part[] {
   ];
 }
 
+function policeParts(b: BuildingDef): Part[] {
+  const body: BlockGeom = { w: b.w, d: b.d, h: b.h - 0.3 };
+  return [
+    ...houseParts(b),
+    // Rooftop light bar: red + blue.
+    {
+      type: 'block',
+      gx: b.w / 2 - 0.4,
+      gy: b.d / 2 - 0.15,
+      gz: b.h,
+      w: 0.4,
+      d: 0.3,
+      h: 0.22,
+      color: PALETTE.fireRed,
+      bevel: 2,
+    },
+    {
+      type: 'block',
+      gx: b.w / 2,
+      gy: b.d / 2 - 0.15,
+      gz: b.h,
+      w: 0.4,
+      d: 0.3,
+      h: 0.22,
+      color: PALETTE.policeBlue,
+      bevel: 2,
+    },
+    // Big gold star badge on the front (picture sign, no words).
+    {
+      type: 'custom',
+      bounds: [],
+      draw: (g, ox, oy, s) => {
+        const c = facePoint(body, 'left', b.w * 0.5, body.h - 0.55, s);
+        drawStar(g, c.x + ox, c.y + oy, 15 * s, PALETTE.coinGold, 2 * s);
+      },
+    },
+  ];
+}
+
+function donutShopParts(b: BuildingDef): Part[] {
+  const top = project(b.w / 2, b.d / 2, b.h, 1);
+  return [
+    ...houseParts(b),
+    {
+      type: 'custom',
+      bounds: [
+        { x: top.x - 34, y: top.y - 62 },
+        { x: top.x + 34, y: top.y + 4 },
+      ],
+      draw: (g, ox, oy, s) => {
+        const c = project(b.w / 2, b.d / 2, b.h, s);
+        g.lineStyle(4 * s, PALETTE.outline, 1);
+        g.lineBetween(c.x + ox, c.y + oy, c.x + ox, c.y + oy - 20 * s);
+        drawDonut(g, c.x + ox, c.y + oy - 34 * s, 26 * s, s);
+      },
+    },
+  ];
+}
+
 export function buildingParts(b: BuildingDef): Part[] {
   switch (b.kind) {
     case 'house':
@@ -227,6 +287,10 @@ export function buildingParts(b: BuildingDef): Part[] {
       return fountainParts(b);
     case 'tree':
       return treeParts(b);
+    case 'police':
+      return policeParts(b);
+    case 'donutshop':
+      return donutShopParts(b);
   }
 }
 
