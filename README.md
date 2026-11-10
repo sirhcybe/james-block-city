@@ -4,7 +4,17 @@ An isometric, blocky, comic-action city game for a 6-year-old (James) and kids a
 Pick a job (Cop, Firefighter, Builder), drive loud vehicles, catch goofy robbers, and earn
 coins through minigames and errands. Runs in Chrome on laptops and Android phones.
 
-**Status:** specs only. No game code yet. Development is spec-driven — see `specs/README.md`.
+**Status:** spec 001 (isometric foundation) done: a walkable block plaza. Development is
+spec-driven — see `specs/README.md`.
+
+```sh
+npm install
+npm run dev      # http://localhost:5173  (?gallery = art gallery, ?play = skip the title)
+npm test         # unit tests (Vitest)
+npm run e2e      # Playwright smoke: desktop Chrome + Pixel 7 (run `npx playwright install chromium` once)
+npm run lint
+npm run build
+```
 
 ## Where things are
 
@@ -21,4 +31,4 @@ coins through minigames and errands. Runs in Chrome on laptops and Android phone
 
 ## Next step
 
-Implement `specs/001-iso-foundation`, then `specs/002-vertical-slice`, then playtest with James.
+Implement `specs/002-vertical-slice`, then playtest with James.
