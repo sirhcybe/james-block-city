@@ -6,7 +6,7 @@ export interface GameActions {
   goTo: { gx: number; gy: number } | null;
   /** Pressed this frame. */
   action: boolean;
-  /** Held. */
+  /** Pressed this frame (Q or the siren button). */
   siren: boolean;
   /** Screen point (logical px). */
   aim: { x: number; y: number } | null;

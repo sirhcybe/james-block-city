@@ -100,3 +100,29 @@ describe('chooseBranch (road assist)', () => {
     expect(rightOf(S)).toEqual({ x: -1, y: 0 });
   });
 });
+
+describe('pedestrians are never in the road (AC11)', () => {
+  const world = loadWorld();
+  it('every walker route stays on sidewalk / plaza / grass tiles', () => {
+    expect(world.walkers.length).toBeGreaterThanOrEqual(3);
+    for (const w of world.walkers) {
+      for (let k = 0; k <= 20; k++) {
+        const x = w.from.gx + ((w.to.gx - w.from.gx) * k) / 20;
+        const y = w.from.gy + ((w.to.gy - w.from.gy) * k) / 20;
+        // Include the hop radius around the walker.
+        for (const [dx, dy] of [
+          [0, 0],
+          [0.25, 0],
+          [-0.25, 0],
+          [0, 0.25],
+          [0, -0.25],
+        ] as const) {
+          expect(
+            tileAt(world, Math.floor(x + dx), Math.floor(y + dy)),
+            `${w.id} @${x},${y}`,
+          ).not.toBe('road');
+        }
+      }
+    }
+  });
+});

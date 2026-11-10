@@ -266,3 +266,41 @@ describe('Traffic Helper model', () => {
     expect(m.pace).toBeGreaterThanOrEqual(0.5);
   });
 });
+
+describe('GameState', () => {
+  const storage = () => {
+    const m = new Map<string, string>();
+    return {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => void m.set(k, v),
+    };
+  };
+
+  it('pays minigames by tier, errands and missions, and it all survives a reload', async () => {
+    const { GameState } = await import('../../src/systems/GameState');
+    const st = storage();
+    const a = new GameState(content, st);
+    expect(a.save.data.job).toBe('cop');
+    expect(a.finishMinigame('traffic-helper', 9)).toBe(15);
+    expect(a.plays('traffic-helper')).toBe(1);
+
+    a.errands.offer('return-donuts');
+    expect(a.completeErrand('return-donuts')).toBeNull(); // no donuts yet
+    a.startMission('donut-dash', 0);
+    a.pickUp('donut');
+    a.pickUp('donut');
+    expect(a.completeErrand('return-donuts')).toBe(10);
+    expect(a.inventory.donut).toBe(0);
+
+    a.mission!.notify({ type: 'reached', target: 'police-car' }, 0);
+    a.mission!.notify({ type: 'caught', robber: 'pickles' }, 30_000);
+    expect(a.completeMission()).toEqual({ stars: 2, coins: 20 });
+    expect(a.economy.coins).toBe(45);
+
+    const b = new GameState(content, st); // "reload the page"
+    expect(b.economy.coins).toBe(45);
+    expect(b.save.data.missionsDone['donut-dash']).toBe(2);
+    expect(b.save.data.errandsDone).toEqual(['return-donuts']);
+    expect(b.save.data.minigamePlays['traffic-helper']).toBe(1);
+  });
+});

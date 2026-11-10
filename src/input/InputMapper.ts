@@ -8,6 +8,8 @@ const DOWN = new Set(['ArrowDown', 'KeyS']);
 const LEFT = new Set(['ArrowLeft', 'KeyA']);
 const RIGHT = new Set(['ArrowRight', 'KeyD']);
 const ACTION = new Set(['Space', 'Enter']);
+/** Siren/horn. Q, because S is already WASD "down" (decided 2026-11-09). */
+const SIREN = new Set(['KeyQ']);
 
 /** A tap/click shorter than this and moving less than TAP_SLOP_PX counts as go-to. */
 const TAP_MAX_MS = 300;
@@ -49,6 +51,7 @@ export class InputMapper {
   private touchTaps = new Map<number, TouchTap>();
   private pendingGoTo: Vec2 | null = null;
   private pendingAction = false;
+  private pendingSiren = false;
   /** World point of the go-to emitted by the last update(), if any. */
   lastGoToWorld: Vec2 | null = null;
   /** Overrides keyboard/pointer movement (used by the debug hook). */
@@ -56,6 +59,7 @@ export class InputMapper {
 
   keyDown(code: string): void {
     if (ACTION.has(code) && !this.keys.has(code)) this.pendingAction = true;
+    if (SIREN.has(code) && !this.keys.has(code)) this.pendingSiren = true;
     this.keys.add(code);
   }
 
@@ -122,6 +126,15 @@ export class InputMapper {
     }
   }
 
+  /** On-screen buttons feed the same one-frame presses as the keys. */
+  pressAction(): void {
+    this.pendingAction = true;
+  }
+
+  pressSiren(): void {
+    this.pendingSiren = true;
+  }
+
   /** Whether the mouse is currently in hold-to-steer mode. */
   isSteering(now: number): boolean {
     return this.mouse !== null && now - this.mouse.downAt >= HOLD_TO_STEER_MS;
@@ -174,6 +187,8 @@ export class InputMapper {
     }
     a.action = this.pendingAction;
     this.pendingAction = false;
+    a.siren = this.pendingSiren;
+    this.pendingSiren = false;
     return a;
   }
 }

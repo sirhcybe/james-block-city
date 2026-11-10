@@ -77,6 +77,21 @@ describe('InputMapper keyboard', () => {
     expect(m.update(0, origin).move).toEqual({ x: 0, y: 0 });
   });
 
+  it('Q (and the siren button) is a one-frame siren press; S stays down', () => {
+    const m = new InputMapper();
+    m.keyDown('KeyQ');
+    const a = m.update(0, origin);
+    expect(a.siren).toBe(true);
+    expect(a.move).toEqual({ x: 0, y: 0 });
+    expect(m.update(0, origin).siren).toBe(false);
+    m.pressSiren();
+    expect(m.update(0, origin).siren).toBe(true);
+    m.keyDown('KeyS');
+    const b = m.update(0, origin);
+    expect(b.siren).toBe(false);
+    expect(b.move).toEqual({ x: 0, y: 1 });
+  });
+
   it('action is a one-frame press', () => {
     const m = new InputMapper();
     m.keyDown('Space');

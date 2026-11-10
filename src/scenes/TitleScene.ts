@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { sfx } from '../audio/sfx';
+import { voice } from '../audio/voice';
 import { addBakedImage, getBaked } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
@@ -7,7 +9,7 @@ import { PLAY_SIZE, UI } from '../art/ui';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import type { MapDef } from '../content/schema';
 import { gridToScreen } from '../iso/projection';
-import { MAP_KEY } from './BootScene';
+import { MAP_KEY } from './keys';
 
 /** Picture-only title: a little block skyline and one big Play button. No words. */
 export class TitleScene extends Phaser.Scene {
@@ -85,6 +87,10 @@ export class TitleScene extends Phaser.Scene {
     const start = () => {
       if (started) return;
       started = true;
+      // Audio and speech must be unlocked inside this tap (Android / Chrome rules).
+      sfx.unlock();
+      voice.unlock();
+      sfx.play('pop');
       this.tweens.killTweensOf(play);
       this.tweens.add({
         targets: play,

@@ -14,6 +14,15 @@ export const WALK_SPEED = 4;
 /** Player collision radius in tiles. */
 export const PLAYER_RADIUS = 0.28;
 
+/** Police car top speed (lane nodes per second = tiles/s), acceleration and braking. Tune by feel. */
+export const CAR_MAX_SPEED = 5.5;
+export const CAR_ACCEL = 7;
+export const CAR_BRAKE = 12;
+/** How close (tiles) the player must be to hop into a car. */
+export const ENTER_CAR_DIST = 1.6;
+/** Vehicles bump things / each other within this distance (tiles). */
+export const BUMP_DIST = 0.75;
+
 /** Camera follow lerp (0..1 per frame at 60 fps). */
 export const CAMERA_LERP = 0.08;
 /** City camera zoom (logical). >1 makes the world (and James's character) bigger on screen. */
