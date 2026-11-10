@@ -21,7 +21,7 @@ chase a robber, play one minigame, do one errand, and earn coins. The question t
   intersection, road loop.
 - Police car: code-drawn, 4 directions, spinning wheels, flashing light bar. Enter/exit with Action
   when near. Road assist per `docs/architecture.md`.
-- Siren button (S / on-screen) with sound + light flash; spammable.
+- Siren button (Q / on-screen; S stays WASD down) with sound + light flash; spammable.
 - Robber (Pickles) + getaway car: flees along roads away from player; wobble; drops 5 donut pickups
   along the route; 3 bumps (or 3 net shots — bumps only for this slice) → stops, "Aw, nuts!" voice,
   robber waddles into a police van; then sneaks off (resets for replay).

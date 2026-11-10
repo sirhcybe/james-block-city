@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "easystarjs": "^0.4.4",
+    "jsfxr": "^1.4.1",
     "phaser": "^3.90.0",
     "zod": "^4.6.7"
   },

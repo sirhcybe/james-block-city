@@ -120,7 +120,7 @@ Screen-relative movement (push up = up the screen) — a 6-year-old won't think 
 | Move/drive | Arrows/WASD, or click-and-hold toward a direction | Floating thumb joystick (left half) |
 | Go to a spot | Click ground/building → path there | Tap ground/building |
 | Action (net, hose, build, talk, enter/exit vehicle) | Space or on-screen button | Big round button, bottom-right |
-| Siren/horn | S or button | Button above Action |
+| Siren/horn | Q or button (S is WASD down) | Button above Action |
 | Aim hose/ladder | Mouse position | Drag on right half |
 | Switch job (all badges) | J or uniform button | Uniform button, top-right |
 | Minigames | One click / click-hold | One tap / tap-hold |
