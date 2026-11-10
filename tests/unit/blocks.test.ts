@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { darken, lighten } from '../../src/art/color';
-import { blockFaces, boundsOf, project } from '../../src/art/isoShapes';
+import { blockFaces, boundsOf, orientedBoxFaces, project } from '../../src/art/isoShapes';
 
 describe('block geometry (art-style: three faces, no studs)', () => {
   const f = blockFaces({ w: 2, d: 1, h: 1 }, 1);
@@ -26,5 +26,29 @@ describe('block geometry (art-style: three faces, no studs)', () => {
     const lum = (c: number) => ((c >> 16) & 0xff) + ((c >> 8) & 0xff) + (c & 0xff);
     expect(lum(lighten(base, 0.15))).toBeGreaterThan(lum(base));
     expect(lum(darken(base, 0.2))).toBeLessThan(lum(base));
+  });
+});
+
+describe('oriented boxes (vehicles in 8 headings, still no studs)', () => {
+  it('shows at most two side faces plus a flat top, at every heading', () => {
+    for (let k = 0; k < 8; k++) {
+      const f = orientedBoxFaces(
+        { cx: 0, cy: 0, halfL: 0.6, halfW: 0.35, z0: 0, z1: 0.4, angle: (k * Math.PI) / 4 },
+        1,
+      );
+      const visible = f.sides.filter((s) => s.visible);
+      expect(visible.length).toBeGreaterThanOrEqual(1);
+      expect(visible.length).toBeLessThanOrEqual(2);
+      const topY = Math.min(...f.top.map((p) => p.y));
+      expect(boundsOf(f.silhouette).minY).toBeCloseTo(topY, 9); // nothing pokes above the top
+    }
+  });
+
+  it('heading straight down the screen shows only the front face', () => {
+    const f = orientedBoxFaces(
+      { cx: 0, cy: 0, halfL: 0.6, halfW: 0.35, z0: 0, z1: 0.4, angle: Math.PI / 4 },
+      1,
+    );
+    expect(f.sides.filter((s) => s.visible).map((s) => s.side)).toEqual(['front']);
   });
 });

@@ -41,3 +41,5 @@ const game = new Phaser.Game({
 });
 
 if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_HOOK === '1') installDebugHook(game);
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('drive'))
+  void import('./driveTuning').then((m) => m.installDriveTuning());

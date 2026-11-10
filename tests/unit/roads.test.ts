@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { tileAt } from '../../src/content/schema';
 import { loadWorld } from '../../src/content/world';
-import { buildLaneGraph, chooseBranch, rightOf } from '../../src/iso/roads';
+import { buildLaneGraph, rightOf } from '../../src/iso/roads';
+import { pickBranch, stickDiff, toScreen, wantsUTurn } from '../../src/iso/steer';
 
 const E = { x: 1, y: 0 };
 const W = { x: -1, y: 0 };
@@ -76,25 +77,56 @@ describe('the city lane graph', () => {
   });
 });
 
-describe('chooseBranch (road assist)', () => {
+describe('pickBranch (screen-space road assist, ADR-004)', () => {
+  // Grid directions: E = +gx (down-right on screen), S = +gy (down-left), W = -gx (up-left),
+  // N = -gy (up-right). Sticks are screen-space (up = -y).
+  const UP = { x: 0, y: -1 };
+  const RIGHT = { x: 1, y: 0 };
+  const DOWN = { x: 0, y: 1 };
+  const scr = (d: { x: number; y: number }) => toScreen(d);
+
   it('goes straight with no input, follows bends, waits at a T with no straight', () => {
-    expect(chooseBranch(null, E, [E, W, S])).toBe(0);
-    expect(chooseBranch(null, E, [W, S])).toBe(1); // bend
-    expect(chooseBranch(null, E, [W, N, S])).toBe(-1); // T: ask the driver
+    expect(pickBranch(null, E, [E, W, S])).toBe(0);
+    expect(pickBranch(null, E, [W, S])).toBe(1); // bend
+    expect(pickBranch(null, E, [W, N, S])).toBe(-1); // T: ask the driver
   });
 
-  it('picks the branch closest to the stick', () => {
-    expect(chooseBranch(S, E, [E, W, S, N])).toBe(2);
-    expect(chooseBranch({ x: 0.9, y: 0.4 }, E, [E, W, S, N])).toBe(0);
-    expect(chooseBranch({ x: 0.3, y: -0.9 }, E, [E, W, S, N])).toBe(3);
+  it('picks the branch closest to the stick as seen on screen', () => {
+    expect(pickBranch(scr(S), E, [E, W, S, N])).toBe(2);
+    expect(pickBranch(scr(N), E, [E, W, S, N])).toBe(3);
+    expect(pickBranch(DOWN, N, [N, S, E, W])).toBe(2); // up-right road, push down: E (down-right)
   });
 
-  it('only U-turns when the stick clearly points back', () => {
-    expect(chooseBranch(W, E, [E, W, S, N])).toBe(1);
-    expect(chooseBranch({ x: -0.6, y: 0.8 }, E, [E, W, S, N])).toBe(2); // back-ish but S is closer
-    expect(chooseBranch(W, E, [W])).toBe(0); // dead end
+  it('breaks ties toward straight on (arrow keys sit between two roads)', () => {
+    // Right is 26.6° from both E (down-right) and N (up-right).
+    expect(stickDiff(RIGHT, E)).toBeCloseTo(stickDiff(RIGHT, N), 6);
+    expect(pickBranch(RIGHT, E, [E, W, S, N])).toBe(0);
+    expect(pickBranch(RIGHT, N, [E, W, S, N])).toBe(3);
+    // Up is 63.4° from both N and W: heading W keeps W.
+    expect(pickBranch(UP, W, [E, W, S, N])).toBe(1);
   });
 
+  it('stops instead of taking a branch far from the stick', () => {
+    // Heading N (up-right) into a bend that only goes E (down-right); stick up: not that way.
+    expect(pickBranch(UP, N, [S, E])).toBe(-1);
+  });
+
+  it('only goes back when the stick is clearly behind, and only when stopped', () => {
+    expect(pickBranch(scr(W), E, [E, W, S, N])).not.toBe(1); // moving: never back
+    expect(pickBranch(scr(W), E, [E, W, S, N], true)).toBe(1); // stopped: back is fine
+    // Sideways-ish (86° from going back): stay put rather than bounce between corners.
+    expect(pickBranch({ x: 0.5, y: 0.87 }, S, [N], true)).toBe(-1);
+  });
+
+  it('wantsUTurn needs the stick > 110° from the heading and a short cooldown', () => {
+    expect(wantsUTurn(UP, E, 5)).toBe(true); // up vs down-right: 116.6°
+    expect(wantsUTurn(RIGHT, E, 5)).toBe(false);
+    expect(wantsUTurn(UP, E, 0.1)).toBe(false); // just turned
+    expect(wantsUTurn(null, E, 5)).toBe(false);
+  });
+});
+
+describe('lanes', () => {
   it('keeps vehicles on the right-hand lane', () => {
     expect(rightOf(E)).toEqual({ x: -0, y: 1 });
     expect(rightOf(S)).toEqual({ x: -1, y: 0 });

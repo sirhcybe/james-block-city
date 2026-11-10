@@ -26,7 +26,6 @@ import { Player } from '../entities/Player';
 import { RobberChase } from '../entities/RobberChase';
 import { Townsperson } from '../entities/Townsperson';
 import { Vehicle } from '../entities/Vehicle';
-import { screenDirToGrid } from '../input/direction';
 import { InputMapper, type PointerSample } from '../input/InputMapper';
 import type { WalkGrid } from '../iso/grid';
 import { PathFinder } from '../iso/path';
@@ -635,7 +634,8 @@ export class CityScene extends Phaser.Scene {
         }
       }
     }
-    const stick = Math.hypot(a.move.x, a.move.y) > 0 ? screenDirToGrid(a.move) : null;
+    // Road assist steers by screen direction (ADR-004).
+    const stick = Math.hypot(a.move.x, a.move.y) > 0 ? a.move : null;
     this.car.update(dt, { stick });
     if (this.car.driver.path.length === 0 && this.car.driver.speed === 0)
       this.target.setVisible(false);

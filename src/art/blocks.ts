@@ -2,7 +2,16 @@ import Phaser from 'phaser';
 import { PALETTE } from '../config';
 import type { Vec2 } from '../iso/projection';
 import { darken, lighten, mix } from './color';
-import { blockFaces, boundsOf, facePoint, type BlockGeom } from './isoShapes';
+import {
+  blockFaces,
+  boundsOf,
+  facePoint,
+  orientedBoxFaces,
+  orientedFacePoint,
+  type BlockGeom,
+  type OrientedBox,
+  type OrientedFace,
+} from './isoShapes';
 import { WT } from './renderScale';
 
 export interface BlockStyle {
@@ -130,6 +139,77 @@ export function drawIsoBlock(
   strokeLine(g, S1!, E1!, ox, oy);
   strokeLine(g, S0!, S1!, ox, oy);
   strokePoly(g, f.silhouette, ox, oy, outline);
+}
+
+/**
+ * Draw a block turned to any angle (vehicles in 8 directions). Same look as drawIsoBlock: flat
+ * shaded faces (sides shade from base to −20% as they turn toward +gx), a lighter top with a
+ * rounded-edge rim, and the thick outline. Returns the faces so details can be drawn on them.
+ */
+export function drawOrientedBlock(
+  g: Phaser.GameObjects.Graphics,
+  o: OrientedBox,
+  style: BlockStyle,
+  ox: number,
+  oy: number,
+  s = WT,
+): OrientedFace[] {
+  const f = orientedBoxFaces(o, s);
+  const base = style.color;
+  const topC = style.top ?? lighten(base, 0.15);
+  const outline = (style.outline ?? 2) * s;
+  const bevel = (style.bevel ?? 4) * s;
+  const visible = f.sides.filter((fc) => fc.visible);
+  for (const fc of visible) fillPoly(g, fc.pts, ox, oy, darken(base, 0.2 * fc.shade));
+  fillPoly(g, f.top, ox, oy, topC);
+  // Top-face rim, inset toward the centre, suggests the soft rounded edge.
+  const c = lerp(f.top[0]!, f.top[2]!, 0.5);
+  const rim = f.top.map((p) => {
+    const len = Math.hypot(c.x - p.x, c.y - p.y) || 1;
+    const d = Math.min(bevel * 0.9, len * 0.4);
+    return { x: p.x + ((c.x - p.x) / len) * d, y: p.y + ((c.y - p.y) / len) * d };
+  });
+  g.lineStyle(Math.max(1, s), lighten(topC, 0.35), 0.9);
+  poly(g, rim, ox, oy);
+  g.strokePath();
+  for (const fc of visible)
+    strokePoly(g, fc.pts, ox, oy, Math.max(1, outline * 0.5), PALETTE.outline, 0.85);
+  strokePoly(g, f.silhouette, ox, oy, outline);
+  return f.sides;
+}
+
+/** A window or light (flat quad) on an oriented block's face. */
+export function drawOrientedWindow(
+  g: Phaser.GameObjects.Graphics,
+  fc: OrientedFace,
+  u0: number,
+  u1: number,
+  z0: number,
+  z1: number,
+  ox: number,
+  oy: number,
+  color: number = PALETTE.windowBlue,
+  s = WT,
+  glint = true,
+): void {
+  const pts = [
+    orientedFacePoint(fc, u0, z0, s),
+    orientedFacePoint(fc, u1, z0, s),
+    orientedFacePoint(fc, u1, z1, s),
+    orientedFacePoint(fc, u0, z1, s),
+  ];
+  fillPoly(g, pts, ox, oy, darken(color, 0.12 * fc.shade));
+  if (glint) {
+    g.lineStyle(Math.max(1, 1.5 * s), 0xffffff, 0.75);
+    strokeLine(
+      g,
+      orientedFacePoint(fc, u0 + (u1 - u0) * 0.2, z1 - (z1 - z0) * 0.25, s),
+      orientedFacePoint(fc, u0 + (u1 - u0) * 0.45, z1 - (z1 - z0) * 0.15, s),
+      ox,
+      oy,
+    );
+  }
+  strokePoly(g, pts, ox, oy, Math.max(1, 1.5 * s));
 }
 
 /** A window (flat parallelogram) on a block's vertical face. */

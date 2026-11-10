@@ -61,7 +61,8 @@ Touch: floating joystick on the left half (appears where the thumb lands); butto
 ### Movement
 - On foot: free movement on walkable tiles, collision with buildings.
 - Vehicles: **road assist** — the vehicle snaps to the nearest lane centerline and only chooses
-  direction at intersections; joystick picks the branch closest to the input direction.
+  direction at intersections; joystick picks the branch closest to the input direction *as seen on
+  screen*, rounding corners with short curves (ADR-003, ADR-004).
 - `goTo`: A* (EasyStar.js) over the walk/road grid; follow the path; any manual input cancels it.
 
 ### Content-driven systems
