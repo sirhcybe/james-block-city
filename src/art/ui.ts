@@ -13,7 +13,7 @@ export const UI = {
 export const PLAY_SIZE = 200;
 export const KNOB_R = 34;
 
-function bake(
+export function bakeIcon(
   scene: Phaser.Scene,
   key: string,
   w: number,
@@ -31,7 +31,7 @@ function bake(
 /** Icon-only UI art: round, chunky, outlined. */
 export function bakeUi(scene: Phaser.Scene): void {
   // Big round Play button with a triangle.
-  bake(scene, UI.play, PLAY_SIZE + 12, PLAY_SIZE + 20, (g, s) => {
+  bakeIcon(scene, UI.play, PLAY_SIZE + 12, PLAY_SIZE + 20, (g, s) => {
     const c = ((PLAY_SIZE + 12) / 2) * s;
     const r = (PLAY_SIZE / 2) * s;
     g.fillStyle(darken(PALETTE.policeBlue, 0.35), 1);
@@ -56,7 +56,7 @@ export function bakeUi(scene: Phaser.Scene): void {
 
   // Joystick base + knob.
   const baseD = JOYSTICK_RADIUS * 2 + 16;
-  bake(scene, UI.stickBase, baseD, baseD, (g, s) => {
+  bakeIcon(scene, UI.stickBase, baseD, baseD, (g, s) => {
     const c = (baseD / 2) * s;
     g.fillStyle(0xffffff, 0.25);
     g.fillCircle(c, c, JOYSTICK_RADIUS * s);
@@ -64,7 +64,7 @@ export function bakeUi(scene: Phaser.Scene): void {
     g.strokeCircle(c, c, JOYSTICK_RADIUS * s);
   });
   const knobD = KNOB_R * 2 + 8;
-  bake(scene, UI.stickKnob, knobD, knobD, (g, s) => {
+  bakeIcon(scene, UI.stickKnob, knobD, knobD, (g, s) => {
     const c = (knobD / 2) * s;
     g.fillStyle(PALETTE.coinGold, 1);
     g.fillCircle(c, c, KNOB_R * s);
@@ -75,7 +75,7 @@ export function bakeUi(scene: Phaser.Scene): void {
   });
 
   // Go-to target marker: a flat diamond ring on the ground.
-  bake(
+  bakeIcon(
     scene,
     UI.target,
     68,

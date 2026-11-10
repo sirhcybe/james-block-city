@@ -16,13 +16,37 @@ export interface CharacterLook {
   pants: number;
   hair: number;
   skin: number;
+  /** Black-and-white striped shirt (robbers). */
+  stripes?: boolean;
+  /** Black eye mask (robbers). */
+  mask?: boolean;
+  hat?: 'cop' | 'chef';
 }
 
 export const PLAYER_LOOK: CharacterLook = {
-  shirt: PALETTE.builderYellow,
-  pants: PALETTE.policeBlue,
+  shirt: PALETTE.policeBlue,
+  pants: 0x24407a,
   hair: 0x6b4226,
   skin: PALETTE.skin,
+  hat: 'cop',
+};
+
+/** Every other character in the slice, by look id (used by content, e.g. map walkers). */
+export const LOOKS: Record<string, CharacterLook> = {
+  player: PLAYER_LOOK,
+  pickles: {
+    shirt: 0xffffff,
+    pants: 0x3a3d52,
+    hair: 0xd9822b,
+    skin: PALETTE.skin,
+    stripes: true,
+    mask: true,
+  },
+  baker: { shirt: 0xffffff, pants: PALETTE.donutPink, hair: 0x3b2a1a, skin: 0xc68a5e, hat: 'chef' },
+  walkerRed: { shirt: PALETTE.fireRed, pants: 0x3a3d52, hair: 0x2b1d14, skin: 0xe0ac7e },
+  walkerGreen: { shirt: PALETTE.grass, pants: 0x5a4632, hair: 0xf0c75e, skin: PALETTE.skin },
+  walkerBlue: { shirt: PALETTE.harborTeal, pants: 0x3a3d52, hair: 0x111111, skin: 0x8d5a3b },
+  walkerPurple: { shirt: PALETTE.getawayPurple, pants: 0x2f6fde, hair: 0xa0522d, skin: 0xf2c9a0 },
 };
 
 export function characterFrameKey(name: string, facing: Facing, frame: 0 | 1): string {
@@ -94,6 +118,11 @@ function drawCharacter(
     bodyH - 4 * s,
     5 * s,
   );
+  if (look.stripes) {
+    g.fillStyle(PALETTE.robberBlack, 1);
+    for (let k = 1; k < 4; k++)
+      g.fillRect(bodyX + 2 * s, bodyY + k * 5 * s, bodyW - 4 * s, 2.5 * s);
+  }
   g.lineStyle(2 * s, ol, 1);
   g.strokeRoundedRect(bodyX, bodyY, bodyW, bodyH, 7 * s);
 
@@ -133,6 +162,53 @@ function drawCharacter(
     g.fillStyle(0xff8f8f, 0.5);
     g.fillCircle(ex - 9 * s, hy + 5 * s, 2.5 * s);
     g.fillCircle(ex + 9 * s, hy + 5 * s, 2.5 * s);
+  }
+
+  if (look.mask) {
+    // A goofy black eye mask (a band, with eye holes on the front).
+    g.fillStyle(PALETTE.robberBlack, 1);
+    g.fillRoundedRect(hx - hr + 1 * s, hy - 4 * s, hr * 2 - 2 * s, 8 * s, 3 * s);
+    if (front) {
+      const ex = hx + side * 3 * s;
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(ex - 5 * s, hy, 2.6 * s);
+      g.fillCircle(ex + 5 * s, hy, 2.6 * s);
+      g.fillStyle(ol, 1);
+      g.fillCircle(ex - 5 * s, hy, 1.4 * s);
+      g.fillCircle(ex + 5 * s, hy, 1.4 * s);
+    }
+  }
+  if (look.hat === 'cop') {
+    // Flat-topped police cap with a brim and a gold badge (smooth, no peg).
+    g.fillStyle(PALETTE.policeBlue, 1);
+    g.lineStyle(2 * s, ol, 1);
+    g.fillRoundedRect(hx - 12 * s, hy - hr - 4 * s, 24 * s, 10 * s, 3 * s);
+    g.strokeRoundedRect(hx - 12 * s, hy - hr - 4 * s, 24 * s, 10 * s, 3 * s);
+    g.fillStyle(0x1d2b4f, 1);
+    g.fillRoundedRect(
+      hx - 13 * s + side * (front ? 3 : -3) * s,
+      hy - hr + 4 * s,
+      26 * s,
+      4 * s,
+      2 * s,
+    );
+    if (front) {
+      g.fillStyle(PALETTE.coinGold, 1);
+      g.fillCircle(hx + side * 2 * s, hy - hr + 1 * s, 2.8 * s);
+    }
+  } else if (look.hat === 'chef') {
+    g.fillStyle(0xffffff, 1);
+    g.lineStyle(2 * s, ol, 1);
+    for (const [dx, dy, r] of [
+      [-6, -16, 6],
+      [6, -16, 6],
+      [0, -20, 7],
+    ] as const) {
+      g.fillCircle(hx + dx * s, hy + dy * s - hr * 0.6, r * s);
+      g.strokeCircle(hx + dx * s, hy + dy * s - hr * 0.6, r * s);
+    }
+    g.fillRoundedRect(hx - 10 * s, hy - hr - 6 * s, 20 * s, 8 * s, 2 * s);
+    g.strokeRoundedRect(hx - 10 * s, hy - hr - 6 * s, 20 * s, 8 * s, 2 * s);
   }
 }
 

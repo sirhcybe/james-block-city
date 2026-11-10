@@ -1,0 +1,11 @@
+[
+  {
+    "id": "return-donuts",
+    "kind": "return",
+    "giver": "donut-owner",
+    "icon": "donut",
+    "item": "donut",
+    "reward": 10,
+    "job": "cop"
+  }
+]

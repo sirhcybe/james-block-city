@@ -7,8 +7,15 @@ import { CityScene } from './scenes/CityScene';
 import { GalleryScene } from './scenes/GalleryScene';
 import { HudScene } from './scenes/HudScene';
 import { TitleScene } from './scenes/TitleScene';
+import { TrafficHelperScene } from './scenes/TrafficHelperScene';
 
-const scenes: Phaser.Types.Scenes.SceneType[] = [BootScene, TitleScene, CityScene, HudScene];
+const scenes: Phaser.Types.Scenes.SceneType[] = [
+  BootScene,
+  TitleScene,
+  CityScene,
+  HudScene,
+  TrafficHelperScene,
+];
 if (import.meta.env.DEV) scenes.push(GalleryScene);
 
 const game = new Phaser.Game({

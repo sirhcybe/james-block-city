@@ -5,7 +5,7 @@ import { characterFrameKey, FACINGS } from '../art/characters';
 import { RS, WT } from '../art/renderScale';
 import { PALETTE, type PaletteKey } from '../config';
 import type { MapDef } from '../content/schema';
-import { MAP_KEY } from './BootScene';
+import { MAP_KEY } from './keys';
 
 /** Dev-only (`?gallery`): sample blocks, buildings and character frames for a visual check. */
 export class GalleryScene extends Phaser.Scene {

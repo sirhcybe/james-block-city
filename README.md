@@ -4,8 +4,9 @@ An isometric, blocky, comic-action city game for a 6-year-old (James) and kids a
 Pick a job (Cop, Firefighter, Builder), drive loud vehicles, catch goofy robbers, and earn
 coins through minigames and errands. Runs in Chrome on laptops and Android phones.
 
-**Status:** spec 001 (isometric foundation) done: a walkable block plaza. Development is
-spec-driven — see `specs/README.md`.
+**Status:** spec 002 (vertical slice "Donut Dash") built: drive the police car, chase Pickles,
+return the donuts, play Traffic Helper, earn and keep coins. Next: real-phone check + playtest with
+James. Development is spec-driven — see `specs/README.md`.
 
 ```sh
 npm install
@@ -31,4 +32,5 @@ npm run build
 
 ## Next step
 
-Implement `specs/002-vertical-slice`, then playtest with James.
+Playtest spec 002 with James (`docs/playtests/TEMPLATE.md`), including a real Android phone, then
+write spec 003 from the findings.

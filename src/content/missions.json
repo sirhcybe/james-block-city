@@ -1,0 +1,17 @@
+[
+  {
+    "id": "donut-dash",
+    "job": "cop",
+    "tier": "rookie",
+    "voiceIntro": "intro-donut-dash",
+    "goals": [
+      { "type": "goTo", "target": "police-car" },
+      { "type": "catch", "robber": "pickles", "bumps": 3 }
+    ],
+    "reward": { "coins": 20 },
+    "bonus": [
+      { "type": "collect", "item": "donut", "count": 3 },
+      { "type": "fastGoal", "goal": 1, "seconds": 90 }
+    ]
+  }
+]

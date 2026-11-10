@@ -1,0 +1,9 @@
+[
+  {
+    "id": "traffic-helper",
+    "job": "cop",
+    "durationSec": 120,
+    "tiers": [0, 8, 16],
+    "difficultyStepPerReplay": 0.1
+  }
+]
