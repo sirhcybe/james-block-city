@@ -126,10 +126,7 @@ export function installDebugHook(game: Phaser.Game): void {
       const c = city();
       if (!c) return;
       const r = c.robber.car.driver;
-      c.car.driver.from = r.from;
-      c.car.driver.to = r.to;
-      c.car.driver.t = Math.max(0, r.t - 0.4);
-      c.car.driver.speed = 0;
+      c.car.driver.placeOnEdge(r.from, r.to, Math.max(0, r.t - 0.4));
     },
     startMinigame: () => city()?.startMinigame(),
     finishMinigame: (score) => {

@@ -89,3 +89,104 @@ export function facePoint(
     ? project(x0 + u, y0 + b.d, z0 + z, s)
     : project(x0 + b.w, y0 + b.d - u, z0 + z, s);
 }
+
+/**
+ * A box turned to any angle on the ground (vehicles drawn in 8 directions). Same look rules as
+ * blocks: flat top, flat sides, no studs. `angle` is the grid-space heading of the long axis.
+ */
+export interface OrientedBox {
+  /** Centre of the footprint, grid units. */
+  cx: number;
+  cy: number;
+  /** Half length along the heading and half width across it, tiles. */
+  halfL: number;
+  halfW: number;
+  z0: number;
+  z1: number;
+  angle: number;
+}
+
+export type OrientedSide = 'front' | 'back' | 'left' | 'right';
+
+export interface OrientedFace {
+  side: OrientedSide;
+  /** Grid-space outward normal. */
+  normal: Vec2;
+  /** Ground corners at u = 0 and u = 1 along the face (grid units). */
+  a: Vec2;
+  b: Vec2;
+  /** Projected quad: bottom a, bottom b, top b, top a. */
+  pts: Vec2[];
+  /** 0 = faces +gy (base colour), 1 = faces +gx (darkest), like the block's left/right faces. */
+  shade: number;
+  /** Visible from the iso camera (faces toward the viewer, i.e. toward +gx+gy). */
+  visible: boolean;
+}
+
+export function orientedAxes(angle: number): { f: Vec2; r: Vec2 } {
+  const f = { x: Math.cos(angle), y: Math.sin(angle) };
+  return { f, r: { x: -f.y, y: f.x } };
+}
+
+/** All four side faces, the top face and the silhouette of an oriented box. */
+export function orientedBoxFaces(
+  o: OrientedBox,
+  s: number,
+): { sides: OrientedFace[]; top: Vec2[]; silhouette: Vec2[] } {
+  const { f, r } = orientedAxes(o.angle);
+  const g = (i: number, j: number): Vec2 => ({
+    x: o.cx + f.x * o.halfL * i + r.x * o.halfW * j,
+    y: o.cy + f.y * o.halfL * i + r.y * o.halfW * j,
+  });
+  const P = (p: Vec2, z: number) => project(p.x, p.y, z, s);
+  const FL = g(1, -1);
+  const FR = g(1, 1);
+  const BL = g(-1, -1);
+  const BR = g(-1, 1);
+  const face = (side: OrientedSide, normal: Vec2, a: Vec2, b: Vec2): OrientedFace => {
+    const sum = normal.x + normal.y;
+    return {
+      side,
+      normal,
+      a,
+      b,
+      pts: [P(a, o.z0), P(b, o.z0), P(b, o.z1), P(a, o.z1)],
+      shade: sum > 1e-9 ? Math.max(0, Math.min(1, normal.x / sum)) : 0,
+      visible: sum > 1e-3,
+    };
+  };
+  const neg = (v: Vec2) => ({ x: -v.x, y: -v.y });
+  const sides = [
+    face('front', f, FL, FR),
+    face('back', neg(f), BR, BL),
+    face('right', r, FR, BR),
+    face('left', neg(r), BL, FL),
+  ];
+  const top = [P(FL, o.z1), P(FR, o.z1), P(BR, o.z1), P(BL, o.z1)];
+  const all = [FL, FR, BR, BL].flatMap((p) => [P(p, o.z0), P(p, o.z1)]);
+  return { sides, top, silhouette: convexHull(all) };
+}
+
+/** A point on an oriented face: u 0..1 along it, z in block units (absolute). */
+export function orientedFacePoint(fc: OrientedFace, u: number, z: number, s: number): Vec2 {
+  return project(fc.a.x + (fc.b.x - fc.a.x) * u, fc.a.y + (fc.b.y - fc.a.y) * u, z, s);
+}
+
+/** Convex hull (monotone chain), counter-clockwise. */
+export function convexHull(points: Vec2[]): Vec2[] {
+  const p = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+  if (p.length < 3) return p;
+  const cross = (o: Vec2, a: Vec2, b: Vec2) =>
+    (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const lower: Vec2[] = [];
+  for (const pt of p) {
+    while (lower.length >= 2 && cross(lower.at(-2)!, lower.at(-1)!, pt) <= 0) lower.pop();
+    lower.push(pt);
+  }
+  const upper: Vec2[] = [];
+  for (const pt of [...p].reverse()) {
+    while (upper.length >= 2 && cross(upper.at(-2)!, upper.at(-1)!, pt) <= 0) upper.pop();
+    upper.push(pt);
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}

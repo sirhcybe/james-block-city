@@ -1,6 +1,6 @@
 # ADR-003: Road assist on a centre-line lane graph
 
-**Status:** accepted · 2026-11-09
+**Status:** accepted · 2026-11-09 · branch choice and U-turn rules superseded by ADR-004 (screen-space steering)
 
 ## Context
 Spec 002 needs vehicles that a 6-year-old can drive with one thumb: they must stay on the road,

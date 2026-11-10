@@ -3,6 +3,14 @@ import { addBakedImage, bakeBlock, getBaked } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
 import { characterFrameKey, FACINGS } from '../art/characters';
 import { RS, WT } from '../art/renderScale';
+import {
+  GETAWAY_CAR,
+  POLICE_CAR,
+  POLICE_VAN,
+  VEHICLE_DIRS,
+  vehicleFrameKey,
+  vehicleLightKey,
+} from '../art/vehicles';
 import { PALETTE, type PaletteKey } from '../config';
 import type { MapDef } from '../content/schema';
 import { MAP_KEY } from './keys';
@@ -15,6 +23,10 @@ export class GalleryScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0).setBackgroundColor(0xe8ecf3);
+    if (new URLSearchParams(location.search).get('gallery') === 'vehicles') {
+      this.vehicles();
+      return;
+    }
 
     const colors: PaletteKey[] = [
       'policeBlue',
@@ -56,6 +68,18 @@ export class GalleryScene extends Phaser.Scene {
           .image(1100 + fr * 60, 60 + i * 90, characterFrameKey('player', f, fr))
           .setOrigin(0.5, 0)
           .setScale(1 / WT);
+      }
+    });
+  }
+
+  /** `?gallery=vehicles`: every vehicle in all 8 headings (lights on for the police ones). */
+  private vehicles(): void {
+    [POLICE_CAR, GETAWAY_CAR, POLICE_VAN].forEach((v, row) => {
+      for (let d = 0; d < VEHICLE_DIRS; d++) {
+        const x = 90 + d * 152;
+        const y = 170 + row * 210;
+        addBakedImage(this, getBaked(vehicleFrameKey(v.name, d, 0)), x, y);
+        if (v.lightBar) addBakedImage(this, getBaked(vehicleLightKey(v.name, d, 1)), x, y);
       }
     });
   }

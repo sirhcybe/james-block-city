@@ -119,39 +119,3 @@ export function dirBetween(a: LaneNode, b: LaneNode): Vec2 {
 export function rightOf(d: Vec2): Vec2 {
   return { x: -d.y, y: d.x };
 }
-
-/**
- * Road assist branch choice at a node.
- * @param input desired direction in grid space (from screenDirToGrid), or null for "no input"
- * @param heading the direction the vehicle arrived with
- * @param options unit grid directions of the available branches
- * @returns index into `options`, or -1 to stop and wait
- *
- * With input: the branch closest to the input wins; a U-turn only when the input clearly points back.
- * Without input: keep going straight, or follow a bend; stop at a junction with no straight on.
- */
-export function chooseBranch(input: Vec2 | null, heading: Vec2, options: Vec2[]): number {
-  if (options.length === 0) return -1;
-  const isReverse = (o: Vec2) => o.x === -heading.x && o.y === -heading.y;
-  const forward = options.filter((o) => !isReverse(o));
-  const idx = (o: Vec2) => options.indexOf(o);
-
-  const len = input ? Math.hypot(input.x, input.y) : 0;
-  if (!input || len < 1e-6) {
-    const straight = forward.find((o) => o.x === heading.x && o.y === heading.y);
-    if (straight) return idx(straight);
-    if (forward.length === 1) return idx(forward[0]!);
-    return -1;
-  }
-
-  const ix = input.x / len;
-  const iy = input.y / len;
-  const dot = (o: Vec2) => o.x * ix + o.y * iy;
-  let best: Vec2 | null = null;
-  for (const o of forward) if (!best || dot(o) > dot(best)) best = o;
-  const reverse = options.find(isReverse);
-  // U-turn when the stick points back and nothing ahead is a reasonable match.
-  if (reverse && dot(reverse) > 0.7 && (!best || dot(best) < 0.3)) return idx(reverse);
-  if (best) return idx(best);
-  return reverse ? idx(reverse) : -1;
-}

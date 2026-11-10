@@ -18,6 +18,10 @@ export const PLAYER_RADIUS = 0.28;
 export const CAR_MAX_SPEED = 5.5;
 export const CAR_ACCEL = 7;
 export const CAR_BRAKE = 12;
+/** Speed through a corner curve, the largest corner curve radius (tiles), U-turn spin time (s). */
+export const CAR_CORNER_SPEED = 3.6;
+export const CAR_TURN_RADIUS = 0.9;
+export const CAR_UTURN_SEC = 0.35;
 /** How close (tiles) the player must be to hop into a car. */
 export const ENTER_CAR_DIST = 1.6;
 /** Vehicles bump things / each other within this distance (tiles). */

@@ -1,10 +1,20 @@
 import type Phaser from 'phaser';
 import { PALETTE } from '../config';
-import type { Facing } from '../entities/Player';
 import { darken, lighten } from './color';
-import { bakeParts, type BakedMeta, type Part } from './blocks';
-import { FACINGS } from './characters';
-import { facePoint, project, type BlockGeom } from './isoShapes';
+import {
+  bakeParts,
+  drawOrientedBlock,
+  drawOrientedWindow,
+  type BakedMeta,
+  type Part,
+} from './blocks';
+import {
+  orientedAxes,
+  orientedFacePoint,
+  project,
+  type OrientedBox,
+  type OrientedSide,
+} from './isoShapes';
 import { drawStar } from './shapes2d';
 
 export interface VehicleLook {
@@ -62,242 +72,266 @@ export const POLICE_VAN: VehicleLook = {
 /** Light frame: 0 = off, 1 = red bright, 2 = blue bright. */
 export type LightFrame = 0 | 1 | 2;
 
-export function vehicleFrameKey(name: string, f: Facing, wheel: 0 | 1, light: LightFrame): string {
-  return `${name}-${f}-${wheel}-${light}`;
+/** Number of drawn headings: 8 (every 45° in grid space; 0 = +gx, down-right on screen). */
+export const VEHICLE_DIRS = 8;
+
+export function vehicleFrameKey(name: string, dir8: number, wheel: 0 | 1): string {
+  return `${name}-d${dir8}-${wheel}`;
 }
 
-const along = (f: Facing) => (f === 'SE' || f === 'NW' ? 'x' : 'y');
-const forwardSign = (f: Facing) => (f === 'SE' || f === 'SW' ? 1 : -1);
+/** The lit light-bar overlay for a heading (light 1 = red bright, 2 = blue bright). */
+export function vehicleLightKey(name: string, dir8: number, light: 1 | 2): string {
+  return `${name}-d${dir8}-light${light}`;
+}
 
-function vehicleParts(v: VehicleLook, facing: Facing, wheel: 0 | 1, light: LightFrame): Part[] {
-  const ax = along(facing);
-  const fwd = forwardSign(facing);
+/** Height of the roof (where the light bar / driver sit), in block units. */
+function roofOf(v: VehicleLook): number {
+  return 0.12 + v.bodyH + (v.cabin !== null ? 0.26 : 0);
+}
+
+/** The two light-bar blocks on the roof, back one first. */
+function lightBar(v: VehicleLook, angle: number): { box: OrientedBox; red: boolean }[] {
+  const { f, r } = orientedAxes(angle);
+  const back = -0.08;
+  const z = roofOf(v);
+  const at = (side: number) => ({
+    cx: f.x * back + r.x * side * 0.085,
+    cy: f.y * back + r.y * side * 0.085,
+  });
+  const bars = [
+    { box: { ...at(-1), halfL: 0.1, halfW: 0.08, z0: z, z1: z + 0.1, angle }, red: true },
+    { box: { ...at(1), halfL: 0.1, halfW: 0.08, z0: z, z1: z + 0.1, angle }, red: false },
+  ];
+  return bars.sort((a, b) => a.box.cx + a.box.cy - (b.box.cx + b.box.cy));
+}
+
+function drawVehicle(
+  g: Phaser.GameObjects.Graphics,
+  ox: number,
+  oy: number,
+  s: number,
+  v: VehicleLook,
+  dir8: number,
+  wheel: 0 | 1,
+): void {
+  const angle = (dir8 * Math.PI) / 4;
+  const { f } = orientedAxes(angle);
   const L = v.length;
   const Wd = v.width;
-  const w = ax === 'x' ? L : Wd;
-  const d = ax === 'x' ? Wd : L;
-  const chassis: BlockGeom = { gx: -w / 2, gy: -d / 2, gz: 0.12, w, d, h: v.bodyH };
-  // The long side we can see: 'left' face runs along gx, 'right' face along gy.
-  const side: 'left' | 'right' = ax === 'x' ? 'left' : 'right';
-  // The visible short end: front if driving toward the viewer (SE/SW), else the back.
-  const end: 'left' | 'right' = ax === 'x' ? 'right' : 'left';
-  const showsFront = fwd === 1;
-  const parts: Part[] = [
-    // Fixed frame box so every frame has the same size and origin (wheels, glow, driver fit inside).
-    {
-      type: 'custom',
-      bounds: [
-        { x: -64, y: -96 },
-        { x: 64, y: 36 },
-      ],
-      draw: () => {},
-    },
-    { type: 'block', ...chassis, color: v.body, bevel: 3 },
-  ];
+  const z0 = 0.12;
+  const zTop = z0 + v.bodyH;
+  const chassis: OrientedBox = { cx: 0, cy: 0, halfL: L / 2, halfW: Wd / 2, z0, z1: zTop, angle };
+  const sides = drawOrientedBlock(g, chassis, { color: v.body, bevel: 3 }, ox, oy, s);
+  const bySide = (k: OrientedSide) => sides.find((fc) => fc.side === k)!;
+  const longSides = [bySide('left'), bySide('right')];
+  const showsFront = f.x + f.y > 1e-3;
 
-  if (v.stripe !== undefined) {
-    parts.push({
-      type: 'window',
-      block: chassis,
-      face: side,
-      u0: 0.04,
-      u1: L - 0.04,
-      z0: v.bodyH * 0.35,
-      z1: v.bodyH * 0.6,
-      color: v.stripe,
-    });
+  for (const fc of longSides) {
+    if (!fc.visible) continue;
+    if (v.stripe !== undefined) {
+      drawOrientedWindow(
+        g,
+        fc,
+        0.03,
+        0.97,
+        z0 + v.bodyH * 0.35,
+        z0 + v.bodyH * 0.6,
+        ox,
+        oy,
+        v.stripe,
+        s,
+        false,
+      );
+    }
   }
-  // Head / tail lights on the visible end.
-  for (const u of [0.08, Wd - 0.2]) {
-    parts.push({
-      type: 'window',
-      block: chassis,
-      face: end,
-      u0: u,
-      u1: u + 0.12,
-      z0: v.bodyH * 0.45,
-      z1: v.bodyH * 0.8,
-      color: showsFront ? 0xfff1a8 : PALETTE.fireRed,
-    });
+  // Head lights on the front, tail lights on the back (whichever we can see).
+  for (const [k, color] of [
+    ['front', 0xfff1a8],
+    ['back', PALETTE.fireRed],
+  ] as const) {
+    const fc = bySide(k);
+    if (!fc.visible) continue;
+    for (const u of [0.1, 0.72]) {
+      drawOrientedWindow(
+        g,
+        fc,
+        u,
+        u + 0.18,
+        z0 + v.bodyH * 0.45,
+        z0 + v.bodyH * 0.8,
+        ox,
+        oy,
+        color,
+        s,
+        false,
+      );
+    }
+  }
+
+  // Wheels on the long sides we can see (or see edge-on), with a spoke that turns between frames.
+  for (const fc of longSides) {
+    const facing = fc.normal.x + fc.normal.y;
+    if (facing < -0.05) continue;
+    // Seen edge-on (heading straight up/down the screen) a wheel is a thin upright ellipse.
+    const squash = 0.4 + 0.6 * Math.min(1, Math.max(0, facing));
+    for (const u of [0.2, 0.8]) {
+      const c = orientedFacePoint(fc, u, z0 + 0.02, s);
+      const x = c.x + ox;
+      const y = c.y + oy;
+      const rr = 7.5 * s;
+      g.fillStyle(0x2b2d42, 1);
+      g.fillEllipse(x, y, rr * 2 * squash, rr * 2.1);
+      g.fillStyle(0xc9ced8, 1);
+      g.fillEllipse(x, y, rr * squash, rr);
+      g.lineStyle(2 * s, 0x2b2d42, 1);
+      const a = wheel === 0 ? Math.PI / 4 : -Math.PI / 4;
+      g.lineBetween(
+        x - Math.cos(a) * rr * 0.5 * squash,
+        y - Math.sin(a) * rr * 0.5,
+        x + Math.cos(a) * rr * 0.5 * squash,
+        y + Math.sin(a) * rr * 0.5,
+      );
+    }
+  }
+
+  if (v.star) {
+    for (const fc of longSides) {
+      if (!fc.visible) continue;
+      const c = orientedFacePoint(fc, 0.5, z0 + v.bodyH * 0.62, s);
+      drawStar(g, c.x + ox, c.y + oy, (v.bodyH > 0.5 ? 13 : 7) * s, PALETTE.coinGold, 1.5 * s);
+    }
   }
 
   // Cabin, a little toward the back.
-  const back = -fwd * 0.08;
-  let roofZ = 0.12 + v.bodyH;
   if (v.cabin !== null) {
-    const cl = L * 0.52;
-    const cabin: BlockGeom =
-      ax === 'x'
-        ? { gx: -cl / 2 + back, gy: -Wd / 2 + 0.05, gz: roofZ, w: cl, d: Wd - 0.1, h: 0.26 }
-        : { gx: -Wd / 2 + 0.05, gy: -cl / 2 + back, gz: roofZ, w: Wd - 0.1, d: cl, h: 0.26 };
-    parts.push({ type: 'block', ...cabin, color: v.body, top: lighten(v.cabin, 0.1), bevel: 3 });
-    for (const face of ['left', 'right'] as const) {
-      const span = face === 'left' ? cabin.w : cabin.d;
-      parts.push({
-        type: 'window',
-        block: cabin,
-        face,
-        u0: 0.06,
-        u1: span - 0.06,
-        z0: 0.06,
-        z1: 0.22,
-        color: PALETTE.windowBlue,
-      });
+    const cabin: OrientedBox = {
+      cx: f.x * -0.08,
+      cy: f.y * -0.08,
+      halfL: L * 0.26,
+      halfW: Wd / 2 - 0.05,
+      z0: zTop,
+      z1: zTop + 0.26,
+      angle,
+    };
+    const cs = drawOrientedBlock(
+      g,
+      cabin,
+      { color: v.body, top: lighten(v.cabin, 0.1), bevel: 3 },
+      ox,
+      oy,
+      s,
+    );
+    for (const fc of cs) {
+      if (!fc.visible) continue;
+      drawOrientedWindow(g, fc, 0.1, 0.9, zTop + 0.06, zTop + 0.22, ox, oy, PALETTE.windowBlue, s);
     }
-    roofZ += 0.26;
   }
 
   if (v.lightBar) {
-    const bright = (c: number, on: boolean) => (on ? lighten(c, 0.35) : darken(c, 0.35));
-    const half = 0.16;
-    const red = { color: bright(PALETTE.fireRed, light === 1), bevel: 1 };
-    const blue = { color: bright(PALETTE.policeBlue, light === 2), bevel: 1 };
-    if (ax === 'x') {
-      parts.push({
-        type: 'block',
-        gx: -0.1 + back,
-        gy: -half,
-        gz: roofZ,
-        w: 0.2,
-        d: half,
-        h: 0.1,
-        ...red,
-      });
-      parts.push({
-        type: 'block',
-        gx: -0.1 + back,
-        gy: 0,
-        gz: roofZ,
-        w: 0.2,
-        d: half,
-        h: 0.1,
-        ...blue,
-      });
-    } else {
-      parts.push({
-        type: 'block',
-        gx: -half,
-        gy: -0.1 + back,
-        gz: roofZ,
-        w: half,
-        d: 0.2,
-        h: 0.1,
-        ...red,
-      });
-      parts.push({
-        type: 'block',
-        gx: 0,
-        gy: -0.1 + back,
-        gz: roofZ,
-        w: half,
-        d: 0.2,
-        h: 0.1,
-        ...blue,
-      });
-    }
-    if (light !== 0) {
-      // Glow.
-      parts.push({
-        type: 'custom',
-        bounds: [],
-        draw: (g, ox, oy, s) => {
-          const c = project(0, 0, roofZ + 0.1, s);
-          g.fillStyle(light === 1 ? PALETTE.fireRed : PALETTE.policeBlue, 0.35);
-          g.fillCircle(c.x + ox, c.y + oy, 15 * s);
-        },
-      });
+    for (const { box, red } of lightBar(v, angle)) {
+      const c = red ? PALETTE.fireRed : PALETTE.policeBlue;
+      drawOrientedBlock(g, box, { color: darken(c, 0.35), bevel: 1 }, ox, oy, s);
     }
   }
 
-  if (v.robberDriver) {
-    // Pickles at the wheel of his open-top getaway car: striped body + masked head.
-    parts.push({
-      type: 'custom',
-      bounds: [
-        { x: -20, y: -66 },
-        { x: 20, y: -10 },
-      ],
-      draw: (g, ox, oy, s) => {
-        const c = project(0, 0, roofZ, s);
-        const x = c.x + ox;
-        const y = c.y + oy;
-        g.lineStyle(2 * s, PALETTE.outline, 1);
-        g.fillStyle(0xffffff, 1);
-        g.fillRoundedRect(x - 9 * s, y - 16 * s, 18 * s, 15 * s, 5 * s);
-        g.fillStyle(PALETTE.robberBlack, 1);
-        g.fillRect(x - 8 * s, y - 12 * s, 16 * s, 2.5 * s);
-        g.fillRect(x - 8 * s, y - 7 * s, 16 * s, 2.5 * s);
-        g.strokeRoundedRect(x - 9 * s, y - 16 * s, 18 * s, 15 * s, 5 * s);
-        g.fillStyle(PALETTE.skin, 1);
-        g.fillCircle(x, y - 26 * s, 10 * s);
-        g.fillStyle(0xd9822b, 1);
-        g.slice(x, y - 26 * s, 10 * s, Math.PI * 1.05, Math.PI * 1.95, false);
-        g.fillPath();
-        g.strokeCircle(x, y - 26 * s, 10 * s);
-        g.fillStyle(PALETTE.robberBlack, 1);
-        g.fillRoundedRect(x - 9 * s, y - 29 * s, 18 * s, 6 * s, 2 * s);
-        if (showsFront) {
-          g.fillStyle(0xffffff, 1);
-          g.fillCircle(x - 3.5 * s, y - 26 * s, 2 * s);
-          g.fillCircle(x + 3.5 * s, y - 26 * s, 2 * s);
-          g.lineStyle(1.5 * s, PALETTE.outline, 1);
-          g.beginPath();
-          g.arc(x, y - 22 * s, 3.5 * s, Math.PI * 0.1, Math.PI * 0.9, false);
-          g.strokePath();
-        }
-      },
-    });
-  }
-
-  // Wheels on the visible long side, with a spoke that turns between frames.
-  parts.push({
-    type: 'custom',
-    bounds: [],
-    draw: (g, ox, oy, s) => {
-      for (const u of [L * 0.2, L * 0.8]) {
-        const c = facePoint(chassis, side, u, 0.02, s);
-        const x = c.x + ox;
-        const y = c.y + oy;
-        const r = 7.5 * s;
-        g.fillStyle(0x2b2d42, 1);
-        g.fillEllipse(x, y, r * 2, r * 2.1);
-        g.fillStyle(0xc9ced8, 1);
-        g.fillCircle(x, y, r * 0.5);
-        g.lineStyle(2 * s, 0x2b2d42, 1);
-        const a = wheel === 0 ? Math.PI / 4 : -Math.PI / 4;
-        g.lineBetween(
-          x - Math.cos(a) * r * 0.5,
-          y - Math.sin(a) * r * 0.5,
-          x + Math.cos(a) * r * 0.5,
-          y + Math.sin(a) * r * 0.5,
-        );
-      }
-    },
-  });
-
-  if (v.star) {
-    parts.push({
-      type: 'custom',
-      bounds: [],
-      draw: (g, ox, oy, s) => {
-        const c = facePoint(chassis, side, L / 2, v.bodyH * 0.62, s);
-        drawStar(g, c.x + ox, c.y + oy, (v.bodyH > 0.5 ? 13 : 7) * s, PALETTE.coinGold, 1.5 * s);
-      },
-    });
-  }
-  return parts;
+  if (v.robberDriver) drawRobberDriver(g, ox, oy, s, roofOf(v), showsFront);
 }
 
-/** Bake every frame of a vehicle look (4 facings × 2 wheel frames × light frames). */
+/** Pickles at the wheel of his open-top getaway car: striped body + masked head. */
+function drawRobberDriver(
+  g: Phaser.GameObjects.Graphics,
+  ox: number,
+  oy: number,
+  s: number,
+  roofZ: number,
+  showsFront: boolean,
+): void {
+  const c = project(0, 0, roofZ, s);
+  const x = c.x + ox;
+  const y = c.y + oy;
+  g.lineStyle(2 * s, PALETTE.outline, 1);
+  g.fillStyle(0xffffff, 1);
+  g.fillRoundedRect(x - 9 * s, y - 16 * s, 18 * s, 15 * s, 5 * s);
+  g.fillStyle(PALETTE.robberBlack, 1);
+  g.fillRect(x - 8 * s, y - 12 * s, 16 * s, 2.5 * s);
+  g.fillRect(x - 8 * s, y - 7 * s, 16 * s, 2.5 * s);
+  g.strokeRoundedRect(x - 9 * s, y - 16 * s, 18 * s, 15 * s, 5 * s);
+  g.fillStyle(PALETTE.skin, 1);
+  g.fillCircle(x, y - 26 * s, 10 * s);
+  g.fillStyle(0xd9822b, 1);
+  g.slice(x, y - 26 * s, 10 * s, Math.PI * 1.05, Math.PI * 1.95, false);
+  g.fillPath();
+  g.strokeCircle(x, y - 26 * s, 10 * s);
+  g.fillStyle(PALETTE.robberBlack, 1);
+  g.fillRoundedRect(x - 9 * s, y - 29 * s, 18 * s, 6 * s, 2 * s);
+  if (showsFront) {
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(x - 3.5 * s, y - 26 * s, 2 * s);
+    g.fillCircle(x + 3.5 * s, y - 26 * s, 2 * s);
+    g.lineStyle(1.5 * s, PALETTE.outline, 1);
+    g.beginPath();
+    g.arc(x, y - 22 * s, 3.5 * s, Math.PI * 0.1, Math.PI * 0.9, false);
+    g.strokePath();
+  }
+}
+
+/** Every frame shares this box, so all headings and wheel frames have one size and origin. */
+const FRAME_BOUNDS = [
+  { x: -64, y: -96 },
+  { x: 64, y: 36 },
+];
+
+function bodyParts(v: VehicleLook, dir8: number, wheel: 0 | 1): Part[] {
+  return [
+    { type: 'custom', bounds: FRAME_BOUNDS, draw: () => {} },
+    {
+      type: 'custom',
+      bounds: [],
+      draw: (g, ox, oy, s) => drawVehicle(g, ox, oy, s, v, dir8, wheel),
+    },
+  ];
+}
+
+function lightParts(v: VehicleLook, dir8: number, light: 1 | 2): Part[] {
+  const angle = (dir8 * Math.PI) / 4;
+  const z = roofOf(v);
+  return [
+    {
+      type: 'custom',
+      bounds: [
+        { x: -34, y: -(z + 0.1) * 32 - 20 },
+        { x: 34, y: -z * 32 + 20 },
+      ],
+      draw: (g, ox, oy, s) => {
+        for (const { box, red } of lightBar(v, angle)) {
+          const c = red ? PALETTE.fireRed : PALETTE.policeBlue;
+          const on = (light === 1) === red;
+          drawOrientedBlock(
+            g,
+            box,
+            { color: on ? lighten(c, 0.35) : darken(c, 0.35), bevel: 1 },
+            ox,
+            oy,
+            s,
+          );
+        }
+        const c = project(0, 0, z + 0.1, s);
+        g.fillStyle(light === 1 ? PALETTE.fireRed : PALETTE.policeBlue, 0.35);
+        g.fillCircle(c.x + ox, c.y + oy, 15 * s);
+      },
+    },
+  ];
+}
+
+/** Bake every frame of a vehicle look: 8 headings × 2 wheel frames, plus light-bar overlays. */
 export function bakeVehicle(scene: Phaser.Scene, v: VehicleLook): BakedMeta[] {
   const metas: BakedMeta[] = [];
-  const lights: LightFrame[] = v.lightBar ? [0, 1, 2] : [0];
-  for (const f of FACINGS) {
-    for (const wheel of [0, 1] as const) {
-      for (const light of lights) {
-        const key = vehicleFrameKey(v.name, f, wheel, light);
-        metas.push(bakeParts(scene, key, vehicleParts(v, f, wheel, light)));
-      }
+  for (let d = 0; d < VEHICLE_DIRS; d++) {
+    for (const wheel of [0, 1] as const)
+      metas.push(bakeParts(scene, vehicleFrameKey(v.name, d, wheel), bodyParts(v, d, wheel)));
+    if (v.lightBar) {
+      for (const light of [1, 2] as const)
+        metas.push(bakeParts(scene, vehicleLightKey(v.name, d, light), lightParts(v, d, light)));
     }
   }
   return metas;

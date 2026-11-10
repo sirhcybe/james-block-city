@@ -1,8 +1,6 @@
 # 003 — Cop Job Complete
 
-> **DRAFT by the agent. Waiting for Chris to review.** The GDD gives only the mission *names*. Each
-> mission's content below is a proposal, and the choices to make are listed under Open questions.
-> No code is written until this spec, plan.md and tasks.md are approved.
+> **Approved by Chris on 2026-11-09.** The mission stories are the agent's proposals, approved as written.
 
 ## Goal
 1. Fix the car controls so James feels "my car goes where I push" (finding from the 2026-11-09 playtest).
@@ -194,22 +192,11 @@ Android phone) is still open and gets checked again here, as AC20.
 - [ ] AC21 A playtest note template for 003 is in `docs/playtests/TEMPLATE.md`, updated with this
       spec's question.
 
-## Open questions (for Chris)
-1. **Car controls.** Is what's described in A what felt wrong? Or was it something else, such as
-   too fast, too slow, the camera, tap-to-go, or the thumb stick? Anything specific you noticed
-   should go in here.
-2. **The 6 missions.** These are my proposals; the GDD only has the names.
-   - "Rooftop Run" is on a bike, so I made it a park and alley chase rather than rooftops. Is
-     that OK?
-   - Are the rest of the plots OK?
-3. **Map size.** Should Downtown grow to its full north-west quarter of the 48×48 map now? The
-   other districts would stay water and park. Or should the missions fit into a smaller Downtown?
-4. **Net vs. Action.** The Action button turns into a net only when a robber is in range.
-   Otherwise it is enter/exit as now. Is that OK, or should there be a separate Net button?
-5. **Spec size.** This is a big spec, about 30 tasks.
-   - Option: split it into 003 (driving fix, net, Rookie missions, badge) and 004 (Shop, bike,
-     Pro missions, Who Took It?). That shifts the roadmap numbers.
-   - Option: keep it as one spec, but stop for a quick play after part A and after the Rookie
-     missions.
-6. **Replays.** In 002 each Donut Dash replay paid 20 again. Should replays pay less, for example
-   5, so coins can't be farmed?
+## Decisions (Chris, 2026-11-09)
+1. **Car controls.** The bug found in code (holding one direction flips back and forth at corners)
+   is what felt wrong. Part A fixes it.
+2. **The 6 missions.** The mission stories are approved as written.
+3. **Map size.** Downtown grows to its full north-west district.
+4. **Net vs. Action.** The Action button turns into the net only when a robber is close.
+5. **Spec size.** Keep it as one spec, with play stops at T5 and T17.
+6. **Replays.** Replays keep paying the full mission reward.

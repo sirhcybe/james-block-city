@@ -1,13 +1,15 @@
 # 003 — Tasks
 
-> **DRAFT. Waiting for review.** Tasks are done in order. ⏸ marks a stop for a quick human play.
+> Approved 2026-11-09. Tasks are done in order. ⏸ marks a stop for a quick human play.
 
 ## A. Driving feel
-- [ ] T1 Write `src/iso/steer.ts` (`screenAngle`, `pickBranch`, `wantsUTurn`) with unit tests.
+- [x] T1 Write `src/iso/steer.ts` (`screenAngle`, `pickBranch`, `wantsUTurn`) with unit tests.
       - Angle sweep × every node: no flip-back-and-forth.
       - Ties go to straight ahead.
       - (AC1, AC2)
-- [ ] T2 `LaneDriver`:
+      Done: `src/iso/steer.ts` (`toScreen`, `stickDiff`, `pickBranch`, `wantsUTurn`); tests in
+      `roads.test.ts` (ties, stop, going back) and the `driving.test.ts` sweep (AC1).
+- [x] T2 `LaneDriver`:
       - stick in screen space;
       - commit to the next edge at t ≥ 0.5;
       - corner arcs;
@@ -15,12 +17,20 @@
       - U-turn spin state.
       - Extend the "never leaves the road" test to sample arc positions; existing driving tests
         keep passing. (AC1, AC3)
-- [ ] T3 Vehicle art: 8 facings for the police car, getaway car and van.
+      Done. The next edge is picked on entering an edge and can be re-picked until its curve
+      starts (instead of at t ≥ 0.5). Stop line half a tile before a junction; `placeOnEdge` for
+      the debug hook.
+- [x] T3 Vehicle art: 8 facings for the police car, getaway car and van.
       - `facing8`.
       - Spin and hop on U-turn.
       - Check with gallery screenshots. (AC4)
-- [ ] T4 Add the dev-only `?drive` tuning overlay and tune by hand in the browser; write
+      Done: `drawOrientedBlock` (`art/blocks.ts`) + `orientedBoxFaces` (`art/isoShapes.ts`, unit
+      tested); `dir8`; the light bar is an overlay sprite; checked in `?gallery=vehicles` and in
+      the city.
+- [x] T4 Add the dev-only `?drive` tuning overlay and tune by hand in the browser; write
       ADR-004; commit.
+      Done: `src/driveTuning.ts` (`?play&drive`, dev build only); ADR-004. Defaults kept from
+      spec 002 except the new corner speed 3.6, curve 0.9 and spin 0.35 s.
 - [ ] ⏸ T5 Chris drives with keys, mouse and thumb (emulated, and on a phone if possible) and
       confirms it feels right. Record the result in the playtest note. (AC5)
 

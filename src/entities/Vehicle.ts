@@ -1,10 +1,15 @@
 import type Phaser from 'phaser';
 import { getBaked } from '../art/blocks';
 import { WT } from '../art/renderScale';
-import { vehicleFrameKey, type LightFrame, type VehicleLook } from '../art/vehicles';
+import {
+  vehicleFrameKey,
+  vehicleLightKey,
+  type LightFrame,
+  type VehicleLook,
+} from '../art/vehicles';
 import { gridToScreen, type Vec2 } from '../iso/projection';
 import type { LaneGraph, LaneNode } from '../iso/roads';
-import { LaneDriver, type DriveInput } from './LaneDriver';
+import { DRIVE_TUNING, LaneDriver, type DriveInput } from './LaneDriver';
 
 /**
  * A drawn vehicle on the lane graph: road-assist motion (LaneDriver) + sprite with spinning wheels,
@@ -13,6 +18,8 @@ import { LaneDriver, type DriveInput } from './LaneDriver';
 export class Vehicle {
   readonly driver: LaneDriver;
   readonly img: Phaser.GameObjects.Image;
+  /** Lit light bar drawn over the body while the siren flashes (police vehicles). */
+  readonly lightImg: Phaser.GameObjects.Image | null = null;
   look: VehicleLook;
   private wheelT = 0;
   private wheel: 0 | 1 = 0;
@@ -33,11 +40,19 @@ export class Vehicle {
   ) {
     this.look = look;
     this.driver = new LaneDriver(graph, start, heading, maxSpeed);
-    const meta = getBaked(vehicleFrameKey(look.name, this.driver.facing, 0, 0));
+    const meta = getBaked(vehicleFrameKey(look.name, this.driver.dir8, 0));
     this.img = scene.add
       .image(0, 0, meta.key)
       .setOrigin(meta.originX, meta.originY)
       .setScale(1 / WT);
+    if (look.lightBar) {
+      const lm = getBaked(vehicleLightKey(look.name, 0, 1));
+      this.lightImg = scene.add
+        .image(0, 0, lm.key)
+        .setOrigin(lm.originX, lm.originY)
+        .setScale(1 / WT)
+        .setVisible(false);
+    }
     this.sync(0);
   }
 
@@ -62,7 +77,10 @@ export class Vehicle {
 
   sync(dt: number): void {
     const p = gridToScreen(this.driver.pos.x, this.driver.pos.y);
-    this.img.setPosition(p.x, p.y - this.hop);
+    // A little hop while spinning round (U-turn).
+    const spin = this.driver.spin;
+    const spinHop = spin ? Math.sin(Math.PI * Math.min(1, spin.t / DRIVE_TUNING.uturnSec)) * 10 : 0;
+    this.img.setPosition(p.x, p.y - this.hop - spinHop);
 
     this.wheelT += Math.abs(this.driver.speed) * dt;
     if (this.wheelT > 0.18) {
@@ -77,9 +95,19 @@ export class Vehicle {
         this.light = this.light === 1 ? 2 : 1;
       }
     } else this.light = 0;
-    this.img.setTexture(
-      vehicleFrameKey(this.look.name, this.driver.facing, this.wheel, this.light),
-    );
+    const d8 = this.driver.dir8;
+    this.img.setTexture(vehicleFrameKey(this.look.name, d8, this.wheel));
+    if (this.lightImg) {
+      const on = this.light !== 0 && this.img.visible;
+      this.lightImg.setVisible(on);
+      if (on) {
+        this.lightImg
+          .setTexture(vehicleLightKey(this.look.name, d8, this.light as 1 | 2))
+          .setPosition(this.img.x, this.img.y)
+          .setDepth(this.img.depth + 0.5)
+          .setAlpha(this.img.alpha);
+      }
+    }
   }
 
   /** Lights currently flashing (siren on). */

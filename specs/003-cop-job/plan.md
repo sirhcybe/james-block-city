@@ -1,6 +1,6 @@
 # 003 — Plan
 
-> **DRAFT. Waiting for review together with spec.md.**
+> Approved 2026-11-09. Tasks are done in order. ⏸ marks a stop for a quick human play.
 
 ## Approach
 The work comes in three parts, each one playable on its own. We stop for a quick play after
@@ -111,7 +111,7 @@ each part.
   mission, and it is awarded once all three Rookie missions are done).
 - Save: SaveV1 already has `badges`, `owned` and `missionsDone` (stars), so **no version bump is
   expected**. If one is needed, add SaveV2 with a `migrate` and tests.
-- Replay pay-out depends on open question 6.
+- Replays pay the full reward (decision 6).
 
 ## Risks
 - **Arcs and tight bends.** Arcs combined with 1-tile edges at tight bends could cut the corner

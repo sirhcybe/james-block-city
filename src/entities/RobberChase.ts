@@ -4,12 +4,18 @@ import { voice } from '../audio/voice';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
 import { WT } from '../art/renderScale';
-import { GETAWAY_CAR, GETAWAY_EMPTY, POLICE_VAN, vehicleFrameKey } from '../art/vehicles';
+import {
+  GETAWAY_CAR,
+  GETAWAY_EMPTY,
+  POLICE_VAN,
+  vehicleFrameKey,
+  vehicleLightKey,
+} from '../art/vehicles';
 import { BUMP_DIST, CAR_MAX_SPEED } from '../config';
 import { depthOf, gridToScreen, type Vec2 } from '../iso/projection';
 import { rightOf, type LaneGraph, type LaneNode } from '../iso/roads';
 import { ChaseState } from '../systems/chase';
-import type { BranchChooser } from './LaneDriver';
+import { dir8ForDir, type BranchChooser } from './LaneDriver';
 import { Vehicle } from './Vehicle';
 
 export interface ChaseHooks {
@@ -190,12 +196,21 @@ export class RobberChase {
 
       const facing = this.car.driver.facing;
       const vs = gridToScreen(vanAt.x, vanAt.y);
-      const vanMeta = getBaked(vehicleFrameKey(POLICE_VAN.name, facing, 0, 1));
-      const van = scene.add
+      const vanDir = dir8ForDir(dir);
+      const vanMeta = getBaked(vehicleFrameKey(POLICE_VAN.name, vanDir, 0));
+      const vanLightMeta = getBaked(vehicleLightKey(POLICE_VAN.name, vanDir, 1));
+      const vanDepth = depthOf(vanAt.x, vanAt.y) + 55;
+      const vanBody = scene.add
         .image(vs.x, vs.y, vanMeta.key)
         .setOrigin(vanMeta.originX, vanMeta.originY)
         .setScale(0)
-        .setDepth(depthOf(vanAt.x, vanAt.y) + 55);
+        .setDepth(vanDepth);
+      const vanLight = scene.add
+        .image(vs.x, vs.y, vanLightMeta.key)
+        .setOrigin(vanLightMeta.originX, vanLightMeta.originY)
+        .setScale(0)
+        .setDepth(vanDepth + 0.5);
+      const van = [vanBody, vanLight];
       this.puffAt(vanAt);
       scene.tweens.add({ targets: van, scale: 1 / WT, duration: 300, ease: 'Back.easeOut' });
       let light: 1 | 2 = 1;
@@ -204,7 +219,7 @@ export class RobberChase {
         loop: true,
         callback: () => {
           light = light === 1 ? 2 : 1;
-          van.setTexture(vehicleFrameKey(POLICE_VAN.name, facing, 0, light));
+          vanLight.setTexture(vehicleLightKey(POLICE_VAN.name, vanDir, light));
         },
       });
 
@@ -244,7 +259,7 @@ export class RobberChase {
               ease: 'Quad.easeIn',
               onComplete: () => {
                 flasher.remove();
-                van.destroy();
+                for (const v of van) v.destroy();
                 this.phase = 'caught';
                 this.hooks.onCaught();
               },
