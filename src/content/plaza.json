@@ -1,0 +1,275 @@
+{
+  "id": "plaza",
+  "width": 16,
+  "height": 16,
+  "legend": {
+    "g": "grass",
+    "r": "road",
+    "s": "sidewalk",
+    "p": "plaza"
+  },
+  "tiles": [
+    "gggggggggggggggg",
+    "grrrrrrrrrrrrrrg",
+    "grrrrrrrrrrrrrrg",
+    "grrssssssssssrrg",
+    "grrsppppppppsrrg",
+    "grrsppppppppsrrg",
+    "grrspppppppgsrrg",
+    "grrsppppppppsrrg",
+    "grrsgpppppppsrrg",
+    "grrspppppppgsrrg",
+    "grrsppppppppsrrg",
+    "grrsppppppppsrrg",
+    "grrssssssssssrrg",
+    "grrrrrrrrrrrrrrg",
+    "grrrrrrrrrrrrrrg",
+    "gggggggggggggggg"
+  ],
+  "spawn": {
+    "gx": 9.5,
+    "gy": 9.5
+  },
+  "buildings": [
+    {
+      "id": "city-hall",
+      "kind": "cityhall",
+      "gx": 4,
+      "gy": 4,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "coinGold"
+    },
+    {
+      "id": "tower-east",
+      "kind": "tower",
+      "gx": 10,
+      "gy": 4,
+      "w": 2,
+      "d": 2,
+      "h": 7,
+      "color": "harborTeal"
+    },
+    {
+      "id": "tower-west",
+      "kind": "tower",
+      "gx": 4,
+      "gy": 10,
+      "w": 2,
+      "d": 2,
+      "h": 8,
+      "color": "policeBlue"
+    },
+    {
+      "id": "shop-north",
+      "kind": "house",
+      "gx": 7,
+      "gy": 4,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "builderYellow"
+    },
+    {
+      "id": "house-east",
+      "kind": "house",
+      "gx": 10,
+      "gy": 7,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "fireRed"
+    },
+    {
+      "id": "house-south",
+      "kind": "house",
+      "gx": 7,
+      "gy": 10,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "policeBlue"
+    },
+    {
+      "id": "fountain",
+      "kind": "fountain",
+      "gx": 7,
+      "gy": 7,
+      "w": 2,
+      "d": 2,
+      "h": 0.5,
+      "color": "water"
+    },
+    {
+      "id": "tree-1",
+      "kind": "tree",
+      "gx": 11,
+      "gy": 6,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-2",
+      "kind": "tree",
+      "gx": 4,
+      "gy": 8,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-3",
+      "kind": "tree",
+      "gx": 11,
+      "gy": 9,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-4",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-5",
+      "kind": "tree",
+      "gx": 4,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-6",
+      "kind": "tree",
+      "gx": 8,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-7",
+      "kind": "tree",
+      "gx": 12,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-8",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-9",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 8,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-10",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-11",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 3,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-12",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 7,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-13",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-14",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-15",
+      "kind": "tree",
+      "gx": 3,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-16",
+      "kind": "tree",
+      "gx": 7,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "tree-17",
+      "kind": "tree",
+      "gx": 11,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    }
+  ]
+}

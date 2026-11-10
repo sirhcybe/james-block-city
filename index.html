@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#3FB8E0" />
+    <title>James's Block City</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #3fb8e0;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+      }
+      #rotate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #2f6fde;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate {
+          display: flex;
+        }
+      }
+      #rotate svg {
+        width: 60vmin;
+        height: 60vmin;
+      }
+      #rotate .phone {
+        transform-origin: 100px 100px;
+        animation: tip 2.4s ease-in-out infinite;
+      }
+      @keyframes tip {
+        0%,
+        25% {
+          transform: rotate(0deg);
+        }
+        55%,
+        100% {
+          transform: rotate(-90deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <!-- Picture-only "rotate your phone" overlay (shown in portrait on touch devices) -->
+    <div id="rotate" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <path
+          d="M40 150 A70 70 0 0 1 60 50"
+          fill="none"
+          stroke="#FFD23F"
+          stroke-width="10"
+          stroke-linecap="round"
+        />
+        <path d="M45 38 L72 44 L56 66 Z" fill="#FFD23F" />
+        <g class="phone">
+          <rect
+            x="70"
+            y="45"
+            width="60"
+            height="110"
+            rx="12"
+            fill="#F4F6FA"
+            stroke="#2B2D42"
+            stroke-width="6"
+          />
+          <rect x="80" y="60" width="40" height="72" rx="4" fill="#7EC8F2" />
+          <circle cx="100" cy="143" r="5" fill="#2B2D42" />
+        </g>
+      </svg>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
