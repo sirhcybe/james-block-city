@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | 1 | Paper prototype with James (physical, non-code) | — | Not started |
 | 2 | Isometric foundation | `specs/001-iso-foundation` | Done |
-| 3 | Vertical slice: police chase + Traffic Helper + one errand → **playtest** | `specs/002-vertical-slice` | Specced |
+| 3 | Vertical slice: police chase + Traffic Helper + one errand → **playtest** | `specs/002-vertical-slice` | Built; awaiting real-phone check + playtest |
 | 4 | Cop job complete (6 missions, Who Took It?, Shop + police bike, Time-Out Tower) | 003 (to write) | — |
 | 5 | Job Center + Firefighter (6 missions, 2 minigames, interiors) | 004 (to write) | — |
 | 6 | Builder (6 missions, 3 minigames, build spots) | 005 (to write) | — |
