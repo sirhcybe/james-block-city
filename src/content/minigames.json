@@ -12,5 +12,19 @@
     "durationSec": 110,
     "tiers": [0, 6, 11],
     "difficultyStepPerReplay": 0.15
+  },
+  {
+    "id": "window-splash",
+    "job": "fire",
+    "durationSec": 100,
+    "tiers": [0, 25, 45],
+    "difficultyStepPerReplay": 0.15
+  },
+  {
+    "id": "ladder-rescue",
+    "job": "fire",
+    "durationSec": 100,
+    "tiers": [0, 6, 11],
+    "difficultyStepPerReplay": 0.15
   }
 ]

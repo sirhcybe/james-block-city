@@ -299,7 +299,11 @@ export class HudScene extends Phaser.Scene {
             ? HUD.actionExit
             : info.action === 'net'
               ? HUD.actionNet
-              : HUD.actionIdle,
+              : info.action === 'hose'
+                ? HUD.actionHose
+                : info.action === 'blast'
+                  ? HUD.actionBlast
+                  : HUD.actionIdle,
       );
       if (info.action !== 'none')
         this.tweens.add({ targets: this.action, scale: 1.12 / RS, duration: 140, yoyo: true });

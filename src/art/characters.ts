@@ -20,7 +20,7 @@ export interface CharacterLook {
   stripes?: boolean;
   /** Black eye mask (robbers). */
   mask?: boolean;
-  hat?: 'cop' | 'chef';
+  hat?: 'cop' | 'chef' | 'fire' | 'hardhat';
 }
 
 export const PLAYER_LOOK: CharacterLook = {
@@ -52,6 +52,22 @@ export const LOOKS: Record<string, CharacterLook> = {
   },
   /** The player before First Day hands over the cap. */
   playerPlain: { ...PLAYER_LOOK, hat: undefined },
+  playerFire: { ...PLAYER_LOOK, shirt: PALETTE.fireRed, pants: 0x3a3d52, hat: 'fire' },
+  playerBuilder: { ...PLAYER_LOOK, shirt: PALETTE.coneOrange, pants: 0x2f6fde, hat: 'hardhat' },
+  fireChief: {
+    shirt: PALETTE.fireRed,
+    pants: 0x2b2d42,
+    hair: 0x3b2a1a,
+    skin: 0x8d5a3b,
+    hat: 'fire',
+  },
+  foreman: {
+    shirt: PALETTE.builderYellow,
+    pants: 0x5a4632,
+    hair: 0x6b4226,
+    skin: 0xe0ac7e,
+    hat: 'hardhat',
+  },
   chief: { shirt: 0x1f4fa8, pants: 0x1a2f5e, hair: 0xb0b0b0, skin: 0xc68a5e, hat: 'cop' },
   mayor: { shirt: 0x6b3fa0, pants: 0x2b2d42, hair: 0x6b4226, skin: PALETTE.skin },
   kid: { shirt: PALETTE.coinGold, pants: 0x2f6fde, hair: 0x2b1d14, skin: 0x8d5a3b },
@@ -223,6 +239,35 @@ function drawCharacter(
     }
     g.fillRoundedRect(hx - 10 * s, hy - hr - 6 * s, 20 * s, 8 * s, 2 * s);
     g.strokeRoundedRect(hx - 10 * s, hy - hr - 6 * s, 20 * s, 8 * s, 2 * s);
+  } else if (look.hat === 'fire' || look.hat === 'hardhat') {
+    // Rounded helmet: red with a gold shield (fire) or yellow with a ridge (builder).
+    const fire = look.hat === 'fire';
+    g.fillStyle(fire ? PALETTE.fireRed : PALETTE.builderYellow, 1);
+    g.lineStyle(2 * s, ol, 1);
+    g.slice(hx, hy - hr + 6 * s, 13 * s, Math.PI, 0, false);
+    g.fillPath();
+    g.strokePath();
+    g.fillRoundedRect(
+      hx - 16 * s + side * (front ? 2 : -2) * s,
+      hy - hr + 4 * s,
+      32 * s,
+      5 * s,
+      2 * s,
+    );
+    g.strokeRoundedRect(
+      hx - 16 * s + side * (front ? 2 : -2) * s,
+      hy - hr + 4 * s,
+      32 * s,
+      5 * s,
+      2 * s,
+    );
+    if (fire && front) {
+      g.fillStyle(PALETTE.coinGold, 1);
+      g.fillCircle(hx + side * 2 * s, hy - hr - 1 * s, 3.4 * s);
+    } else if (!fire) {
+      g.lineStyle(2 * s, ol, 1);
+      g.lineBetween(hx, hy - hr - 7 * s, hx, hy - hr + 4 * s);
+    }
   }
 }
 

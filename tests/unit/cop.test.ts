@@ -237,7 +237,7 @@ describe('Economy.spend and the Shop (AC9)', () => {
 describe('Errands after missions (AC16)', () => {
   it('3 new Cop errands, each offered once its mission is done', () => {
     const book = new ErrandBook(content.errands);
-    const after = content.errands.filter((e) => e.after);
+    const after = content.errands.filter((e) => e.after && e.job === 'cop');
     expect(after.map((e) => e.kind).sort()).toEqual(['deliver', 'find', 'return']);
     expect(book.unlockedBy({}, [])).toEqual([]);
     expect(book.unlockedBy({ 'rooftop-run': 1 }, []).map((e) => e.id)).toEqual([

@@ -19,6 +19,8 @@ export const HUD = {
   starEmpty: 'hud-star-empty',
   check: 'hud-check',
   actionNet: 'hud-action-net',
+  actionHose: 'hud-action-hose',
+  actionBlast: 'hud-action-blast',
   badgeSlot: 'hud-badge-slot',
   badge: (job: string) => `hud-badge-${job}`,
 } as const;
@@ -158,6 +160,14 @@ export function bakeHud(scene: Phaser.Scene): void {
   bakeIcon(scene, HUD.actionNet, A, A + 6, (g, s) => {
     const c = roundButton(g, ACTION_SIZE, PALETTE.coneOrange, s);
     drawIcon(g, 'net', c, c, 46 * s, s * 1.4);
+  });
+  bakeIcon(scene, HUD.actionHose, A, A + 6, (g, s) => {
+    const c = roundButton(g, ACTION_SIZE, PALETTE.harborTeal, s);
+    drawIcon(g, 'hose', c - 6 * s, c + 4 * s, 44 * s, s * 1.4);
+  });
+  bakeIcon(scene, HUD.actionBlast, A, A + 6, (g, s) => {
+    const c = roundButton(g, ACTION_SIZE, PALETTE.builderYellow, s);
+    drawIcon(g, 'blaster', c, c, 44 * s, s * 1.4);
   });
   for (const [job, color] of [
     ['cop', PALETTE.coinGold],

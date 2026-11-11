@@ -48,7 +48,7 @@ export abstract class GoalHandler {
     if (this.w.moveMode() === 'car') return null;
     const v = this.w.vehicle(this.c.vehicle);
     if (!v) return null;
-    return { at: v.pos, line: this.c.vehicle === 'police-bike' ? 'hint-bike' : 'hint-car' };
+    return { at: v.pos, line: GOTO_LINES[this.c.vehicle] ?? 'hint-car' };
   }
 }
 
@@ -56,6 +56,8 @@ const VEHICLE_IDS: VehicleId[] = ['police-car', 'police-bike', 'fire-truck', 'mi
 const GOTO_LINES: Record<string, string> = {
   'police-car': 'hint-car',
   'police-bike': 'hint-bike',
+  'fire-truck': 'hint-truck',
+  'mixer-truck': 'hint-mixer',
   mayor: 'hint-mayor',
   'puppy-owner': 'hint-owner',
 };
@@ -431,6 +433,190 @@ export class FindHandler extends GoalHandler {
   }
 }
 
+/** Spray fires out (spec 004). The world lights them; the hose puts them out. */
+export class SprayHandler extends GoalHandler {
+  constructor(
+    c: HandlerCtx,
+    private readonly fires: string[],
+  ) {
+    super(c);
+  }
+
+  override start(): void {
+    for (const f of this.fires) this.w.lightFire(f);
+    const practice = this.fires.length === 1 && this.fires[0] === 'practice-fire';
+    voice.say(practice ? 'spray-now' : 'hint-spray');
+  }
+
+  override onPart(): void {
+    voice.say('pfft', { interrupt: true });
+  }
+
+  hint(): Hint | null {
+    const burning = this.fires.filter((f) => this.w.fireBurning(f)).map((f) => this.w.perch(f));
+    if (burning.length === 0) return null;
+    const f = this.w.focus();
+    burning.sort((a, b) => dist(a, f) - dist(b, f));
+    const target = burning[0]!;
+    // High fires need the truck: hint at it while walking.
+    if (target.z > 1.5) {
+      const v = this.vehicleHint();
+      if (v) return v;
+    }
+    return { at: target, line: dist(target, f) < 3.5 ? 'hint-spray' : 'hint-fire-far' };
+  }
+
+  override end(): void {
+    for (const f of this.fires) this.w.removeFire(f);
+  }
+}
+
+/** Park the truck by the tower; the ladder goes up, the pet slides down to its owner (spec 004). */
+export class RescueHandler extends GoalHandler {
+  private pet: Phaser.GameObjects.Image | null = null;
+  private ladder: { destroy(): void } | null = null;
+  private phase: 'waiting' | 'rescuing' | 'done' = 'waiting';
+  private timers: Phaser.Time.TimerEvent[] = [];
+
+  constructor(
+    c: HandlerCtx,
+    private readonly goal: Extract<Goal, { type: 'rescue' }>,
+  ) {
+    super(c);
+  }
+
+  override start(): void {
+    const p = this.w.perch(this.goal.perch);
+    const s = gridToScreen(p.x, p.y);
+    const key = this.goal.pet === 'parrot' ? MPROP.parrot : MPROP.kitten;
+    const pet = addBakedImage(this.w.stage, getBaked(key), s.x, s.y - p.z * 32);
+    pet.setDepth(depthOf(p.x, p.y) + 220);
+    this.w.stage.tweens.add({ targets: pet, y: pet.y - 6, duration: 400, yoyo: true, repeat: -1 });
+    this.pet = pet;
+  }
+
+  override update(): void {
+    if (this.phase !== 'waiting') return;
+    const r = this.w.riding();
+    if (!r || r.id !== this.c.vehicle) return;
+    const at = this.w.marker(this.goal.at);
+    if (dist(r.vehicle.pos, at) > 2.6 || Math.abs(r.vehicle.driver.speed) > 0.6) return;
+    const p = this.w.perch(this.goal.perch);
+    if (p.z > this.w.ladderReach()) {
+      voice.say('too-high', { minGapMs: 8000 });
+      return;
+    }
+    this.phase = 'rescuing';
+    r.vehicle.driver.speed = 0;
+    voice.say('ladder-up', { interrupt: true });
+    sfx.play('whoosh', 0.7);
+    const from = { ...r.vehicle.pos };
+    this.ladder = this.w.raiseLadder(from, p, 1200);
+    const scene = this.w.stage;
+    this.timers.push(
+      scene.time.delayedCall(1300, () => {
+        const pet = this.pet;
+        if (!pet) return;
+        scene.tweens.killTweensOf(pet);
+        const down = gridToScreen(from.x, from.y);
+        sfx.play('pop', 1.4);
+        scene.tweens.add({
+          targets: pet,
+          x: down.x,
+          y: down.y - 30,
+          duration: 1000,
+          ease: 'Quad.easeIn',
+          onComplete: () => this.handOver(),
+        });
+      }),
+    );
+  }
+
+  /** The pet hops to its owner (or just cheers), then the goal is done. */
+  private handOver(): void {
+    const pet = this.pet;
+    if (!pet) return;
+    this.ladder?.destroy();
+    this.ladder = null;
+    const owner = this.goal.pet === 'kitten' ? this.w.townsperson('kitty-owner') : null;
+    const to = owner
+      ? gridToScreen(owner.pos.x + 0.4, owner.pos.y + 0.2)
+      : { x: pet.x, y: pet.y + 20 };
+    sfx.play('pop', 1.3);
+    this.w.stage.tweens.add({
+      targets: pet,
+      x: to.x,
+      y: to.y,
+      duration: 600,
+      ease: 'Quad.easeOut',
+    });
+    owner?.cheer();
+    this.phase = 'done';
+    this.pet = null;
+    this.c.notify({ type: 'rescued', pet: this.goal.pet });
+    this.w.stage.tweens.add({
+      targets: pet,
+      alpha: 0,
+      delay: 5000,
+      duration: 600,
+      onComplete: () => pet.destroy(),
+    });
+  }
+
+  hint(): Hint | null {
+    return this.vehicleHint() ?? { at: this.w.marker(this.goal.at), line: 'hint-rescue' };
+  }
+
+  override end(): void {
+    for (const t of this.timers) t.remove();
+    this.ladder?.destroy();
+    if (this.pet && this.phase !== 'done') this.pet.destroy();
+  }
+}
+
+/** Walk in through a door to a room (the kitchen); the room scene does the rest (spec 004). */
+export class InsideHandler extends GoalHandler {
+  private door: Phaser.GameObjects.Image | null = null;
+  private went = false;
+
+  constructor(
+    c: HandlerCtx,
+    private readonly goal: Extract<Goal, { type: 'inside' }>,
+  ) {
+    super(c);
+  }
+
+  override start(): void {
+    const m = this.w.marker(this.goal.at);
+    const s = gridToScreen(m.x, m.y);
+    const door = addBakedImage(this.w.stage, getBaked(MPROP.door), s.x, s.y).setDepth(-999_985);
+    this.w.stage.tweens.add({
+      targets: door,
+      scaleY: door.scaleY * 1.1,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
+    this.door = door;
+  }
+
+  override update(): void {
+    if (this.went || this.w.moveMode() !== 'foot') return;
+    if (dist(this.w.playerPos(), this.w.marker(this.goal.at)) < 0.75) {
+      this.went = true;
+      this.w.goInside(this.goal.room);
+    }
+  }
+
+  hint(): Hint {
+    return { at: this.w.marker(this.goal.at), line: 'hint-door' };
+  }
+
+  override end(): void {
+    this.door?.destroy();
+  }
+}
+
 /** Placeholder for goal types whose job spec isn't built yet: it hints at nothing. */
 export class NoopHandler extends GoalHandler {
   hint(): null {
@@ -456,6 +642,12 @@ export function makeHandler(goal: Goal, c: HandlerCtx): GoalHandler {
       return new EscortHandler(c, goal);
     case 'find':
       return new FindHandler(c, goal);
+    case 'spray':
+      return new SprayHandler(c, goal.fires);
+    case 'rescue':
+      return new RescueHandler(c, goal);
+    case 'inside':
+      return new InsideHandler(c, goal);
     default:
       return new NoopHandler(c);
   }

@@ -6,6 +6,10 @@ import { BootScene } from './scenes/BootScene';
 import { CityScene } from './scenes/CityScene';
 import { GalleryScene } from './scenes/GalleryScene';
 import { HudScene } from './scenes/HudScene';
+import { InteriorScene } from './scenes/InteriorScene';
+import { JobCenterScene } from './scenes/JobCenterScene';
+import { LadderRescueScene } from './scenes/LadderRescueScene';
+import { WindowSplashScene } from './scenes/WindowSplashScene';
 import { MissionBoardScene } from './scenes/MissionBoardScene';
 import { ShopScene } from './scenes/ShopScene';
 import { WhoTookItScene } from './scenes/WhoTookItScene';
@@ -21,6 +25,10 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   WhoTookItScene,
   MissionBoardScene,
   ShopScene,
+  JobCenterScene,
+  InteriorScene,
+  WindowSplashScene,
+  LadderRescueScene,
 ];
 if (import.meta.env.DEV) scenes.push(GalleryScene);
 

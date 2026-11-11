@@ -37,7 +37,10 @@ export const Goal = z.discriminatedUnion('type', [
   z.object({ type: z.literal('errand'), id: z.string() }),
   z.object({ type: z.literal('build'), spot: z.string() }),
   z.object({ type: z.literal('spray'), fires: z.array(z.string()).min(1) }),
-  z.object({ type: z.literal('rescue'), pet: z.string(), at: z.string() }),
+  /** Park the vehicle at `at`; the ladder goes up to the pet at `perch`; it slides down. */
+  z.object({ type: z.literal('rescue'), pet: z.string(), at: z.string(), perch: z.string() }),
+  /** Walk in through a door (`at`) and do what needs doing inside (a separate room scene). */
+  z.object({ type: z.literal('inside'), at: z.string(), room: z.string() }),
 ]);
 export type Goal = z.infer<typeof Goal>;
 const GoalIn = z.preprocess(legacyCatch, Goal);
@@ -135,7 +138,8 @@ export type MissionEvent =
   | { type: 'errandDone'; id: string }
   | { type: 'built'; spot: string }
   | { type: 'sprayed'; fire: string }
-  | { type: 'rescued'; pet: string };
+  | { type: 'rescued'; pet: string }
+  | { type: 'insideDone'; room: string };
 
 /** The parts of a goal that must all happen (any order), or null for a single-event goal. */
 export function goalParts(goal: Goal): string[] | null {
@@ -176,6 +180,8 @@ function partFor(goal: Goal, e: MissionEvent): string | null {
       return e.type === 'sprayed' && goal.fires.includes(e.fire) ? e.fire : null;
     case 'rescue':
       return e.type === 'rescued' && e.pet === goal.pet ? '*' : null;
+    case 'inside':
+      return e.type === 'insideDone' && e.room === goal.room ? '*' : null;
   }
 }
 

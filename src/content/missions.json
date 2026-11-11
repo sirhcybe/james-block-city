@@ -7,13 +7,32 @@
     "voiceIntro": "intro-first-day",
     "voiceDone": "done-first-day",
     "goals": [
-      { "type": "goTo", "target": "police-car" },
-      { "type": "checkpoints", "flags": ["flag-1", "flag-2", "flag-3"] },
-      { "type": "siren" },
-      { "type": "minigame", "id": "traffic-helper" }
+      {
+        "type": "goTo",
+        "target": "police-car"
+      },
+      {
+        "type": "checkpoints",
+        "flags": ["flag-1", "flag-2", "flag-3"]
+      },
+      {
+        "type": "siren"
+      },
+      {
+        "type": "minigame",
+        "id": "traffic-helper"
+      }
     ],
-    "reward": { "coins": 15 },
-    "bonus": [{ "type": "fastGoal", "goal": 1, "seconds": 60 }]
+    "reward": {
+      "coins": 15
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
   },
   {
     "id": "donut-dash",
@@ -24,19 +43,37 @@
     "voiceDone": "mission-done",
     "requires": ["first-day"],
     "goals": [
-      { "type": "goTo", "target": "police-car" },
+      {
+        "type": "goTo",
+        "target": "police-car"
+      },
       {
         "type": "catch",
         "robbers": [
-          { "id": "pickles", "vehicle": "car", "start": "getaway-start", "drops": "donut" }
+          {
+            "id": "pickles",
+            "vehicle": "car",
+            "start": "getaway-start",
+            "drops": "donut"
+          }
         ],
         "bumps": 3
       }
     ],
-    "reward": { "coins": 20 },
+    "reward": {
+      "coins": 20
+    },
     "bonus": [
-      { "type": "collect", "item": "donut", "count": 3 },
-      { "type": "fastGoal", "goal": 1, "seconds": 90 }
+      {
+        "type": "collect",
+        "item": "donut",
+        "count": 3
+      },
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 90
+      }
     ]
   },
   {
@@ -47,9 +84,25 @@
     "voiceIntro": "intro-duck-crossing",
     "voiceDone": "done-duck-crossing",
     "requires": ["donut-dash"],
-    "goals": [{ "type": "escort", "group": "ducks", "from": "ducks", "to": "pond" }],
-    "reward": { "coins": 20, "unlocks": ["badge:cop"] },
-    "bonus": [{ "type": "fastGoal", "goal": 0, "seconds": 120 }]
+    "goals": [
+      {
+        "type": "escort",
+        "group": "ducks",
+        "from": "ducks",
+        "to": "pond"
+      }
+    ],
+    "reward": {
+      "coins": 20,
+      "unlocks": ["badge:cop"]
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 0,
+        "seconds": 120
+      }
+    ]
   },
   {
     "id": "rooftop-run",
@@ -60,16 +113,36 @@
     "voiceDone": "done-rooftop-run",
     "requires": ["badge:cop", "owned:police-bike"],
     "goals": [
-      { "type": "goTo", "target": "police-bike" },
+      {
+        "type": "goTo",
+        "target": "police-bike"
+      },
       {
         "type": "catch",
-        "robbers": [{ "id": "smudge", "vehicle": "scooter", "start": "smudge-start" }],
+        "robbers": [
+          {
+            "id": "smudge",
+            "vehicle": "scooter",
+            "start": "smudge-start"
+          }
+        ],
         "bumps": 3
       },
-      { "type": "goTo", "target": "mayor" }
+      {
+        "type": "goTo",
+        "target": "mayor"
+      }
     ],
-    "reward": { "coins": 30 },
-    "bonus": [{ "type": "fastGoal", "goal": 1, "seconds": 90 }]
+    "reward": {
+      "coins": 30
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 90
+      }
+    ]
   },
   {
     "id": "lost-puppy",
@@ -80,11 +153,26 @@
     "voiceDone": "done-lost-puppy",
     "requires": ["badge:cop", "owned:police-bike"],
     "goals": [
-      { "type": "find", "item": "puppy", "spots": ["spot-1", "spot-2", "spot-3"] },
-      { "type": "goTo", "target": "puppy-owner" }
+      {
+        "type": "find",
+        "item": "puppy",
+        "spots": ["spot-1", "spot-2", "spot-3"]
+      },
+      {
+        "type": "goTo",
+        "target": "puppy-owner"
+      }
     ],
-    "reward": { "coins": 30 },
-    "bonus": [{ "type": "fastGoal", "goal": 0, "seconds": 120 }]
+    "reward": {
+      "coins": 30
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 0,
+        "seconds": 120
+      }
+    ]
   },
   {
     "id": "double-trouble",
@@ -95,21 +183,233 @@
     "voiceDone": "done-double-trouble",
     "requires": ["badge:cop", "owned:police-bike"],
     "goals": [
-      { "type": "goTo", "target": "police-car" },
+      {
+        "type": "goTo",
+        "target": "police-car"
+      },
       {
         "type": "catch",
         "robbers": [
-          { "id": "pickles", "vehicle": "car", "start": "getaway-start", "drops": "sock" },
-          { "id": "smudge", "vehicle": "car", "start": "getaway-2", "drops": "sock" }
+          {
+            "id": "pickles",
+            "vehicle": "car",
+            "start": "getaway-start",
+            "drops": "sock"
+          },
+          {
+            "id": "smudge",
+            "vehicle": "car",
+            "start": "getaway-2",
+            "drops": "sock"
+          }
         ],
         "bumps": 3
       },
-      { "type": "minigame", "id": "who-took-it" }
+      {
+        "type": "minigame",
+        "id": "who-took-it"
+      }
     ],
-    "reward": { "coins": 40 },
+    "reward": {
+      "coins": 40
+    },
     "bonus": [
-      { "type": "collect", "item": "sock", "count": 3 },
-      { "type": "fastGoal", "goal": 1, "seconds": 150 }
+      {
+        "type": "collect",
+        "item": "sock",
+        "count": 3
+      },
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 150
+      }
+    ]
+  },
+  {
+    "id": "siren-school",
+    "job": "fire",
+    "tier": "rookie",
+    "icon": "helmet",
+    "voiceIntro": "intro-siren-school",
+    "voiceDone": "done-siren-school",
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "fire-truck"
+      },
+      {
+        "type": "checkpoints",
+        "flags": ["fflag-1", "fflag-2", "fflag-3"]
+      },
+      {
+        "type": "siren"
+      },
+      {
+        "type": "spray",
+        "fires": ["practice-fire"]
+      }
+    ],
+    "reward": {
+      "coins": 15
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
+  },
+  {
+    "id": "kitty-floor-10",
+    "job": "fire",
+    "tier": "rookie",
+    "icon": "kitten",
+    "voiceIntro": "intro-kitty",
+    "voiceDone": "done-kitty",
+    "requires": ["siren-school"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "fire-truck"
+      },
+      {
+        "type": "rescue",
+        "pet": "kitten",
+        "at": "kitty-at",
+        "perch": "kitty-perch"
+      }
+    ],
+    "reward": {
+      "coins": 20
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
+  },
+  {
+    "id": "toaster-trouble",
+    "job": "fire",
+    "tier": "rookie",
+    "icon": "toaster",
+    "voiceIntro": "intro-toaster",
+    "voiceDone": "done-toaster",
+    "requires": ["kitty-floor-10"],
+    "goals": [
+      {
+        "type": "inside",
+        "at": "toaster-door",
+        "room": "kitchen"
+      }
+    ],
+    "reward": {
+      "coins": 20,
+      "unlocks": ["badge:fire"]
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 0,
+        "seconds": 90
+      }
+    ]
+  },
+  {
+    "id": "barbecue-blaze",
+    "job": "fire",
+    "tier": "pro",
+    "icon": "grill",
+    "voiceIntro": "intro-bbq",
+    "voiceDone": "done-bbq",
+    "requires": ["badge:fire", "owned:long-ladder"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "fire-truck"
+      },
+      {
+        "type": "spray",
+        "fires": ["bbq-1", "bbq-2", "bbq-3"]
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 75
+      }
+    ]
+  },
+  {
+    "id": "fireworks-fiasco",
+    "job": "fire",
+    "tier": "pro",
+    "icon": "firework",
+    "voiceIntro": "intro-fireworks",
+    "voiceDone": "done-fireworks",
+    "requires": ["badge:fire", "owned:long-ladder"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "fire-truck"
+      },
+      {
+        "type": "spray",
+        "fires": ["fw-1", "fw-2", "fw-3", "fw-4"]
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 120
+      }
+    ]
+  },
+  {
+    "id": "tallest-tower",
+    "job": "fire",
+    "tier": "pro",
+    "icon": "tower",
+    "voiceIntro": "intro-tallest",
+    "voiceDone": "done-tallest",
+    "requires": ["badge:fire", "owned:long-ladder"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "fire-truck"
+      },
+      {
+        "type": "spray",
+        "fires": ["tallest-fire"]
+      },
+      {
+        "type": "rescue",
+        "pet": "parrot",
+        "at": "tallest-at",
+        "perch": "parrot-perch"
+      }
+    ],
+    "reward": {
+      "coins": 40
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 90
+      }
     ]
   }
 ]

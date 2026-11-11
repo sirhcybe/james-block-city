@@ -8,14 +8,12 @@ import { depthOf, gridToScreen, type Vec2 } from '../iso/projection';
 import type { MissionResult } from '../systems/GameState';
 import type { Goal, Mission, MissionEvent, MissionRun } from '../systems/missions';
 import { EV } from '../scenes/keys';
+import { JOBS } from '../systems/jobs';
 import { makeHandler, type GoalHandler, type Hint } from './handlers';
 import type { MissionWorld, VehicleId } from './world';
 
 /** How close (tiles) you must come to the chief for them to start the next mission. */
 const CHIEF_TALK_DIST = 1.6;
-
-/** Who gives each job's missions (a townsperson id / map marker). */
-const BOSS: Record<string, string> = { cop: 'chief', fire: 'fire-chief', builder: 'foreman' };
 
 /** The vehicle a mission is played in: a bike mission if it ever asks for the bike. */
 function missionVehicle(m: Mission): VehicleId {
@@ -58,8 +56,8 @@ export class MissionDirector {
     return this.w.state.nextMission();
   }
 
-  private bossId(): string {
-    return BOSS[this.w.state.job] ?? 'chief';
+  bossId(): string {
+    return JOBS[this.w.state.job].boss;
   }
 
   /** Start a mission now (the boss, the mission board, or a test). */
@@ -67,7 +65,9 @@ export class MissionDirector {
     this.abort();
     const def = this.w.state.missionDef(id);
     this.run = this.w.state.startMission(id, this.w.now());
-    if (id === 'first-day') this.w.give('cap-cop');
+    // The boss hands over the uniform's hat on the job's first mission.
+    const first = this.w.state.content.missions.find((m) => m.job === def.job);
+    if (first?.id === id) this.w.give(JOBS[def.job].gift);
     const boss = this.w.townsperson(this.bossId());
     boss?.setOffering(false);
     boss?.cheer();
@@ -219,12 +219,13 @@ export class MissionDirector {
     const boss = this.w.townsperson(this.bossId());
     if (!boss) return;
     const next = this.offer();
-    const needBike = !next && !this.run && this.w.state.job === 'cop' && this.lockedOnlyByShop();
+    const upgrade = this.w.state.content.shop.find((i) => i.job === this.w.state.job);
+    const needBike = !next && !this.run && !!upgrade && this.lockedOnlyByShop();
     if (next) {
       boss.setBubble(getBaked(bubbleKey(next.icon as IconName)));
       boss.setOffering(true);
     } else if (needBike) {
-      boss.setBubble(getBaked(bubbleKey('bike' as IconName)));
+      boss.setBubble(getBaked(bubbleKey((upgrade?.icon ?? 'bike') as IconName)));
       boss.setOffering(true);
     } else boss.setOffering(false);
 

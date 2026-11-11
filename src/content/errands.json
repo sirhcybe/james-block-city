@@ -39,5 +39,27 @@
     "reward": 10,
     "job": "cop",
     "after": "lost-puppy"
+  },
+  {
+    "id": "deliver-cake",
+    "kind": "deliver",
+    "giver": "donut-owner",
+    "icon": "cake",
+    "item": "cake",
+    "destination": "fire-chief",
+    "reward": 10,
+    "job": "fire",
+    "after": "siren-school"
+  },
+  {
+    "id": "find-balloon",
+    "kind": "find",
+    "giver": "kid-heights",
+    "icon": "balloon",
+    "item": "balloon",
+    "spot": "balloon-spot",
+    "reward": 10,
+    "job": "fire",
+    "after": "barbecue-blaze"
   }
 ]

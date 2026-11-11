@@ -48,4 +48,18 @@ export interface MissionWorld {
   puff(at: Vec2): void;
   /** Give the player something to wear/keep (e.g. the cap on First Day). */
   give(item: string): void;
+  /** A point up in the air on the map (fires on windows, pets on ledges). */
+  perch(id: string): Vec2 & { z: number };
+  /** Light a fire at a perch (spec 004). When it's put out, the world reports `sprayed`. */
+  lightFire(id: string): void;
+  /** Whether a fire is still burning. */
+  fireBurning(id: string): boolean;
+  /** Remove a fire without it being sprayed (mission ended or abandoned). */
+  removeFire(id: string): void;
+  /** How high the fire truck's ladder reaches now (block units). */
+  ladderReach(): number;
+  /** Draw the truck's ladder rising from `from` to a perch over `ms`; returns a remover. */
+  raiseLadder(from: Vec2, to: Vec2 & { z: number }, ms: number): { destroy(): void };
+  /** Go inside a room (a separate scene); the world reports `insideDone` when it's finished. */
+  goInside(room: string): void;
 }

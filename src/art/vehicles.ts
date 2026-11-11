@@ -31,6 +31,14 @@ export interface VehicleLook {
   /** Who sits on top in the open (robbers in open-top cars, anyone riding a bike/scooter). */
   rider?: RiderName;
   stripe?: number;
+  /** Where the cabin sits along the length (− = back, + = front). Default −0.08. */
+  cabinAt?: number;
+  /** Cabin length as a share of the vehicle length (default 0.52). */
+  cabinLen?: number;
+  /** A fire ladder lying along the roof (fire truck). */
+  ladder?: boolean;
+  /** A big striped mixing drum on the back (cement mixer). */
+  drum?: number;
 }
 
 export type RiderName = 'pickles' | 'smudge' | 'cop';
@@ -163,7 +171,7 @@ function roofOf(v: VehicleLook): number {
 /** The two light-bar blocks on the roof, back one first. */
 function lightBar(v: VehicleLook, angle: number): { box: OrientedBox; red: boolean }[] {
   const { f, r } = orientedAxes(angle);
-  const back = -0.08;
+  const back = v.cabinAt ?? -0.08;
   const z = roofOf(v);
   const at = (side: number) => ({
     cx: f.x * back + r.x * side * 0.085,
@@ -275,10 +283,11 @@ function drawVehicle(
 
   // Cabin, a little toward the back.
   if (v.cabin !== null) {
+    const at = v.cabinAt ?? -0.08;
     const cabin: OrientedBox = {
-      cx: f.x * -0.08,
-      cy: f.y * -0.08,
-      halfL: L * 0.26,
+      cx: f.x * at,
+      cy: f.y * at,
+      halfL: (L * (v.cabinLen ?? 0.52)) / 2,
       halfW: Wd / 2 - 0.05,
       z0: zTop,
       z1: zTop + 0.26,
@@ -295,6 +304,56 @@ function drawVehicle(
     for (const fc of cs) {
       if (!fc.visible) continue;
       drawOrientedWindow(g, fc, 0.1, 0.9, zTop + 0.06, zTop + 0.22, ox, oy, PALETTE.windowBlue, s);
+    }
+  }
+
+  if (v.ladder) {
+    // Two grey rails with rungs, lying along the back of the roof.
+    const { r } = orientedAxes(angle);
+    const back = -L * 0.18;
+    for (const side of [-1, 1]) {
+      const rail: OrientedBox = {
+        cx: f.x * back + r.x * side * 0.13,
+        cy: f.y * back + r.y * side * 0.13,
+        halfL: L * 0.32,
+        halfW: 0.035,
+        z0: zTop,
+        z1: zTop + 0.12,
+        angle,
+      };
+      drawOrientedBlock(g, rail, { color: 0xc9ced8, bevel: 1 }, ox, oy, s);
+    }
+    for (let k = -2; k <= 2; k++) {
+      const u = back + k * L * 0.12;
+      const rung: OrientedBox = {
+        cx: f.x * u,
+        cy: f.y * u,
+        halfL: 0.025,
+        halfW: 0.13,
+        z0: zTop + 0.08,
+        z1: zTop + 0.12,
+        angle,
+      };
+      drawOrientedBlock(g, rung, { color: 0xe4e7ee, bevel: 0 }, ox, oy, s);
+    }
+  }
+
+  if (v.drum !== undefined) {
+    // Mixing drum: a stack of boxes that read as a fat barrel, with a stripe.
+    const back = -L * 0.2;
+    const drum: OrientedBox = {
+      cx: f.x * back,
+      cy: f.y * back,
+      halfL: L * 0.26,
+      halfW: Wd / 2 - 0.08,
+      z0: zTop,
+      z1: zTop + 0.42,
+      angle,
+    };
+    const ds = drawOrientedBlock(g, drum, { color: 0xf4f6fa, top: 0xe4e7ee, bevel: 6 }, ox, oy, s);
+    for (const fc of ds) {
+      if (!fc.visible) continue;
+      drawOrientedWindow(g, fc, 0.1, 0.9, zTop + 0.14, zTop + 0.26, ox, oy, v.drum, s, false);
     }
   }
 
@@ -384,8 +443,8 @@ function lightParts(v: VehicleLook, dir8: number, light: 1 | 2): Part[] {
     {
       type: 'custom',
       bounds: [
-        { x: -34, y: -(z + 0.1) * 32 - 20 },
-        { x: 34, y: -z * 32 + 20 },
+        { x: -54, y: -(z + 0.1) * 32 - 34 },
+        { x: 54, y: -z * 32 + 34 },
       ],
       draw: (g, ox, oy, s) => {
         for (const { box, red } of lightBar(v, angle)) {
@@ -400,7 +459,9 @@ function lightParts(v: VehicleLook, dir8: number, light: 1 | 2): Part[] {
             s,
           );
         }
-        const c = project(0, 0, z + 0.1, s);
+        const { f } = orientedAxes(angle);
+        const at = v.cabinAt ?? 0;
+        const c = project(f.x * at, f.y * at, z + 0.1, s);
         g.fillStyle(light === 1 ? PALETTE.fireRed : PALETTE.policeBlue, 0.35);
         g.fillCircle(c.x + ox, c.y + oy, 15 * s);
       },
@@ -434,6 +495,22 @@ export const GETAWAY_EMPTY_2: VehicleLook = {
   rider: undefined,
 };
 
+/** The fire truck (spec 004): long, red, cabin at the front, ladder on the back. */
+export const FIRE_TRUCK: VehicleLook = {
+  name: 'fire-truck',
+  body: PALETTE.fireRed,
+  cabin: PALETTE.fireRed,
+  length: 1.6,
+  width: 0.78,
+  bodyH: 0.42,
+  lightBar: true,
+  star: false,
+  stripe: 0xffffff,
+  cabinAt: 0.42,
+  cabinLen: 0.32,
+  ladder: true,
+};
+
 /** Every vehicle look baked at boot. */
 export const ALL_VEHICLES: VehicleLook[] = [
   POLICE_CAR,
@@ -446,5 +523,6 @@ export const ALL_VEHICLES: VehicleLook[] = [
   POLICE_BIKE_RIDDEN,
   SCOOTER,
   SCOOTER_EMPTY,
+  FIRE_TRUCK,
   ...TRAFFIC_CARS,
 ];

@@ -18,6 +18,13 @@ export const MPROP = {
   puppy: 'char-puppy',
   paw: 'fx-paw',
   sparkle: 'fx-sparkle',
+  fire: 'fx-fire',
+  fire2: 'fx-fire-2',
+  kitten: 'char-kitten',
+  parrot: 'char-parrot',
+  grill: 'prop-grill',
+  door: 'prop-door',
+  drop: 'fx-drop',
 } as const;
 
 export const bubbleKey = (icon: IconName) => `bubble-${icon}`;
@@ -193,8 +200,64 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
     custom([-20, -20, 20, 20], (g, ox, oy, s) => drawIcon(g, 'star', ox, oy, 14 * s, s * 0.6)),
   ]);
 
+  // A grumpy cartoon flame (two frames for flicker). Friendly foe: it says "pfft" when it's out.
+  for (const [key, lean] of [
+    [MPROP.fire, 0],
+    [MPROP.fire2, 1],
+  ] as const) {
+    bakeParts(scene, key, [
+      custom([-26, -58, 26, 6], (g, ox, oy, s) => {
+        g.fillStyle(0x000000, 0.15);
+        g.fillEllipse(ox, oy, 34 * s, 10 * s);
+        drawIcon(g, 'flame', ox + lean * 2 * s, oy - 26 * s - lean * 2 * s, 24 * s, s);
+      }),
+    ]);
+  }
+  bakeParts(scene, MPROP.kitten, [
+    custom([-22, -42, 22, 6], (g, ox, oy, s) => drawIcon(g, 'kitten', ox, oy - 18 * s, 17 * s, s)),
+  ]);
+  bakeParts(scene, MPROP.parrot, [
+    custom([-22, -46, 22, 6], (g, ox, oy, s) => drawIcon(g, 'parrot', ox, oy - 20 * s, 18 * s, s)),
+  ]);
+  bakeParts(scene, MPROP.grill, [
+    custom([-30, -50, 30, 8], (g, ox, oy, s) => {
+      g.fillStyle(0x000000, 0.18);
+      g.fillEllipse(ox, oy, 40 * s, 12 * s);
+      drawIcon(g, 'grill', ox, oy - 22 * s, 22 * s, s);
+    }),
+  ]);
+  // A door mat with an arrow pointing in: walk onto it to go inside.
+  bakeParts(scene, MPROP.door, [
+    custom([-34, -50, 34, 18], (g, ox, oy, s) => {
+      g.fillStyle(PALETTE.fireRed, 1);
+      g.fillEllipse(ox, oy, 56 * s, 26 * s);
+      g.lineStyle(3 * s, PALETTE.outline, 1);
+      g.strokeEllipse(ox, oy, 56 * s, 26 * s);
+      g.fillStyle(0xffffff, 1);
+      const pts = [
+        { x: ox, y: oy - 44 * s },
+        { x: ox + 14 * s, y: oy - 24 * s },
+        { x: ox + 6 * s, y: oy - 24 * s },
+        { x: ox + 6 * s, y: oy - 8 * s },
+        { x: ox - 6 * s, y: oy - 8 * s },
+        { x: ox - 6 * s, y: oy - 24 * s },
+        { x: ox - 14 * s, y: oy - 24 * s },
+      ];
+      g.fillPoints(pts, true);
+      g.strokePoints(pts, true);
+    }),
+  ]);
+  bakeParts(scene, MPROP.drop, [
+    custom([-8, -8, 8, 8], (g, ox, oy, s) => {
+      g.fillStyle(0x7ec8f2, 1);
+      g.fillCircle(ox, oy, 5 * s);
+      g.fillStyle(0xffffff, 0.8);
+      g.fillCircle(ox - 1.5 * s, oy - 1.5 * s, 1.6 * s);
+    }),
+  ]);
+
   // Things to pick up (loot and lost things), bobbing on the ground.
-  for (const item of ['sock', 'rubberDuck', 'balloon'] as IconName[]) {
+  for (const item of ['sock', 'rubberDuck', 'balloon', 'cake'] as IconName[]) {
     bakeParts(scene, `pickup-${item}`, [
       custom([-18, -40, 18, 8], (g, ox, oy, s) => {
         g.fillStyle(0x000000, 0.18);
@@ -238,6 +301,7 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
   ];
   for (const b of bubbles) bakeBubble(scene, b);
   const pads: IconName[] = [
+    'toaster',
     'trafficLight',
     'magnifier',
     'window',

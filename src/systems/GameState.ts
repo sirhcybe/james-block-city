@@ -11,6 +11,7 @@ import {
   type Mission,
 } from './missions';
 import { SaveStore } from './save';
+import { uniformState } from './jobs';
 import { shelf, type ShopItem } from './shop';
 
 type StorageLike = ConstructorParameters<typeof SaveStore>[0];
@@ -150,9 +151,21 @@ export class GameState {
     return this.inventory[item]!;
   }
 
-  /** Shop items showing right now. */
+  /** Shop items showing right now: unlocked ones for the current job (or for every job). */
   shopShelf(): ShopItem[] {
-    return shelf(this.content.shop, this.save.data);
+    return shelf(this.content.shop, this.save.data).filter(
+      (i) => i.job === undefined || i.job === this.job,
+    );
+  }
+
+  /** Put on another uniform (Job Center). False if it isn't allowed yet. */
+  switchJob(job: JobId): boolean {
+    if (uniformState(job, this.job, this.save.data.badges, this.content.missions) !== 'open')
+      return false;
+    this.save.update((s) => (s.job = job));
+    this.mission = null;
+    this.save.flush();
+    return true;
   }
 
   /** Buy a Shop item: false if it's already owned or the player can't afford it yet. */

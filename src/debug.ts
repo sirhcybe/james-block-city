@@ -4,6 +4,8 @@ import { gridToScreen } from './iso/projection';
 import { sfx } from './audio/sfx';
 import { voice } from './audio/voice';
 import type { CityScene } from './scenes/CityScene';
+import type { InteriorScene } from './scenes/InteriorScene';
+import type { JobCenterScene } from './scenes/JobCenterScene';
 import type { MissionBoardScene } from './scenes/MissionBoardScene';
 import type { ShopScene } from './scenes/ShopScene';
 import type { TrafficHelperScene } from './scenes/TrafficHelperScene';
@@ -49,7 +51,7 @@ export interface DebugHook {
   grant(p: { coins?: number; badges?: string[]; owned?: string[]; done?: string[] }): void;
   /** Hop into a vehicle (teleports next to it first). */
   ride(id: VehicleId): void;
-  /** Put the vehicle being driven on the road next to a map marker. */
+  /** Put the vehicle being driven on the road next to a map marker (or a perch, e.g. a fire). */
   driveTo(marker: string): void;
   /** Teleport the player onto a marker (on foot). */
   walkTo(marker: string): void;
@@ -59,7 +61,13 @@ export interface DebugHook {
   culprit(): number;
   tapSuspect(i: number): void;
   /** Open menus and use them. */
-  openMenu(key: 'MissionBoard' | 'Shop'): void;
+  openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter'): void;
+  /** Job Center: tap a uniform. */
+  pickJob(job: 'cop' | 'fire' | 'builder'): boolean;
+  /** Press the hose (as Action with a fire in reach). Returns the aimed fire or null. */
+  hose(): string | null;
+  /** Kitchen: put every flame out, then leave. */
+  interiorDone(): boolean;
   pickMission(id: string): void;
   buy(id: string): boolean;
   closeMenu(): void;
@@ -166,8 +174,9 @@ export function installDebugHook(game: Phaser.Game): void {
     },
     startMinigame: (id) => city()?.startMinigame(id),
     finishMinigame: (score) => {
-      for (const key of ['TrafficHelper', 'WhoTookIt']) {
+      for (const key of ['TrafficHelper', 'WhoTookIt', 'WindowSplash', 'LadderRescue']) {
         const s = game.scene.getScene(key) as TrafficHelperScene | WhoTookItScene | null;
+        // (Window Splash and Ladder Rescue share the same debugFinish via MinigameScene.)
         if (s && s.scene.isActive()) {
           s.debugFinish(score);
           return true;
@@ -201,7 +210,7 @@ export function installDebugHook(game: Phaser.Game): void {
       const c = city();
       const v = c?.riding()?.vehicle;
       if (!c || !v) return;
-      const m = c.marker(marker);
+      const m = c.hasMarker(marker) ? c.marker(marker) : c.perch(marker);
       let best = v.driver.from;
       let bestD = Infinity;
       for (const n of v.driver.graph.nodes.values()) {
@@ -247,8 +256,26 @@ export function installDebugHook(game: Phaser.Game): void {
       const s = game.scene.getScene('Shop') as ShopScene | null;
       return s && s.scene.isActive() ? s.buy(id) : false;
     },
+    pickJob: (job) => {
+      const s = game.scene.getScene('JobCenter') as JobCenterScene | null;
+      return s && s.scene.isActive() ? s.pick(job) : false;
+    },
+    hose: () => {
+      const c = city();
+      if (!c) return null;
+      const t = c.aimHose();
+      if (t) c.spray(t);
+      return t;
+    },
+    interiorDone: () => {
+      const s = game.scene.getScene('Interior') as InteriorScene | null;
+      if (!s || !s.scene.isActive()) return false;
+      s.debugAllOut();
+      s.debugLeave();
+      return true;
+    },
     closeMenu: () => {
-      for (const key of ['MissionBoard', 'Shop']) {
+      for (const key of ['MissionBoard', 'Shop', 'JobCenter']) {
         const s = game.scene.getScene(key);
         if (s && s.scene.isActive()) {
           s.scene.stop();

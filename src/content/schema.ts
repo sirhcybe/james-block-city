@@ -16,6 +16,8 @@ export const BuildingKind = z.enum([
   'donutshop',
   'timeout',
   'shop',
+  'firestation',
+  'skyscraper',
 ]);
 export type BuildingKind = z.infer<typeof BuildingKind>;
 
@@ -33,7 +35,7 @@ export type BuildingDef = z.infer<typeof BuildingDef>;
 
 const Point = z.object({ gx: z.number(), gy: z.number() });
 
-export const PropKind = z.enum(['cone', 'trashcan', 'trafficLight', 'bush', 'board']);
+export const PropKind = z.enum(['cone', 'trashcan', 'trafficLight', 'bush', 'board', 'grill']);
 export type PropKind = z.infer<typeof PropKind>;
 
 export const PropDef = z.object({
@@ -66,6 +68,10 @@ export const MapDef = z
     markers: z.record(z.string(), Point).default({}),
     props: z.array(PropDef).default([]),
     walkers: z.array(WalkerDef).default([]),
+    /** Points up in the air (z in block units): fires on a tower's windows, a kitten on a ledge. */
+    perches: z
+      .array(z.object({ id: z.string(), gx: z.number(), gy: z.number(), z: z.number() }))
+      .default([]),
   })
   .superRefine((m, ctx) => {
     if (m.tiles.length !== m.height) {
@@ -159,6 +165,7 @@ export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
     markers: {},
     props: [],
     walkers: [],
+    perches: [],
   };
   for (const p of pieces) {
     const m = p.map;
@@ -167,6 +174,7 @@ export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
     }
     merged.buildings.push(...m.buildings.map((b) => shift(b, p)));
     merged.props.push(...m.props.map((o) => shift(o, p)));
+    merged.perches.push(...m.perches.map((o) => shift(o, p)));
     merged.walkers.push(
       ...m.walkers.map((w) => ({ ...w, from: shift(w.from, p), to: shift(w.to, p) })),
     );

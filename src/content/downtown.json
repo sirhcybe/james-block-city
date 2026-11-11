@@ -30,8 +30,8 @@
     "grrsppsrrsppsrrg",
     "grrsppsrrsppsrrg",
     "grrssssrrssssrrg",
-    "grrrrrrrrrrrrrrg",
-    "grrrrrrrrrrrrrrg",
+    "grrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrr",
     "grrsssskkssssrrg",
     "grrsgggkkgggsrrg",
     "grrsgggkkgggsrrg",
@@ -40,8 +40,8 @@
     "grrsgggkkwwwsrrg",
     "grrsgggkkwwwsrrg",
     "grrsssskkssssrrg",
-    "grrrrrrrrrrrrrrg",
-    "grrrrrrrrrrrrrrg",
+    "grrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrr",
     "gggggggggggggggg"
   ],
   "spawn": {
@@ -390,16 +390,6 @@
       "kind": "tree",
       "gx": 15,
       "gy": 24,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "leaf"
-    },
-    {
-      "id": "dt-tree-s6",
-      "kind": "tree",
-      "gx": 15,
-      "gy": 29,
       "w": 1,
       "d": 1,
       "h": 2,

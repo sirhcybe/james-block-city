@@ -402,6 +402,114 @@ function shopParts(b: BuildingDef): Part[] {
   ];
 }
 
+/** Skyscraper Heights tower: like a tower, with a helipad (a big H on a circle) on the tallest. */
+function skyscraperParts(b: BuildingDef): Part[] {
+  const accent = PALETTE[b.color];
+  const roofH = 0.3;
+  const body: BlockGeom = { w: b.w, d: b.d, h: b.h - roofH };
+  const parts: Part[] = [
+    { type: 'block', ...body, color: PALETTE.buildingWhite },
+    ...windowsOn(body, Math.floor(body.h), 0, { tall: true, doorAt: 0, door: accent }),
+    { type: 'block', w: b.w, d: b.d, h: roofH, gz: body.h, color: accent },
+  ];
+  if (b.h >= 12) {
+    const top = project(b.w / 2, b.d / 2, b.h, 1);
+    parts.push({
+      type: 'custom',
+      bounds: [
+        { x: top.x - 50, y: top.y - 30 },
+        { x: top.x + 50, y: top.y + 30 },
+      ],
+      draw: (g, ox, oy, sc) => {
+        const c = project(b.w / 2, b.d / 2, b.h, sc);
+        g.fillStyle(0x3a3d4a, 1);
+        g.fillEllipse(c.x + ox, c.y + oy, 70 * sc, 35 * sc);
+        g.lineStyle(3 * sc, PALETTE.coinGold, 1);
+        g.strokeEllipse(c.x + ox, c.y + oy, 60 * sc, 30 * sc);
+        g.lineStyle(5 * sc, 0xffffff, 1);
+        const x = c.x + ox;
+        const y = c.y + oy;
+        g.lineBetween(x - 10 * sc, y - 8 * sc, x - 10 * sc, y + 8 * sc);
+        g.lineBetween(x + 10 * sc, y - 8 * sc, x + 10 * sc, y + 8 * sc);
+        g.lineBetween(x - 10 * sc, y, x + 10 * sc, y);
+      },
+    });
+  } else {
+    parts.push({
+      type: 'block',
+      gx: b.w / 2 - 0.35,
+      gy: b.d / 2 - 0.35,
+      gz: b.h,
+      w: 0.7,
+      d: 0.7,
+      h: 0.45,
+      color: darken(accent, 0.05),
+    });
+  }
+  return parts;
+}
+
+/** Fire station: red, a big garage door, a bell and a flame badge sign. */
+function fireStationParts(b: BuildingDef): Part[] {
+  const body: BlockGeom = { w: b.w, d: b.d, h: b.h - 0.3 };
+  return [
+    { type: 'block', ...body, color: PALETTE.fireRed },
+    {
+      type: 'window',
+      block: body,
+      face: 'left',
+      u0: 0.2,
+      u1: b.w - 0.2,
+      z0: 0,
+      z1: 1.2,
+      color: 0xd9dce3,
+    },
+    { type: 'window', block: body, face: 'right', u0: 0.4, u1: 0.9, z0: 1.4, z1: 1.9 },
+    { type: 'window', block: body, face: 'right', u0: 1.1, u1: 1.6, z0: 1.4, z1: 1.9 },
+    { type: 'block', w: b.w, d: b.d, h: 0.3, gz: body.h, color: PALETTE.buildingWhite },
+    {
+      type: 'custom',
+      bounds: [],
+      draw: (g, ox, oy, sc) => {
+        // Garage door stripes.
+        for (let k = 1; k < 4; k++) {
+          const a = facePoint(body, 'left', 0.2, k * 0.3, sc);
+          const bb = facePoint(body, 'left', b.w - 0.2, k * 0.3, sc);
+          g.lineStyle(2 * sc, 0xa0a6b4, 1);
+          g.lineBetween(a.x + ox, a.y + oy, bb.x + ox, bb.y + oy);
+        }
+        // A flame sign over the door.
+        const c = facePoint(body, 'left', b.w * 0.5, body.h - 0.45, sc);
+        g.fillStyle(PALETTE.coinGold, 1);
+        g.fillCircle(c.x + ox, c.y + oy, 14 * sc);
+        g.lineStyle(2 * sc, PALETTE.outline, 1);
+        g.strokeCircle(c.x + ox, c.y + oy, 14 * sc);
+        g.fillStyle(PALETTE.fireRed, 1);
+        g.fillTriangle(
+          c.x + ox - 7 * sc,
+          c.y + oy + 7 * sc,
+          c.x + ox + 7 * sc,
+          c.y + oy + 7 * sc,
+          c.x + ox,
+          c.y + oy - 10 * sc,
+        );
+      },
+    },
+    // Bell on the roof.
+    {
+      type: 'block',
+      gx: b.w / 2 - 0.15,
+      gy: b.d / 2 - 0.15,
+      gz: b.h,
+      w: 0.3,
+      d: 0.3,
+      h: 0.35,
+      color: PALETTE.coinGold,
+      bevel: 2,
+    },
+  ];
+}
+
 export function buildingParts(b: BuildingDef): Part[] {
   switch (b.kind) {
     case 'house':
@@ -422,6 +530,10 @@ export function buildingParts(b: BuildingDef): Part[] {
       return timeoutParts(b);
     case 'shop':
       return shopParts(b);
+    case 'skyscraper':
+      return skyscraperParts(b);
+    case 'firestation':
+      return fireStationParts(b);
   }
 }
 

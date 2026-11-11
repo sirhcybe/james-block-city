@@ -1,6 +1,7 @@
 import { WalkGrid } from '../iso/grid';
 import { buildLaneGraph, type LaneGraph } from '../iso/roads';
 import downtownRaw from './downtown.json';
+import heightsRaw from './heights.json';
 import plazaRaw from './plaza.json';
 import { mergeMaps, parseMap, tileAt, type MapDef, type TileKind } from './schema';
 
@@ -27,12 +28,13 @@ export function buildRoadGraph(m: MapDef, cls: VehicleClass): LaneGraph {
 }
 
 /**
- * The playable world (ADR-005). Downtown (west, 16×32) is joined to the City Plaza (16×16, east of
- * Downtown's north half). The rest of the 32×32 square is sea until later specs add districts.
+ * The playable world (ADR-005): Downtown (west, 16×32), the City Plaza (16×16, east of Downtown's
+ * north half) and Skyscraper Heights (16×16, under the Plaza; spec 004).
  */
 export function loadWorld(): MapDef {
   return mergeMaps('city', [
     { map: parseMap(downtownRaw), ox: 0, oy: 0 },
     { map: parseMap(plazaRaw), ox: 16, oy: 0 },
+    { map: parseMap(heightsRaw), ox: 16, oy: 16 },
   ]);
 }
