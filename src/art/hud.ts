@@ -21,6 +21,7 @@ export const HUD = {
   actionNet: 'hud-action-net',
   actionHose: 'hud-action-hose',
   actionBlast: 'hud-action-blast',
+  uniform: 'hud-uniform',
   badgeSlot: 'hud-badge-slot',
   badge: (job: string) => `hud-badge-${job}`,
 } as const;
@@ -28,6 +29,8 @@ export const HUD = {
 export const ACTION_SIZE = 150;
 export const SIREN_SIZE = 110;
 export const COIN_SIZE = 56;
+/** Quick-change uniform button (top-right, with all three badges). */
+export const UNIFORM_SIZE = 96;
 
 function roundButton(
   g: Phaser.GameObjects.Graphics,
@@ -181,6 +184,10 @@ export function bakeHud(scene: Phaser.Scene): void {
       drawBadge(g, 150 * s, 150 * s, 140 * s, s * 4, color, job);
     });
   }
+  bakeIcon(scene, HUD.uniform, UNIFORM_SIZE + 8, UNIFORM_SIZE + 14, (g, s) => {
+    const c = roundButton(g, UNIFORM_SIZE, 0xf3e3c0, s);
+    drawIcon(g, 'uniforms', c, c, 34 * s, s * 1.2);
+  });
   bakeIcon(scene, HUD.badgeSlot, 64, 64, (g, s) => {
     g.lineStyle(3 * s, 0xffffff, 0.6);
     g.strokeCircle(32 * s, 32 * s, 26 * s);

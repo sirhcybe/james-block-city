@@ -152,6 +152,10 @@
     "rubber-duck-spot": {
       "gx": 5.5,
       "gy": 23.5
+    },
+    "pour-3": {
+      "gx": 8,
+      "gy": 20
     }
   },
   "buildings": [

@@ -6,6 +6,8 @@ export const INPUT_KEY = 'input';
 export const STATE_KEY = 'state';
 export const HUD_INFO_KEY = 'hudInfo';
 export const HUD_HIT_KEY = 'hudHit';
+/** A function the HUD calls to open the Job Center from anywhere (quick change, spec 005). */
+export const OPEN_JOBS_KEY = 'openJobs';
 
 export const EV = {
   missionComplete: 'mission:complete',

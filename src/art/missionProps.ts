@@ -257,7 +257,7 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
   ]);
 
   // Things to pick up (loot and lost things), bobbing on the ground.
-  for (const item of ['sock', 'rubberDuck', 'balloon', 'cake'] as IconName[]) {
+  for (const item of ['sock', 'rubberDuck', 'balloon', 'cake', 'wrench', 'pizza'] as IconName[]) {
     bakeParts(scene, `pickup-${item}`, [
       custom([-18, -40, 18, 8], (g, ox, oy, s) => {
         g.fillStyle(0x000000, 0.18);

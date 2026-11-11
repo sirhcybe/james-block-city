@@ -66,6 +66,8 @@ export interface DebugHook {
   pickJob(job: 'cop' | 'fire' | 'builder'): boolean;
   /** Press the hose (as Action with a fire in reach). Returns the aimed fire or null. */
   hose(): string | null;
+  /** Press the block blaster (as Action with a build spot in reach). Returns the spot or null. */
+  blast(): string | null;
   /** Kitchen: put every flame out, then leave. */
   interiorDone(): boolean;
   pickMission(id: string): void;
@@ -174,7 +176,15 @@ export function installDebugHook(game: Phaser.Game): void {
     },
     startMinigame: (id) => city()?.startMinigame(id),
     finishMinigame: (score) => {
-      for (const key of ['TrafficHelper', 'WhoTookIt', 'WindowSplash', 'LadderRescue']) {
+      for (const key of [
+        'TrafficHelper',
+        'WhoTookIt',
+        'WindowSplash',
+        'LadderRescue',
+        'BlockStack',
+        'CopyBuild',
+        'CementPour',
+      ]) {
         const s = game.scene.getScene(key) as TrafficHelperScene | WhoTookItScene | null;
         // (Window Splash and Ladder Rescue share the same debugFinish via MinigameScene.)
         if (s && s.scene.isActive()) {
@@ -265,6 +275,13 @@ export function installDebugHook(game: Phaser.Game): void {
       if (!c) return null;
       const t = c.aimHose();
       if (t) c.spray(t);
+      return t;
+    },
+    blast: () => {
+      const c = city();
+      if (!c) return null;
+      const t = c.aimBlast();
+      if (t) c.blast(t);
       return t;
     },
     interiorDone: () => {

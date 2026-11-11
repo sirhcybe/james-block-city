@@ -5,6 +5,7 @@ import { darken, lighten } from './color';
 import { bakeParts, type BakedMeta, type Part } from './blocks';
 import type { BlockGeom } from './isoShapes';
 import { facePoint, project } from './isoShapes';
+import { drawIcon } from './icons';
 import { drawCoin, drawDonut, drawStar } from './shapes2d';
 
 function windowsOn(
@@ -510,6 +511,200 @@ function fireStationParts(b: BuildingDef): Part[] {
   ];
 }
 
+/** Builder build spots (spec 005): a brick wall. */
+function wallParts(b: BuildingDef): Part[] {
+  const parts: Part[] = [];
+  for (let i = 0; i < b.w * 2; i++) {
+    for (let row = 0; row < 2; row++) {
+      const off = row % 2 ? 0.25 : 0;
+      const gx = Math.min(b.w - 0.5, i * 0.5 + off);
+      parts.push({
+        type: 'block',
+        gx,
+        gy: 0.3,
+        gz: row * (b.h / 2),
+        w: 0.48,
+        d: 0.4,
+        h: b.h / 2 - 0.02,
+        color: (i + row) % 2 ? PALETTE[b.color] : darken(PALETTE[b.color], 0.12),
+        bevel: 1,
+      });
+    }
+  }
+  return parts;
+}
+
+/** Wooden dock on posts over the water. */
+function dockParts(b: BuildingDef): Part[] {
+  const parts: Part[] = [];
+  for (const [x, y] of [
+    [0.1, 0.1],
+    [b.w - 0.3, 0.1],
+    [0.1, b.d - 0.3],
+    [b.w - 0.3, b.d - 0.3],
+  ] as const)
+    parts.push({ type: 'block', gx: x, gy: y, gz: -0.5, w: 0.2, d: 0.2, h: 0.6, color: 0x7a5230 });
+  for (let i = 0; i < b.w * 2; i++)
+    parts.push({
+      type: 'block',
+      gx: i * 0.5,
+      gy: 0,
+      gz: 0.1,
+      w: 0.46,
+      d: b.d,
+      h: b.h,
+      color: i % 2 ? PALETTE.trunk : lighten(PALETTE.trunk, 0.1),
+      bevel: 1,
+    });
+  return parts;
+}
+
+/** Wooden bridge: like the dock, with rails. */
+function bridgeParts(b: BuildingDef): Part[] {
+  return [
+    ...dockParts(b),
+    { type: 'block', gx: 0, gy: 0, gz: b.h + 0.1, w: b.w, d: 0.1, h: 0.35, color: 0x7a5230 },
+    {
+      type: 'block',
+      gx: 0,
+      gy: b.d - 0.1,
+      gz: b.h + 0.1,
+      w: b.w,
+      d: 0.1,
+      h: 0.35,
+      color: 0x7a5230,
+    },
+  ];
+}
+
+/** Lighthouse: a white tower with red stripes and a gold lamp room. */
+function lighthouseParts(b: BuildingDef): Part[] {
+  const parts: Part[] = [];
+  const bands = Math.floor(b.h - 1);
+  for (let i = 0; i < bands; i++)
+    parts.push({
+      type: 'block',
+      gx: 0.1,
+      gy: 0.1,
+      gz: i,
+      w: b.w - 0.2,
+      d: b.d - 0.2,
+      h: 1,
+      color: i % 2 ? PALETTE.fireRed : PALETTE.buildingWhite,
+    });
+  parts.push({
+    type: 'block',
+    gx: 0,
+    gy: 0,
+    gz: bands,
+    w: b.w,
+    d: b.d,
+    h: 0.15,
+    color: PALETTE.outline,
+  });
+  parts.push({
+    type: 'block',
+    gx: 0.2,
+    gy: 0.2,
+    gz: bands + 0.15,
+    w: b.w - 0.4,
+    d: b.d - 0.4,
+    h: 0.55,
+    color: PALETTE.coinGold,
+  });
+  parts.push({
+    type: 'block',
+    gx: 0.15,
+    gy: 0.15,
+    gz: bands + 0.7,
+    w: b.w - 0.3,
+    d: b.d - 0.3,
+    h: 0.25,
+    color: PALETTE.fireRed,
+  });
+  return parts;
+}
+
+/** Boat shop: a teal house with a boat sign on the roof. */
+function boatShopParts(b: BuildingDef): Part[] {
+  const top = project(b.w / 2, b.d / 2, b.h, 1);
+  return [
+    ...houseParts(b),
+    {
+      type: 'custom',
+      bounds: [
+        { x: top.x - 36, y: top.y - 60 },
+        { x: top.x + 36, y: top.y + 4 },
+      ],
+      draw: (g, ox, oy, sc) => {
+        const c = project(b.w / 2, b.d / 2, b.h, sc);
+        g.lineStyle(4 * sc, PALETTE.outline, 1);
+        g.lineBetween(c.x + ox, c.y + oy, c.x + ox, c.y + oy - 16 * sc);
+        drawIcon(g, 'boat', c.x + ox, c.y + oy - 34 * sc, 22 * sc, sc);
+      },
+    },
+  ];
+}
+
+/** The foreman's office: a yellow hut with a hard-hat sign. */
+function officeParts(b: BuildingDef): Part[] {
+  const top = project(b.w / 2, b.d / 2, b.h, 1);
+  return [
+    ...houseParts(b),
+    {
+      type: 'custom',
+      bounds: [
+        { x: top.x - 30, y: top.y - 56 },
+        { x: top.x + 30, y: top.y + 4 },
+      ],
+      draw: (g, ox, oy, sc) => {
+        const c = project(b.w / 2, b.d / 2, b.h, sc);
+        g.lineStyle(4 * sc, PALETTE.outline, 1);
+        g.lineBetween(c.x + ox, c.y + oy, c.x + ox, c.y + oy - 14 * sc);
+        drawIcon(g, 'hardHat', c.x + ox, c.y + oy - 30 * sc, 20 * sc, sc);
+      },
+    },
+  ];
+}
+
+/** A tall yellow crane: mast, jib and a hanging block. */
+function craneParts(b: BuildingDef): Part[] {
+  return [
+    { type: 'block', gx: 0.2, gy: 0.2, w: 0.6, d: 0.6, h: 0.3, color: 0x6e6e7a },
+    {
+      type: 'block',
+      gx: 0.35,
+      gy: 0.35,
+      gz: 0.3,
+      w: 0.3,
+      d: 0.3,
+      h: b.h - 0.3,
+      color: PALETTE[b.color],
+    },
+    {
+      type: 'block',
+      gx: -1.2,
+      gy: 0.35,
+      gz: b.h,
+      w: 2.6,
+      d: 0.3,
+      h: 0.25,
+      color: PALETTE[b.color],
+    },
+    {
+      type: 'block',
+      gx: -1.0,
+      gy: 0.3,
+      gz: b.h - 1.6,
+      w: 0.4,
+      d: 0.4,
+      h: 0.4,
+      color: PALETTE.harborTeal,
+      bevel: 2,
+    },
+  ];
+}
+
 export function buildingParts(b: BuildingDef): Part[] {
   switch (b.kind) {
     case 'house':
@@ -534,6 +729,20 @@ export function buildingParts(b: BuildingDef): Part[] {
       return skyscraperParts(b);
     case 'firestation':
       return fireStationParts(b);
+    case 'wall':
+      return wallParts(b);
+    case 'dock':
+      return dockParts(b);
+    case 'bridge':
+      return bridgeParts(b);
+    case 'lighthouse':
+      return lighthouseParts(b);
+    case 'boatshop':
+      return boatShopParts(b);
+    case 'office':
+      return officeParts(b);
+    case 'crane':
+      return craneParts(b);
   }
 }
 

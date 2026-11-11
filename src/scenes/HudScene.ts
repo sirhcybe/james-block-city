@@ -1,15 +1,24 @@
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
-import { ACTION_SIZE, COIN_SIZE, HUD, SIREN_SIZE } from '../art/hud';
+import { ACTION_SIZE, COIN_SIZE, HUD, SIREN_SIZE, UNIFORM_SIZE } from '../art/hud';
 import { RS } from '../art/renderScale';
 import { UI } from '../art/ui';
 import { GAME_H, GAME_W } from '../config';
 import type { InputMapper } from '../input/InputMapper';
 import type { GameState } from '../systems/GameState';
-import { EV, HUD_HIT_KEY, HUD_INFO_KEY, INPUT_KEY, STATE_KEY, type HudInfo } from './keys';
+import {
+  EV,
+  HUD_HIT_KEY,
+  HUD_INFO_KEY,
+  INPUT_KEY,
+  OPEN_JOBS_KEY,
+  STATE_KEY,
+  type HudInfo,
+} from './keys';
 
 const ACTION_POS = { x: GAME_W - 110, y: GAME_H - 110 };
 const SIREN_POS = { x: GAME_W - 110, y: GAME_H - 270 };
+const UNIFORM_POS = { x: GAME_W - 80, y: 70 };
 
 /**
  * Screen-space overlay: coin counter (icon + number), carried donuts, the big Action button,
@@ -27,6 +36,8 @@ export class HudScene extends Phaser.Scene {
   private siren!: Phaser.GameObjects.Image;
   private arrow!: Phaser.GameObjects.Image;
   private badges: Phaser.GameObjects.Image[] = [];
+  private uniform!: Phaser.GameObjects.Image;
+  private state!: GameState;
   private shownCoins = 0;
   private lastAction: HudInfo['action'] | null = null;
 
@@ -37,6 +48,7 @@ export class HudScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
     const state = this.registry.get(STATE_KEY) as GameState;
+    this.state = state;
 
     // Coins (top-left): icon + number. Numbers are fine for a 6-year-old.
     this.coinIcon = this.add.image(54, 50, HUD.coin).setScale(1 / RS);
@@ -84,12 +96,24 @@ export class HudScene extends Phaser.Scene {
       this.mapper()?.pressSiren();
       this.press(this.siren);
     });
+    // Quick change (spec 005): with all three badges, switch uniforms from anywhere.
+    this.uniform = this.add
+      .image(UNIFORM_POS.x, UNIFORM_POS.y, HUD.uniform)
+      .setScale(1 / RS)
+      .setVisible(false)
+      .setInteractive(this.circleHit(UNIFORM_SIZE), Phaser.Geom.Circle.Contains);
+    this.uniform.on('pointerdown', () => {
+      this.press(this.uniform);
+      (this.registry.get(OPEN_JOBS_KEY) as (() => void) | undefined)?.();
+    });
+
     // The world ignores pointers that land on these buttons.
     this.registry.set(HUD_HIT_KEY, (x: number, y: number) => {
       const near = (p: { x: number; y: number }, r: number) => Math.hypot(x - p.x, y - p.y) <= r;
       return (
         near(ACTION_POS, ACTION_SIZE / 2 + 6) ||
-        (this.siren.visible && near(SIREN_POS, SIREN_SIZE / 2 + 6))
+        (this.siren.visible && near(SIREN_POS, SIREN_SIZE / 2 + 6)) ||
+        (this.uniform.visible && near(UNIFORM_POS, UNIFORM_SIZE / 2 + 6))
       );
     });
 
@@ -310,6 +334,7 @@ export class HudScene extends Phaser.Scene {
     }
     // Siren while driving; on foot the same button blows a police whistle.
     this.siren.setVisible(true);
+    this.uniform.setVisible(this.state.progress.badges.length >= 3);
     this.siren.setTexture(info.sirenOn ? HUD.sirenOn : HUD.siren);
 
     const donuts = info.donuts > 0;

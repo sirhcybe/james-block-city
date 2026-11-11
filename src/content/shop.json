@@ -10,5 +10,11 @@
     "icon": "ladder",
     "price": 90,
     "job": "fire"
+  },
+  {
+    "id": "giant-drum",
+    "icon": "mixer",
+    "price": 90,
+    "job": "builder"
   }
 ]

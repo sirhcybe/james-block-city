@@ -62,4 +62,10 @@ export interface MissionWorld {
   raiseLadder(from: Vec2, to: Vec2 & { z: number }, ms: number): { destroy(): void };
   /** Go inside a room (a separate scene); the world reports `insideDone` when it's finished. */
   goInside(room: string): void;
+  /** Builder (spec 005): show a build spot's ghost so the blaster can build it. */
+  startSite(id: string): void;
+  /** Stop a build spot that wasn't finished. */
+  stopSite(id: string): void;
+  /** Whether a build spot is built right now. */
+  siteDone(id: string): boolean;
 }

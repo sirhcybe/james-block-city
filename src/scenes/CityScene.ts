@@ -22,6 +22,7 @@ import {
   SCOOTER,
   SCOOTER_EMPTY,
   FIRE_TRUCK,
+  MIXER_TRUCK,
   TRAFFIC_CARS,
 } from '../art/vehicles';
 import {
@@ -37,6 +38,7 @@ import {
 } from '../config';
 import { tileAt, type BuildingDef, type MapDef, type TileKind } from '../content/schema';
 import { buildRoadGraph, buildWalkGrid } from '../content/world';
+import { BuildSite } from '../entities/BuildSite';
 import { Bumpable } from '../entities/Bumpable';
 import { Fire } from '../entities/Fire';
 import { Pedestrian } from '../entities/Pedestrian';
@@ -57,6 +59,7 @@ import type { MissionWorld, VehicleId } from '../missions/world';
 import type { GameState } from '../systems/GameState';
 import { IdleHints } from '../systems/hints';
 import type { MissionEvent, RobberSpec } from '../systems/missions';
+import { BUILD, pickSite } from '../systems/build';
 import { FIRE, pickFire, tooHigh } from '../systems/fire';
 import { JOBS, outfitFor } from '../systems/jobs';
 import { netTarget, NetShot } from '../systems/net';
@@ -67,6 +70,7 @@ import {
   HUD_INFO_KEY,
   INPUT_KEY,
   MAP_KEY,
+  OPEN_JOBS_KEY,
   STATE_KEY,
   type HudInfo,
   type MinigameResult,
@@ -101,6 +105,9 @@ export const MINIGAMES: Record<string, { scene: string; icon: IconName }> = {
   'who-took-it': { scene: 'WhoTookIt', icon: 'magnifier' },
   'window-splash': { scene: 'WindowSplash', icon: 'window' },
   'ladder-rescue': { scene: 'LadderRescue', icon: 'ladder' },
+  'block-stack': { scene: 'BlockStack', icon: 'crane' },
+  'copy-the-build': { scene: 'CopyBuild', icon: 'grid' },
+  'cement-pour': { scene: 'CementPour', icon: 'bucket' },
 };
 
 /** The vehicles each job may hop into. */
@@ -133,6 +140,8 @@ const ERRAND_LINES: Record<string, string> = {
   'deliver-balloon': 'errand-balloon',
   'deliver-cake': 'errand-cake',
   'find-balloon': 'errand-find-balloon',
+  'find-wrench': 'errand-wrench',
+  'deliver-pizza': 'errand-pizza',
 };
 
 /** Robber looks by who and what he drives. */
@@ -163,6 +172,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   car!: Vehicle;
   bike: Vehicle | null = null;
   fireTruck: Vehicle | null = null;
+  mixer: Vehicle | null = null;
+  /** Builder build spots by id (spec 005). */
+  readonly sites = new Map<string, BuildSite>();
+  private blastAim: string | null = null;
+  private blastCooldown = 0;
   /** Fires burning right now, by perch id (spec 004). */
   readonly fires = new Map<string, Fire>();
   private spraying: { id: string; left: number } | null = null;
@@ -253,6 +267,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (id === 'police-car') return this.car;
     if (id === 'police-bike') return this.bike;
     if (id === 'fire-truck') return this.fireTruck;
+    if (id === 'mixer-truck') return this.mixer;
     return null;
   }
 
@@ -423,6 +438,80 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     return { destroy: () => g.destroy() };
   }
 
+  private builtIds(): Set<string> {
+    return new Set(
+      this.state.progress.owned.filter((o) => o.startsWith('built:')).map((o) => o.slice(6)),
+    );
+  }
+
+  startSite(id: string): void {
+    this.sites.get(id)?.begin();
+  }
+
+  stopSite(id: string): void {
+    this.sites.get(id)?.cancel(this.builtIds().has(id));
+  }
+
+  siteDone(id: string): boolean {
+    const s = this.sites.get(id);
+    return !!s && s.built && !s.active;
+  }
+
+  /** The active build spot the blaster would build on (builder job only), or null. */
+  aimBlast(): string | null {
+    if (this.state.job !== 'builder') return null;
+    const r = this.riding();
+    const mode = r ? (r.id === 'mixer-truck' ? 'truck' : null) : 'foot';
+    if (!mode) return null;
+    const active = [...this.sites.values()]
+      .filter((x) => x.active)
+      .map((x) => ({ id: x.id, ...x.centre }));
+    return pickSite(this.focus(), mode, active);
+  }
+
+  /** One press of the block blaster. */
+  blast(id: string): void {
+    const site = this.sites.get(id);
+    if (!site || !site.active || this.blastCooldown > 0) return;
+    this.blastCooldown = BUILD.cooldownSec;
+    const from = gridToScreen(this.focus().x, this.focus().y);
+    from.y -= 30;
+    sfx.play('thunk');
+    const n = this.state.owns('giant-drum') ? BUILD.giantPerPress : BUILD.perPress;
+    if (site.addBlocks(n, from)) {
+      this.time.delayedCall(560, () => {
+        this.state.give(`built:${id}`);
+        this.state.save.flush();
+        this.refreshWalkGrid();
+        // Built things block the way (or, for docks and bridges, let you walk on the water).
+        if (!this.props.some((p) => p.def.id === id)) {
+          const depth = footprintDepth({
+            x: site.def.gx,
+            y: site.def.gy,
+            w: site.def.w,
+            d: site.def.d,
+          });
+          this.props.push({
+            def: site.def,
+            image: site.img,
+            bounds: site.img.getBounds(),
+            depth,
+            faded: false,
+          });
+        }
+        sfx.play('tada');
+        this.sparkleAt(site.centre);
+        voice.say('built', { interrupt: true });
+        this.notifyMission({ type: 'built', spot: id });
+      });
+    }
+  }
+
+  private refreshWalkGrid(): void {
+    this.grid.copyFrom(buildWalkGrid(this.map, this.builtIds()));
+    this.pathFinder.refresh();
+  }
+
   goInside(room: string): void {
     this.pauseForOverlay();
     this.scene.launch('Interior', { room });
@@ -457,7 +546,10 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   create(): void {
     this.map = this.registry.get(MAP_KEY) as MapDef;
     this.state = this.registry.get(STATE_KEY) as GameState;
-    const grid = buildWalkGrid(this.map);
+    const built = new Set(
+      this.state.progress.owned.filter((o) => o.startsWith('built:')).map((o) => o.slice(6)),
+    );
+    const grid = buildWalkGrid(this.map, built);
     this.grid = grid;
     this.pathFinder = new PathFinder(grid);
     this.carGraph = buildRoadGraph(this.map, 'car');
@@ -465,6 +557,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.player = new Player(grid, { x: this.map.spawn.gx, y: this.map.spawn.gy });
     this.input2 = new InputMapper();
     this.registry.set(INPUT_KEY, this.input2);
+    this.registry.set(OPEN_JOBS_KEY, () => this.openMenu('JobCenter'));
     this.props = [];
     this.pickups.length = 0;
     this.bumpables.length = 0;
@@ -481,6 +574,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.ridingId = null;
     this.bike = null;
     this.fireTruck = null;
+    this.mixer = null;
+    this.sites.clear();
     this.fires.clear();
     this.spraying = null;
 
@@ -498,6 +593,21 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
 
     // Buildings, trees, fountain, Time-Out Tower.
     for (const def of this.map.buildings) {
+      if (def.site) {
+        const site = new BuildSite(this, def, built.has(def.id));
+        this.sites.set(def.id, site);
+        if (built.has(def.id)) {
+          const depth = footprintDepth({ x: def.gx, y: def.gy, w: def.w, d: def.d });
+          this.props.push({
+            def,
+            image: site.img,
+            bounds: site.img.getBounds(),
+            depth,
+            faded: false,
+          });
+        }
+        continue;
+      }
       const meta = getBaked(buildingTextureKey(def));
       const p = gridToScreen(def.gx, def.gy);
       const depth = footprintDepth({ x: def.gx, y: def.gy, w: def.w, d: def.d });
@@ -576,6 +686,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     });
     this.car.img.setName('police-car');
     if (this.state.owns('police-bike')) this.spawnBike(false);
+    if (this.hasMarker('mixer-truck')) {
+      const node = this.nodeNear(this.carGraph, this.marker('mixer-truck'));
+      this.mixer = new Vehicle(this, this.carGraph, MIXER_TRUCK, node, { x: 0, y: 1 });
+      this.mixer.img.setName('mixer-truck');
+    }
     if (this.hasMarker('fire-truck')) {
       const node = this.nodeNear(this.carGraph, this.marker('fire-truck'));
       this.fireTruck = new Vehicle(this, this.carGraph, FIRE_TRUCK, node, { x: 0, y: 1 });
@@ -966,6 +1081,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   }
 
   openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter'): void {
+    if (!this.scene.isActive()) return;
     this.pauseForOverlay();
     this.scene.launch(key);
   }
@@ -1098,7 +1214,10 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private siren(): void {
     this.sirenPresses++;
     const r = this.riding();
-    if (r) {
+    if (r?.id === 'mixer-truck') {
+      sfx.play('horn');
+      sfx.play('honk', 0.9);
+    } else if (r) {
       sfx.sirenBlast();
       r.vehicle.flash(2.5);
     } else {
@@ -1129,6 +1248,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (a.siren) this.siren();
     this.netAim = this.state.job === 'cop' ? this.aimNet() : null;
     this.hoseAim = this.aimHose();
+    if (this.blastCooldown > 0) this.blastCooldown -= Math.min(deltaMs, 50) / 1000;
+    this.blastAim = this.aimBlast();
     if (this.mode === 'foot') this.updateOnFoot(dt, a);
     else this.updateDriving(dt, a);
 
@@ -1138,6 +1259,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       this.car.update(dt, { stick: null });
     if (this.bike && (this.mode === 'foot' || this.ridingId !== 'police-bike'))
       this.bike.update(dt, { stick: null });
+    if (this.mixer && (this.mode === 'foot' || this.ridingId !== 'mixer-truck'))
+      this.mixer.update(dt, { stick: null });
     if (this.fireTruck && (this.mode === 'foot' || this.ridingId !== 'fire-truck'))
       this.fireTruck.update(dt, { stick: null });
     this.updateNets(dt);
@@ -1191,6 +1314,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const out: Vehicle[] = [this.car];
     if (this.bike) out.push(this.bike);
     if (this.fireTruck) out.push(this.fireTruck);
+    if (this.mixer) out.push(this.mixer);
     for (const r of this.robbers) out.push(r.car);
     for (const t of this.traffic) out.push(t.vehicle);
     return out;
@@ -1247,6 +1371,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (a.action) {
       const near = this.nearestVehicle();
       if (this.hoseAim) this.spray(this.hoseAim);
+      else if (this.blastAim) this.blast(this.blastAim);
       else if (near) this.enterCar(near);
     }
     if (this.mode !== 'foot') return;
@@ -1286,6 +1411,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (a.action) {
       if (this.netAim) this.fireNet(this.netAim);
       else if (this.hoseAim) this.spray(this.hoseAim);
+      else if (this.blastAim) this.blast(this.blastAim);
       else if (Math.abs(v.driver.speed) < 1.5) {
         this.exitCar();
         return;
@@ -1395,15 +1521,17 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const r = this.riding();
     const info: HudInfo = {
       mode: this.mode,
-      action: this.hoseAim
-        ? 'hose'
-        : r
-          ? this.netAim
-            ? 'net'
-            : 'exit'
-          : this.nearestVehicle()
-            ? 'enter'
-            : 'none',
+      action: this.blastAim
+        ? 'blast'
+        : this.hoseAim
+          ? 'hose'
+          : r
+            ? this.netAim
+              ? 'net'
+              : 'exit'
+            : this.nearestVehicle()
+              ? 'enter'
+              : 'none',
       donuts: this.state.inventory.donut ?? 0,
       sirenOn: r?.vehicle.flashing ?? false,
       hint,
@@ -1434,6 +1562,14 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       job: this.state.job,
       fires: [...this.fires.keys()],
       hoseAim: this.hoseAim,
+      blastAim: this.blastAim,
+      sites: Object.fromEntries(
+        [...this.sites.values()].map((x) => [
+          x.id,
+          { active: x.active, added: x.state.added, needed: x.state.needed, built: x.built },
+        ]),
+      ),
+      mixer: this.mixer ? { ...this.mixer.pos } : null,
       truck: this.fireTruck ? { ...this.fireTruck.pos, speed: this.fireTruck.driver.speed } : null,
       car: { ...this.car.pos, speed: this.car.driver.speed, flashing: this.car.flashing },
       bike: this.bike ? { ...this.bike.pos, speed: this.bike.driver.speed } : null,

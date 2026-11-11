@@ -59,6 +59,7 @@ const GOTO_LINES: Record<string, string> = {
   'fire-truck': 'hint-truck',
   'mixer-truck': 'hint-mixer',
   mayor: 'hint-mayor',
+  island: 'hint-island',
   'puppy-owner': 'hint-owner',
 };
 
@@ -617,6 +618,32 @@ export class InsideHandler extends GoalHandler {
   }
 }
 
+/** Build something on a build spot with the block blaster (spec 005). */
+export class BuildHandler extends GoalHandler {
+  constructor(
+    c: HandlerCtx,
+    private readonly spot: string,
+  ) {
+    super(c);
+  }
+
+  override start(): void {
+    this.w.startSite(this.spot);
+    voice.say('build-now');
+  }
+
+  hint(): Hint | null {
+    const v = this.vehicleHint();
+    if (v) return v;
+    const at = `${this.spot}-at`;
+    return { at: this.w.hasMarker(at) ? this.w.marker(at) : this.w.focus(), line: 'hint-build' };
+  }
+
+  override end(): void {
+    if (!this.w.siteDone(this.spot)) this.w.stopSite(this.spot);
+  }
+}
+
 /** Placeholder for goal types whose job spec isn't built yet: it hints at nothing. */
 export class NoopHandler extends GoalHandler {
   hint(): null {
@@ -648,6 +675,8 @@ export function makeHandler(goal: Goal, c: HandlerCtx): GoalHandler {
       return new RescueHandler(c, goal);
     case 'inside':
       return new InsideHandler(c, goal);
+    case 'build':
+      return new BuildHandler(c, goal.spot);
     default:
       return new NoopHandler(c);
   }

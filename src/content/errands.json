@@ -61,5 +61,27 @@
     "reward": 10,
     "job": "fire",
     "after": "barbecue-blaze"
+  },
+  {
+    "id": "find-wrench",
+    "kind": "find",
+    "giver": "foreman",
+    "icon": "wrench",
+    "item": "wrench",
+    "spot": "wrench-spot",
+    "reward": 10,
+    "job": "builder",
+    "after": "hard-hat-day"
+  },
+  {
+    "id": "deliver-pizza",
+    "kind": "deliver",
+    "giver": "donut-owner",
+    "icon": "pizza",
+    "item": "pizza",
+    "destination": "boat-owner",
+    "reward": 10,
+    "job": "builder",
+    "after": "boat-shop"
   }
 ]

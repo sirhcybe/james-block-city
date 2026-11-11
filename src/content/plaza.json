@@ -12,8 +12,8 @@
   },
   "tiles": [
     "gggggggggggggggg",
-    "rrrrrrrrrrrrrrrg",
-    "rrrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
     "grrssssssssssrrg",
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
@@ -24,8 +24,8 @@
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
     "grrssssssssssrrg",
-    "rrrrrrrrrrrrrrrg",
-    "rrrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
     "grrggggggggggrrg"
   ],
   "spawn": {
@@ -286,6 +286,10 @@
     "toaster-door": {
       "gx": 8,
       "gy": 12.5
+    },
+    "pour-1": {
+      "gx": 8,
+      "gy": 14
     }
   },
   "props": [

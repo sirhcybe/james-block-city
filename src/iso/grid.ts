@@ -23,6 +23,15 @@ export class WalkGrid {
     if (this.inBounds(x, y)) this.blocked[y * this.width + x] = 1;
   }
 
+  /** Copy another grid of the same size (used when something new is built). */
+  copyFrom(o: WalkGrid): void {
+    this.blocked.set((o as unknown as { blocked: Uint8Array }).blocked);
+  }
+
+  unblock(x: number, y: number): void {
+    if (this.inBounds(x, y)) this.blocked[y * this.width + x] = 0;
+  }
+
   blockRect(x: number, y: number, w: number, d: number): void {
     for (let j = y; j < y + d; j++) for (let i = x; i < x + w; i++) this.block(i, j);
   }

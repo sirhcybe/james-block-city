@@ -411,5 +411,199 @@
         "seconds": 90
       }
     ]
+  },
+  {
+    "id": "hard-hat-day",
+    "job": "builder",
+    "tier": "rookie",
+    "icon": "hardHat",
+    "voiceIntro": "intro-hard-hat",
+    "voiceDone": "done-hard-hat",
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "mixer-truck"
+      },
+      {
+        "type": "checkpoints",
+        "flags": ["bflag-1", "bflag-2", "bflag-3"]
+      },
+      {
+        "type": "build",
+        "spot": "practice-wall"
+      }
+    ],
+    "reward": {
+      "coins": 15
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
+  },
+  {
+    "id": "dock-it",
+    "job": "builder",
+    "tier": "rookie",
+    "icon": "dock",
+    "voiceIntro": "intro-dock",
+    "voiceDone": "done-dock",
+    "requires": ["hard-hat-day"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "mixer-truck"
+      },
+      {
+        "type": "build",
+        "spot": "dock"
+      }
+    ],
+    "reward": {
+      "coins": 20
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 45
+      }
+    ]
+  },
+  {
+    "id": "mixer-mayhem",
+    "job": "builder",
+    "tier": "rookie",
+    "icon": "mixer",
+    "voiceIntro": "intro-mixer",
+    "voiceDone": "done-mixer",
+    "requires": ["dock-it"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "mixer-truck"
+      },
+      {
+        "type": "checkpoints",
+        "flags": ["pour-1", "pour-2", "pour-3"]
+      },
+      {
+        "type": "minigame",
+        "id": "cement-pour"
+      }
+    ],
+    "reward": {
+      "coins": 20,
+      "unlocks": ["badge:builder"]
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 120
+      }
+    ]
+  },
+  {
+    "id": "lighthouse-lights",
+    "job": "builder",
+    "tier": "pro",
+    "icon": "lighthouse",
+    "voiceIntro": "intro-lighthouse",
+    "voiceDone": "done-lighthouse",
+    "requires": ["badge:builder", "owned:giant-drum"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "mixer-truck"
+      },
+      {
+        "type": "build",
+        "spot": "lighthouse"
+      },
+      {
+        "type": "goTo",
+        "target": "keeper"
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
+  },
+  {
+    "id": "boat-shop",
+    "job": "builder",
+    "tier": "pro",
+    "icon": "boat",
+    "voiceIntro": "intro-boat-shop",
+    "voiceDone": "done-boat-shop",
+    "requires": ["badge:builder", "owned:giant-drum"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "mixer-truck"
+      },
+      {
+        "type": "build",
+        "spot": "boat-shop"
+      },
+      {
+        "type": "goTo",
+        "target": "boat-owner"
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
+  },
+  {
+    "id": "bridge-to-the-island",
+    "job": "builder",
+    "tier": "pro",
+    "icon": "bridge",
+    "voiceIntro": "intro-bridge",
+    "voiceDone": "done-bridge",
+    "requires": ["badge:builder", "owned:giant-drum"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "mixer-truck"
+      },
+      {
+        "type": "build",
+        "spot": "bridge"
+      },
+      {
+        "type": "goTo",
+        "target": "island"
+      }
+    ],
+    "reward": {
+      "coins": 40
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
   }
 ]

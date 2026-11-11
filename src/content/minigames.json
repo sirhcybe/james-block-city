@@ -26,5 +26,26 @@
     "durationSec": 100,
     "tiers": [0, 6, 11],
     "difficultyStepPerReplay": 0.15
+  },
+  {
+    "id": "block-stack",
+    "job": "builder",
+    "durationSec": 100,
+    "tiers": [0, 8, 15],
+    "difficultyStepPerReplay": 0.15
+  },
+  {
+    "id": "copy-the-build",
+    "job": "builder",
+    "durationSec": 110,
+    "tiers": [0, 4, 8],
+    "difficultyStepPerReplay": 0.15
+  },
+  {
+    "id": "cement-pour",
+    "job": "builder",
+    "durationSec": 90,
+    "tiers": [0, 25, 42],
+    "difficultyStepPerReplay": 0.15
   }
 ]

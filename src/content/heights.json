@@ -14,8 +14,8 @@
     "grrggggggggggrrg",
     "grrggggggggggrrg",
     "grrggggggggggrrg",
-    "rrrrrrrrrrrrrrrg",
-    "rrrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
     "grrssssrrssssrrg",
     "grrsppsrrsppsrrg",
     "grrsppsrrsppsrrg",
@@ -24,8 +24,8 @@
     "grrsppsrrsppsrrg",
     "grrsppsrrsppsrrg",
     "grrssssrrssssrrg",
-    "rrrrrrrrrrrrrrrg",
-    "rrrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
     "gggggggggggggggg"
   ],
   "spawn": {
@@ -100,6 +100,10 @@
     "traffic-5": {
       "gx": 14,
       "gy": 4
+    },
+    "pour-2": {
+      "gx": 8,
+      "gy": 14
     }
   },
   "perches": [

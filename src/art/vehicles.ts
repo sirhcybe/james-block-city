@@ -511,6 +511,21 @@ export const FIRE_TRUCK: VehicleLook = {
   ladder: true,
 };
 
+/** The cement mixer (spec 005): yellow, cabin in front, a striped drum on the back. */
+export const MIXER_TRUCK: VehicleLook = {
+  name: 'mixer-truck',
+  body: PALETTE.builderYellow,
+  cabin: PALETTE.builderYellow,
+  length: 1.5,
+  width: 0.78,
+  bodyH: 0.38,
+  lightBar: false,
+  star: false,
+  cabinAt: 0.42,
+  cabinLen: 0.3,
+  drum: PALETTE.coneOrange,
+};
+
 /** Every vehicle look baked at boot. */
 export const ALL_VEHICLES: VehicleLook[] = [
   POLICE_CAR,
@@ -524,5 +539,6 @@ export const ALL_VEHICLES: VehicleLook[] = [
   SCOOTER,
   SCOOTER_EMPTY,
   FIRE_TRUCK,
+  MIXER_TRUCK,
   ...TRAFFIC_CARS,
 ];

@@ -18,6 +18,13 @@ export const BuildingKind = z.enum([
   'shop',
   'firestation',
   'skyscraper',
+  'wall',
+  'dock',
+  'lighthouse',
+  'boatshop',
+  'bridge',
+  'office',
+  'crane',
 ]);
 export type BuildingKind = z.infer<typeof BuildingKind>;
 
@@ -30,6 +37,8 @@ export const BuildingDef = z.object({
   d: z.number().int().positive(),
   h: z.number().positive(),
   color: z.enum(paletteKeys),
+  /** A build spot (spec 005): not there until the Builder builds it. */
+  site: z.boolean().optional(),
 });
 export type BuildingDef = z.infer<typeof BuildingDef>;
 
