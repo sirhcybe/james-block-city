@@ -23,7 +23,9 @@ Turns were also instant 90° snaps at a point, with a 4-facing sprite.
   - With input: take the branch closest to the stick, within 100°. Straight on may be up to 110°.
   - Ties within 3° go to the gentler turn, so straight on wins.
   - Nothing close enough: stop. The stick is saying "not that way".
-  - Going back is only allowed when stopped, and only when the stick is clearly behind (within 70°).
+  - Going back is only allowed when stopped, and only when the stick is mostly behind (within 85°;
+    under 90° so a sideways push can't bounce the car between the two ends of a road). This was
+    70° at first, which left a diagonal push parked for good on some roads (playtest 2026-11-10).
 - **U-turns (`wantsUTurn`).**
   - The car turns round only when the stick is more than 110° from its heading, and not within
     0.3 s of the last change of direction.

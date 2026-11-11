@@ -10,8 +10,8 @@
   },
   "tiles": [
     "gggggggggggggggg",
-    "grrrrrrrrrrrrrrg",
-    "grrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrg",
     "grrssssssssssrrg",
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
@@ -22,8 +22,8 @@
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
     "grrssssssssssrrg",
-    "grrrrrrrrrrrrrrg",
-    "grrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrg",
     "gggggggggggggggg"
   ],
   "spawn": {
