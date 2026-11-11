@@ -113,7 +113,10 @@ describe('requires, next mission and the Cop badge (AC7, AC8)', () => {
     expect(isUnlocked(rr, progress({ missionsDone: rookieDone, badges: ['cop'] }))).toBe(false);
     expect(isUnlocked(rr, progress({ owned: ['police-bike'] }))).toBe(false);
     expect(
-      isUnlocked(rr, progress({ missionsDone: rookieDone, badges: ['cop'], owned: ['police-bike'] })),
+      isUnlocked(
+        rr,
+        progress({ missionsDone: rookieDone, badges: ['cop'], owned: ['police-bike'] }),
+      ),
     ).toBe(true);
     // Badge but no bike: the chief has nothing to offer (padlocks on the board).
     expect(
@@ -297,7 +300,12 @@ describe('Net launcher aim help (AC11)', () => {
 });
 
 describe('Escort (Duck Crossing, AC14)', () => {
-  const walk = (s: EscortState, path: { x: number; y: number }[], road = () => false, traffic = false) => {
+  const walk = (
+    s: EscortState,
+    path: { x: number; y: number }[],
+    road = () => false,
+    traffic = false,
+  ) => {
     for (const p of path) s.update(1 / 30, p, road(), traffic);
   };
   const line = (a: { x: number; y: number }, b: { x: number; y: number }, n: number) =>
@@ -448,5 +456,30 @@ describe('Downtown map (AC10)', () => {
       const m = world.markers[id]!;
       expect(pf.find({ x: s.gx, y: s.gy }, { x: m.gx, y: m.gy }), id).not.toBeNull();
     }
+  });
+});
+
+describe('Saves from spec 002 still load (AC17)', () => {
+  it('a 002 save (donut-dash done, coins, no cap) migrates and offers First Day', async () => {
+    const { migrate, SAVE_KEY } = await import('../../src/systems/save');
+    const old = {
+      version: 1,
+      coins: 45,
+      job: 'cop',
+      badges: [],
+      missionsDone: { 'donut-dash': 2 },
+      errandsDone: ['return-donuts'],
+      owned: [],
+      minigamePlays: { 'traffic-helper': 1 },
+      apartment: [],
+    };
+    expect(migrate(old)).toEqual(old);
+    const st = storage();
+    st.setItem(SAVE_KEY, JSON.stringify(old));
+    const g = new GameState(content, st);
+    expect(g.economy.coins).toBe(45);
+    expect(g.stars('donut-dash')).toBe(2);
+    expect(g.nextMission()?.id).toBe('first-day');
+    expect(g.owns('cap-cop')).toBe(false);
   });
 });

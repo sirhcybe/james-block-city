@@ -2,6 +2,7 @@ import type Phaser from 'phaser';
 import { PALETTE } from '../config';
 import { darken, lighten } from './color';
 import { drawCoin, drawDonut, drawStar } from './shapes2d';
+import { drawIcon } from './icons';
 import { bakeIcon } from './ui';
 
 /** HUD and minigame icons (pictures only, never words). Sizes are logical px. */
@@ -17,6 +18,9 @@ export const HUD = {
   star: 'hud-star',
   starEmpty: 'hud-star-empty',
   check: 'hud-check',
+  actionNet: 'hud-action-net',
+  badgeSlot: 'hud-badge-slot',
+  badge: (job: string) => `hud-badge-${job}`,
 } as const;
 
 export const ACTION_SIZE = 150;
@@ -108,6 +112,32 @@ function arrowRight(
   g.strokePoints(pts, true);
 }
 
+/** A job badge: a scalloped star badge in the job colour with the job's picture in the middle. */
+function drawBadge(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  y: number,
+  r: number,
+  s: number,
+  color: number,
+  job: string,
+): void {
+  g.lineStyle(3 * s * 0.5, PALETTE.outline, 1);
+  g.fillStyle(color, 1);
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 - Math.PI / 2;
+    const rr = i % 2 ? r * 0.86 : r;
+    pts.push({ x: x + Math.cos(a) * rr, y: y + Math.sin(a) * rr });
+  }
+  g.fillPoints(pts, true);
+  g.strokePoints(pts, true);
+  g.fillStyle(0xffffff, 0.9);
+  g.fillCircle(x, y, r * 0.6);
+  g.strokeCircle(x, y, r * 0.6);
+  drawIcon(g, job === 'cop' ? 'star' : job === 'fire' ? 'flame' : 'brick', x, y, r * 0.45, s * 0.5);
+}
+
 export function bakeHud(scene: Phaser.Scene): void {
   bakeIcon(scene, HUD.coin, COIN_SIZE, COIN_SIZE, (g, s) => {
     drawCoin(g, (COIN_SIZE / 2) * s, (COIN_SIZE / 2) * s, (COIN_SIZE / 2 - 3) * s, s);
@@ -124,6 +154,26 @@ export function bakeHud(scene: Phaser.Scene): void {
     const c = roundButton(g, ACTION_SIZE, PALETTE.coinGold, s);
     personIcon(g, c + 22 * s, c + 6 * s, 1.3, s);
     arrowRight(g, c - 22 * s, c + 4 * s, 1, s);
+  });
+  bakeIcon(scene, HUD.actionNet, A, A + 6, (g, s) => {
+    const c = roundButton(g, ACTION_SIZE, PALETTE.coneOrange, s);
+    drawIcon(g, 'net', c, c, 46 * s, s * 1.4);
+  });
+  for (const [job, color] of [
+    ['cop', PALETTE.coinGold],
+    ['fire', PALETTE.fireRed],
+    ['builder', PALETTE.builderYellow],
+  ] as const) {
+    bakeIcon(scene, HUD.badge(job), 64, 64, (g, s) => {
+      drawBadge(g, 32 * s, 32 * s, 28 * s, s, color, job);
+    });
+    bakeIcon(scene, `${HUD.badge(job)}-big`, 300, 300, (g, s) => {
+      drawBadge(g, 150 * s, 150 * s, 140 * s, s * 4, color, job);
+    });
+  }
+  bakeIcon(scene, HUD.badgeSlot, 64, 64, (g, s) => {
+    g.lineStyle(3 * s, 0xffffff, 0.6);
+    g.strokeCircle(32 * s, 32 * s, 26 * s);
   });
   bakeIcon(scene, HUD.actionIdle, A, A + 6, (g, s) => {
     const c = roundButton(g, ACTION_SIZE, 0xb8bfcc, s);

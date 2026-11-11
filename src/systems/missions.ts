@@ -191,6 +191,8 @@ export class MissionRun {
   readonly parts = new Set<string>();
   /** Items collected during this run (for collect bonuses). */
   readonly collected: Record<string, number> = {};
+  /** The part the last event ticked off (for effects: which flag turned green). */
+  lastPart: string | null = null;
 
   constructor(
     readonly mission: Mission,
@@ -226,6 +228,7 @@ export class MissionRun {
     const part = partFor(g, e);
     if (part === null || this.parts.has(part)) return null;
     this.parts.add(part);
+    this.lastPart = part;
     const parts = goalParts(g);
     if (parts && !parts.every((p) => this.parts.has(p))) return 'part';
     this.parts.clear();

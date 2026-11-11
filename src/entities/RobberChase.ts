@@ -10,11 +10,13 @@ import {
   POLICE_VAN,
   vehicleFrameKey,
   vehicleLightKey,
+  type VehicleLook,
 } from '../art/vehicles';
+import { MPROP } from '../art/missionProps';
 import { BUMP_DIST, CAR_MAX_SPEED } from '../config';
 import { depthOf, gridToScreen, type Vec2 } from '../iso/projection';
 import { rightOf, type LaneGraph, type LaneNode } from '../iso/roads';
-import { ChaseState } from '../systems/chase';
+import { ChaseState, DEFAULT_CHASE } from '../systems/chase';
 import { dir8ForDir, type BranchChooser } from './LaneDriver';
 import { Vehicle } from './Vehicle';
 
@@ -28,16 +30,28 @@ export interface ChaseHooks {
 
 export type ChasePhase = 'parked' | 'fleeing' | 'catching' | 'caught';
 
+export interface RobberLooks {
+  /** 'pickles' or 'smudge' (character frames when he hops out). */
+  name: string;
+  look: VehicleLook;
+  empty: VehicleLook;
+  bumpsNeeded?: number;
+  /** Top speed as a fraction of the player's car (scooters are a bit slower). */
+  speedScale?: number;
+}
+
 /**
- * Pickles in his wobbly getaway car: flees along the roads away from the player, drops donuts,
- * gets bumped (boing!), runs out of gas if the chase drags on, and when caught waddles into the
- * police van. No harm, ever.
+ * A Bandit Brother in his wobbly getaway car (or on his scooter): flees along the roads away from
+ * the player, drops loot, gets bumped (boing!) or netted, runs out of gas if the chase drags on,
+ * and when caught waddles into the police van. No harm, ever.
  */
 export class RobberChase {
   readonly car: Vehicle;
-  chase = new ChaseState();
+  readonly name: string;
+  chase: ChaseState;
   phase: ChasePhase = 'parked';
   private wobble: Phaser.Tweens.Tween | null = null;
+  private netImg: Phaser.GameObjects.Image | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -47,8 +61,49 @@ export class RobberChase {
     private readonly puff: BakedMeta,
     private readonly hooks: ChaseHooks,
     private readonly rand: () => number = Math.random,
+    private readonly looks: RobberLooks = {
+      name: 'pickles',
+      look: GETAWAY_CAR,
+      empty: GETAWAY_EMPTY,
+    },
   ) {
-    this.car = new Vehicle(scene, graph, GETAWAY_CAR, home, heading);
+    this.name = looks.name;
+    this.chase = this.newChase();
+    this.car = new Vehicle(scene, graph, looks.look, home, heading);
+  }
+
+  private newChase(): ChaseState {
+    return new ChaseState({ ...DEFAULT_CHASE, bumpsNeeded: this.looks.bumpsNeeded ?? 3 });
+  }
+
+  /** Remove from the world (end of a mission). */
+  destroy(): void {
+    this.wobble?.stop();
+    this.netImg?.destroy();
+    this.car.img.destroy();
+    this.car.lightImg?.destroy();
+  }
+
+  /** A net landed on him: one net is enough. */
+  netted(): void {
+    if (this.phase !== 'fleeing') return;
+    const meta = getBaked(MPROP.netted);
+    const s = gridToScreen(this.pos.x, this.pos.y);
+    this.netImg = this.scene.add
+      .image(s.x, s.y - 14, meta.key)
+      .setOrigin(meta.originX, meta.originY)
+      .setScale(0)
+      .setDepth(depthOf(this.pos.x, this.pos.y) + 70);
+    this.scene.tweens.add({
+      targets: this.netImg,
+      scale: 1 / WT,
+      duration: 220,
+      ease: 'Back.easeOut',
+    });
+    this.chase.caught = true;
+    sfx.play('boing', 0.8);
+    voice.say('netted', { interrupt: true });
+    this.catchSequence();
   }
 
   get pos(): Vec2 {
@@ -56,9 +111,9 @@ export class RobberChase {
   }
 
   start(): void {
-    this.chase = new ChaseState();
+    this.chase = this.newChase();
     this.phase = 'fleeing';
-    this.car.setLook(GETAWAY_CAR);
+    this.car.setLook(this.looks.look);
     this.wobble?.stop();
     this.wobble = this.scene.tweens.add({
       targets: this.car.img,
@@ -75,7 +130,9 @@ export class RobberChase {
     this.wobble?.stop();
     this.wobble = null;
     this.phase = 'parked';
-    this.car.setLook(GETAWAY_CAR);
+    this.car.setLook(this.looks.look);
+    this.netImg?.destroy();
+    this.netImg = null;
     this.car.img.setAngle(0);
     this.car.placeAt(this.home, this.heading);
     this.car.img.setAlpha(0);
@@ -116,7 +173,7 @@ export class RobberChase {
         this.hooks.onOutOfGas();
       }
     }
-    const cruise = CAR_MAX_SPEED * this.chase.speedFactor(dist);
+    const cruise = CAR_MAX_SPEED * (this.looks.speedScale ?? 1) * this.chase.speedFactor(dist);
     this.car.update(dt, { stick: null, cruise, chooser: this.chooser(police) });
 
     if (policeCar) {
@@ -185,10 +242,11 @@ export class RobberChase {
     const vanAt = { x: carPos.x + dir.x * 1.6, y: carPos.y + dir.y * 1.6 };
 
     scene.time.delayedCall(700, () => {
-      this.car.setLook(GETAWAY_EMPTY);
+      this.car.setLook(this.looks.empty);
+      if (this.netImg) scene.tweens.add({ targets: this.netImg, alpha: 0, duration: 300 });
       const rs = gridToScreen(robberAt.x, robberAt.y);
       const robber = scene.add
-        .image(rs.x, rs.y, characterFrameKey('pickles', 'SW', 0))
+        .image(rs.x, rs.y, characterFrameKey(this.name, 'SW', 0))
         .setOrigin(0.5, CHAR_FOOT_Y / CHAR_H)
         .setScale(0)
         .setDepth(depthOf(robberAt.x, robberAt.y) + 60);
@@ -225,7 +283,7 @@ export class RobberChase {
 
       // Waddle (wobbling side to side) into the van.
       scene.time.delayedCall(900, () => {
-        robber.setTexture(characterFrameKey('pickles', facing, 0));
+        robber.setTexture(characterFrameKey(this.name, facing, 0));
         scene.tweens.add({
           targets: robber,
           angle: { from: -12, to: 12 },

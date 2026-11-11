@@ -172,8 +172,8 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
       g.fillEllipse(ox, oy, 26 * size * s, 9 * size * s);
       duckBody(g, ox, oy - 16 * size * s, 15 * size * s, s, color);
     });
-  bakeParts(scene, MPROP.duck, [duck(1, 0xffd23f)]);
-  bakeParts(scene, MPROP.duckling, [duck(0.6, 0xfff08a)]);
+  bakeParts(scene, MPROP.duck, [duck(1.5, 0xffd23f)]);
+  bakeParts(scene, MPROP.duckling, [duck(1, 0xfff08a)]);
 
   bakeParts(scene, MPROP.puppy, [
     custom([-24, -42, 24, 8], (g, ox, oy, s) => {
@@ -193,6 +193,17 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
     custom([-20, -20, 20, 20], (g, ox, oy, s) => drawIcon(g, 'star', ox, oy, 14 * s, s * 0.6)),
   ]);
 
+  // Things to pick up (loot and lost things), bobbing on the ground.
+  for (const item of ['sock', 'rubberDuck', 'balloon'] as IconName[]) {
+    bakeParts(scene, `pickup-${item}`, [
+      custom([-18, -40, 18, 8], (g, ox, oy, s) => {
+        g.fillStyle(0x000000, 0.18);
+        g.fillEllipse(ox, oy, 24 * s, 9 * s);
+        drawIcon(g, item, ox, oy - 18 * s, 13 * s, s * 0.8);
+      }),
+    ]);
+  }
+
   const bubbles: IconName[] = [
     'star',
     'duck',
@@ -206,6 +217,24 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
     'parrot',
     'brick',
     'wrench',
+    'flag',
+    'donut',
+    'scooter',
+    'twoRobbers',
+    'bike',
+    'flame',
+    'toaster',
+    'grill',
+    'firework',
+    'tower',
+    'dock',
+    'mixer',
+    'lighthouse',
+    'boat',
+    'bridge',
+    'hardHat',
+    'helmet',
+    'ladder',
   ];
   for (const b of bubbles) bakeBubble(scene, b);
   const pads: IconName[] = [

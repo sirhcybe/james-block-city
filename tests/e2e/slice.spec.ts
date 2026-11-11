@@ -89,7 +89,12 @@ test('AC2/AC4/AC5: chase on the roads, donuts drop, 3 bumps catch Pickles, missi
 }) => {
   const errors = watchErrors(page);
   await boot(page);
-  await page.evaluate(() => window.__jbc!.enterCar());
+  // Spec 003: Donut Dash comes after First Day; start it the way the chief would.
+  await page.evaluate(() => {
+    window.__jbc!.grant({ done: ['first-day'] });
+    window.__jbc!.startMission('donut-dash');
+    window.__jbc!.enterCar();
+  });
   await expect.poll(async () => (await st(page)).chase.phase, LONG).toBe('fleeing');
   // Donuts drop while he flees; the errand opens.
   await expect.poll(async () => (await st(page)).chase.dropped, LONG).toBeGreaterThanOrEqual(1);
@@ -107,10 +112,10 @@ test('AC2/AC4/AC5: chase on the roads, donuts drop, 3 bumps catch Pickles, missi
     { ...LONG, polling: 400 },
   );
   expect((await st(page)).chase.bumps).toBe(3);
-  await expect.poll(async () => (await st(page)).mission?.waiting, LONG).toBe(true);
+  await expect.poll(async () => (await st(page)).mission, LONG).toBeNull();
   const s = await st(page);
   expect(s.coins).toBe(20);
-  expect(s.mission?.goal).toBe('done');
+  expect(s.stars['donut-dash']).toBeGreaterThanOrEqual(1);
   await expect
     .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), LONG)
     .toEqual(expect.arrayContaining(['chase-start', 'caught', 'mission-done']));
@@ -156,10 +161,8 @@ test('AC6/AC7/AC8/AC10: coins only from minigame + errand, and they survive a re
   await page.evaluate(() => {
     const c = window.__jbc!.game.scene.getScene('City') as unknown as {
       state: { errands: { offer(id: string): void }; pickUp(i: string): void };
-      owner: { setOffering(on: boolean): void };
     };
     c.state.errands.offer('return-donuts');
-    c.owner.setOffering(true);
     c.state.pickUp('donut');
   });
   await page.evaluate(() => window.__jbc!.goTo(10, 6));
@@ -183,9 +186,20 @@ test('AC6/AC7/AC8/AC10: coins only from minigame + errand, and they survive a re
 
 test('AC9: idle 20 s → arrow + voice hint to the current goal', async ({ page }) => {
   await boot(page);
+  // Spec 003: before any mission the hint points at the chief.
   await page.evaluate(() => window.__jbc!.idle(21));
   await expect.poll(async () => (await st(page)).hintShowing, LONG).toBe(true);
-  expect(await page.evaluate(() => window.__jbc!.voiceLog())).toContain('hint-car');
+  expect(await page.evaluate(() => window.__jbc!.voiceLog())).toContain('hint-chief');
+  await page.keyboard.press('ArrowLeft');
+  // During a mission's "get in the car" goal it points at the car.
+  await page.evaluate(() => {
+    window.__jbc!.grant({ done: ['first-day'] });
+    window.__jbc!.startMission('donut-dash');
+    window.__jbc!.idle(21);
+  });
+  await expect
+    .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), LONG)
+    .toContain('hint-car');
   // Any input clears it.
   await page.keyboard.press('ArrowLeft');
   await expect.poll(async () => (await st(page)).hintShowing, LONG).toBe(false);

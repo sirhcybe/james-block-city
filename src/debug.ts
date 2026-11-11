@@ -4,7 +4,11 @@ import { gridToScreen } from './iso/projection';
 import { sfx } from './audio/sfx';
 import { voice } from './audio/voice';
 import type { CityScene } from './scenes/CityScene';
+import type { MissionBoardScene } from './scenes/MissionBoardScene';
+import type { ShopScene } from './scenes/ShopScene';
 import type { TrafficHelperScene } from './scenes/TrafficHelperScene';
+import type { WhoTookItScene } from './scenes/WhoTookItScene';
+import type { VehicleId } from './missions/world';
 import { SAVE_KEY } from './systems/save';
 
 /** `window.__jbc`: test/debug hook. Only installed in dev builds or when VITE_DEBUG_HOOK=1. */
@@ -36,9 +40,29 @@ export interface DebugHook {
   exitCar(): void;
   /** Put the police car right behind the getaway car (tests the bump/catch flow quickly). */
   chaseUp(): void;
-  /** Launch the Traffic Helper minigame now / finish it with a score. */
-  startMinigame(): void;
+  /** Launch a minigame now / finish whichever minigame is running with a score. */
+  startMinigame(id?: string): void;
   finishMinigame(score: number): boolean;
+  /** Start a mission right away (as if the chief or the board offered it). */
+  startMission(id: string): void;
+  /** Set up progress for a test: coins (paid as minigame coins), badges, owned items, stars. */
+  grant(p: { coins?: number; badges?: string[]; owned?: string[]; done?: string[] }): void;
+  /** Hop into a vehicle (teleports next to it first). */
+  ride(id: VehicleId): void;
+  /** Put the vehicle being driven on the road next to a map marker. */
+  driveTo(marker: string): void;
+  /** Teleport the player onto a marker (on foot). */
+  walkTo(marker: string): void;
+  /** Fire the net (as if Action was pressed). Returns the aimed target or null. */
+  fireNet(): string | null;
+  /** Who Took It?: the culprit index, and tap a suspect. */
+  culprit(): number;
+  tapSuspect(i: number): void;
+  /** Open menus and use them. */
+  openMenu(key: 'MissionBoard' | 'Shop'): void;
+  pickMission(id: string): void;
+  buy(id: string): boolean;
+  closeMenu(): void;
   /** Pretend the player has been idle for N seconds (hint system). */
   idle(seconds: number): void;
   voiceLog(): string[];
@@ -125,15 +149,113 @@ export function installDebugHook(game: Phaser.Game): void {
     chaseUp: () => {
       const c = city();
       if (!c) return;
-      const r = c.robber.car.driver;
-      c.car.driver.placeOnEdge(r.from, r.to, Math.max(0, r.t - 0.4));
+      // Pull the vehicle being driven up right behind the nearest fleeing robber.
+      const v = c.riding()?.vehicle ?? c.car;
+      const rb = c.robbers
+        .filter((x) => x.phase === 'fleeing')
+        .sort(
+          (a, b) =>
+            Math.hypot(a.pos.x - v.pos.x, a.pos.y - v.pos.y) -
+            Math.hypot(b.pos.x - v.pos.x, b.pos.y - v.pos.y),
+        )[0];
+      if (!rb) return;
+      const r = rb.car.driver;
+      const from = v.driver.graph.get(r.from.x, r.from.y);
+      const to = v.driver.graph.get(r.to.x, r.to.y);
+      if (from && to) v.driver.placeOnEdge(from, to, Math.max(0, r.t - 0.4));
     },
-    startMinigame: () => city()?.startMinigame(),
+    startMinigame: (id) => city()?.startMinigame(id),
     finishMinigame: (score) => {
-      const s = game.scene.getScene('TrafficHelper') as TrafficHelperScene | null;
-      if (!s || !s.scene.isActive()) return false;
-      s.debugFinish(score);
-      return true;
+      for (const key of ['TrafficHelper', 'WhoTookIt']) {
+        const s = game.scene.getScene(key) as TrafficHelperScene | WhoTookItScene | null;
+        if (s && s.scene.isActive()) {
+          s.debugFinish(score);
+          return true;
+        }
+      }
+      return false;
+    },
+    startMission: (id) => city()?.director.begin(id),
+    grant: (p) => {
+      const c = city();
+      if (!c) return;
+      const st = c.state;
+      if (p.coins) st.economy.award('minigame', p.coins);
+      st.save.update((s) => {
+        for (const b of p.badges ?? []) if (!s.badges.includes(b)) s.badges.push(b);
+        for (const o of p.owned ?? []) if (!s.owned.includes(o)) s.owned.push(o);
+        for (const d of p.done ?? []) s.missionsDone[d] = Math.max(1, s.missionsDone[d] ?? 0);
+      });
+      if (p.owned?.includes('police-bike')) c.spawnBike(false);
+      st.save.flush();
+    },
+    ride: (id) => {
+      const c = city();
+      const v = c?.vehicle(id);
+      if (!c || !v) return;
+      if (c.mode === 'car') c.exitCar();
+      c.player.pos = { x: v.pos.x, y: v.pos.y - 1.2 };
+      c.enterCar(id);
+    },
+    driveTo: (marker) => {
+      const c = city();
+      const v = c?.riding()?.vehicle;
+      if (!c || !v) return;
+      const m = c.marker(marker);
+      let best = v.driver.from;
+      let bestD = Infinity;
+      for (const n of v.driver.graph.nodes.values()) {
+        const d = (n.x - m.x) ** 2 + (n.y - m.y) ** 2;
+        if (d < bestD && n.links.length > 0) {
+          bestD = d;
+          best = n;
+        }
+      }
+      v.placeAt(best, { x: 1, y: 0 });
+    },
+    walkTo: (marker) => {
+      const c = city();
+      if (!c) return;
+      if (c.mode === 'car') c.exitCar();
+      const m = c.marker(marker);
+      c.player.cancelPath();
+      c.player.pos = { x: m.x, y: m.y };
+      const w = gridToScreen(m.x, m.y);
+      c.cameras.main.centerOn(w.x, w.y);
+    },
+    fireNet: () => {
+      const c = city();
+      if (!c) return null;
+      const t = c.aimNet();
+      if (t) c.fireNet(t);
+      return t;
+    },
+    culprit: () => {
+      const s = game.scene.getScene('WhoTookIt') as WhoTookItScene | null;
+      return s && s.scene.isActive() ? s.debugCulprit() : -1;
+    },
+    tapSuspect: (i) => {
+      const s = game.scene.getScene('WhoTookIt') as WhoTookItScene | null;
+      if (s && s.scene.isActive()) s.debugTap(i);
+    },
+    openMenu: (key) => city()?.openMenu(key),
+    pickMission: (id) => {
+      const s = game.scene.getScene('MissionBoard') as MissionBoardScene | null;
+      if (s && s.scene.isActive()) s.pick(id);
+    },
+    buy: (id) => {
+      const s = game.scene.getScene('Shop') as ShopScene | null;
+      return s && s.scene.isActive() ? s.buy(id) : false;
+    },
+    closeMenu: () => {
+      for (const key of ['MissionBoard', 'Shop']) {
+        const s = game.scene.getScene(key);
+        if (s && s.scene.isActive()) {
+          s.scene.stop();
+          game.scene.resume('City');
+          game.scene.wake('Hud');
+        }
+      }
     },
     idle: (seconds) => city()?.debugIdle(seconds),
     voiceLog: () => [...voice.log],

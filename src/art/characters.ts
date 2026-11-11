@@ -42,6 +42,20 @@ export const LOOKS: Record<string, CharacterLook> = {
     stripes: true,
     mask: true,
   },
+  smudge: {
+    shirt: 0xffffff,
+    pants: 0x3a3d52,
+    hair: 0x2b1d14,
+    skin: 0xe0ac7e,
+    stripes: true,
+    mask: true,
+  },
+  /** The player before First Day hands over the cap. */
+  playerPlain: { ...PLAYER_LOOK, hat: undefined },
+  chief: { shirt: 0x1f4fa8, pants: 0x1a2f5e, hair: 0xb0b0b0, skin: 0xc68a5e, hat: 'cop' },
+  mayor: { shirt: 0x6b3fa0, pants: 0x2b2d42, hair: 0x6b4226, skin: PALETTE.skin },
+  kid: { shirt: PALETTE.coinGold, pants: 0x2f6fde, hair: 0x2b1d14, skin: 0x8d5a3b },
+  grandma: { shirt: PALETTE.donutPink, pants: 0x6e6e8a, hair: 0xe8e8e8, skin: 0xf2c9a0 },
   baker: { shirt: 0xffffff, pants: PALETTE.donutPink, hair: 0x3b2a1a, skin: 0xc68a5e, hat: 'chef' },
   walkerRed: { shirt: PALETTE.fireRed, pants: 0x3a3d52, hair: 0x2b1d14, skin: 0xe0ac7e },
   walkerGreen: { shirt: PALETTE.grass, pants: 0x5a4632, hair: 0xf0c75e, skin: PALETTE.skin },
@@ -213,6 +227,20 @@ function drawCharacter(
 }
 
 /** Bake all frames (4 facings × 2 bob frames) for a character look. */
+/** A big front-facing portrait frame (minigame line-ups): `big-<name>`, drawn at 3× logical size. */
+export const BIG_CHAR_SCALE = 3;
+export const bigCharacterKey = (name: string) => `big-${name}`;
+
+export function bakeBigCharacter(scene: Phaser.Scene, name: string, look: CharacterLook): void {
+  const key = bigCharacterKey(name);
+  if (scene.textures.exists(key)) return;
+  const s = WT * BIG_CHAR_SCALE;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  drawCharacter(g, look, 'SW', 0, s);
+  g.generateTexture(key, Math.ceil(CHAR_W * s), Math.ceil(CHAR_H * s));
+  g.destroy();
+}
+
 export function bakeCharacter(scene: Phaser.Scene, name: string, look: CharacterLook): void {
   for (const facing of FACINGS) {
     for (const frame of [0, 1] as const) {

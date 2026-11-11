@@ -1,6 +1,7 @@
 // Perf check: Pixel 7 emulation (landscape) + CPU throttle (RATE, default 4) for 12 s.
-// SCENARIO=walk (spec 001: walking around the plaza) or SCENARIO=chase (spec 002, default: in the
-// police car chasing Pickles, donuts dropping, pedestrians hopping, siren on).
+// SCENARIO=walk (spec 001: walking around the plaza), SCENARIO=chase (spec 002, default: in the
+// police car chasing Pickles, donuts dropping, pedestrians hopping, siren on), or SCENARIO=double
+// (spec 003 AC20: Double Trouble, two getaway cars, socks dropping, 3 town cars, siren on).
 // Uses the installed Chrome with the real GPU and vsync off, so fps = uncapped throughput.
 // Usage: npm run dev, then `node scripts/perf.mjs` (URL=..., RATE=..., SCENARIO=... to override).
 import { chromium, devices } from 'playwright';
@@ -36,11 +37,24 @@ console.log(
     })
     .catch(() => null),
 );
-if (SCENARIO === 'chase') {
-  await p.evaluate(() => window.__jbc.enterCar());
-  await p.waitForFunction(() => window.__jbc.player().chase.phase === 'fleeing', null, {
-    timeout: 30000,
-  });
+if (SCENARIO === 'chase' || SCENARIO === 'double') {
+  const id = SCENARIO === 'double' ? 'double-trouble' : 'donut-dash';
+  await p.evaluate((mission) => {
+    window.__jbc.grant({
+      done: ['first-day', 'donut-dash', 'duck-crossing'],
+      badges: ['cop'],
+      owned: ['police-bike'],
+    });
+    window.__jbc.startMission(mission);
+    window.__jbc.enterCar();
+  }, id);
+  await p.waitForFunction(
+    () => window.__jbc.player().robbers.some((r) => r.phase === 'fleeing'),
+    null,
+    {
+      timeout: 30000,
+    },
+  );
 } else {
   await p.evaluate(() => window.__jbc.teleport(24.5, 9.5));
 }
@@ -67,7 +81,7 @@ const result = await p.evaluate(async (scenario) => {
   for (let i = 0; i < 12; i++) {
     const [x, y] = dirs[i % dirs.length];
     j.setMove(x, y);
-    if (scenario === 'chase') window.__jbc.game.scene.getScene('City').input2.pressSiren();
+    if (scenario !== 'walk') window.__jbc.game.scene.getScene('City').input2.pressSiren();
     await new Promise((r) => setTimeout(r, 1000));
   }
   run = false;

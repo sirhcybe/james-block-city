@@ -27,8 +27,8 @@ export function buildRoadGraph(m: MapDef, cls: VehicleClass): LaneGraph {
 }
 
 /**
- * The playable world (ADR-005). Downtown (west, 16×32) is joined to the City Plaza (16×16, east of
- * Downtown's north half). The rest of the 32×32 square is sea until later specs add districts.
+ * The playable world (ADR-005). Downtown (west, 16Ã—32) is joined to the City Plaza (16Ã—16, east of
+ * Downtown's north half). The rest of the 32Ã—32 square is sea until later specs add districts.
  */
 export function loadWorld(): MapDef {
   return mergeMaps('city', [

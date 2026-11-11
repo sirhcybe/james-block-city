@@ -31,6 +31,17 @@ export class Townsperson {
       .setVisible(false);
   }
 
+  /** Swap the picture in the bubble (e.g. the chief's star → a mission picture). */
+  setBubble(meta: BakedMeta): void {
+    if (this.bubble.texture.key === meta.key) return;
+    this.bubble.setTexture(meta.key).setOrigin(meta.originX, meta.originY);
+  }
+
+  /** Turn to face a facing (frames are baked for 4 facings). */
+  face(lookName: string, facing: 'NE' | 'NW' | 'SE' | 'SW'): void {
+    this.img.setTexture(characterFrameKey(lookName, facing, 0));
+  }
+
   setOffering(on: boolean): void {
     if (on === this.offering) return;
     this.offering = on;
