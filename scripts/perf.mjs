@@ -93,7 +93,7 @@ const result = await p.evaluate(async (scenario) => {
     frames: frames.length,
     avgFps: Math.round(1000 / avg),
     p95ms: frames[Math.floor(frames.length * 0.95)],
-    chase: s.chase,
+    chase: s?.chase ?? null,
   };
 }, SCENARIO);
 console.log({ rate: RATE, scenario: SCENARIO, ...result });

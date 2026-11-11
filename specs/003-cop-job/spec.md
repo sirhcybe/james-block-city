@@ -123,63 +123,81 @@ Android phone) is still open and gets checked again here, as AC20.
 ## Acceptance criteria
 
 ### Driving feel
-- [ ] AC1 Holding any single direction (8 keyboard directions, any stick angle) for 30 s from any
+- [x] AC1 Holding any single direction (8 keyboard directions, any stick angle) for 30 s from any
       start never makes the car flip back and forth.
       - Measure: no more than 1 U-turn in a row without a different input in between.
       - Never more than 2 direction changes on the same node within 1 s.
       - Evidence: unit test that sweeps the stick angle × start positions.
-- [ ] AC2 At every intersection, the branch closest to the stick *as seen on screen* is taken.
+      _Evidence:_ `tests/unit/driving.test.ts` AC1 sweep (32 directions × every 5th node × each heading × 30 s): at most 1 U-turn, never more than 2 changes on one node within 1 s, never off the road. Plus the Downtown ↔ Plaza travel tests (2026-11-10).
+- [x] AC2 At every intersection, the branch closest to the stick *as seen on screen* is taken.
       When the stick sits exactly between two branches and one is straight ahead, the car goes
       straight ahead. Evidence: unit test.
-- [ ] AC3 Turns follow a smooth arc and the vehicle never leaves the road, including mid-arc.
+      _Evidence:_ `tests/unit/roads.test.ts` (`pickBranch` ties go straight, closest branch on screen) and the crossing-turn test in `driving.test.ts`.
+- [x] AC3 Turns follow a smooth arc and the vehicle never leaves the road, including mid-arc.
       Evidence: the existing 2-minute random-input unit test, extended to the arcs.
-- [ ] AC4 Vehicles show 8 facings and U-turns are a 180° spin animation. Evidence: screenshots in
+      _Evidence:_ `driving.test.ts` "never leaves the road whatever the stick does (curves and spins included)" samples the position every frame for 2 minutes.
+- [x] AC4 Vehicles show 8 facings and U-turns are a 180° spin animation. Evidence: screenshots in
       the gallery and in the city.
+      _Evidence:_ `?gallery=vehicles` (8 headings of every vehicle) and city screenshots; spin state unit test (`dir8` 4 after a U-turn).
 - [ ] AC5 A grown-up confirms that driving with keys and with the thumb feels like "it goes where I
       push" (Chris; and James at the next playtest). Evidence: playtest note.
+      _Evidence so far:_ Chris on 2026-11-10: "driving is better" plus the travel fix (`docs/playtests/2026-11-10.md`). James's check is still to do at the next playtest.
 
 ### Cop job
-- [ ] AC6 The chief offers the next mission with a picture bubble, and walking up starts it with
+- [x] AC6 The chief offers the next mission with a picture bubble, and walking up starts it with
       a voice intro. All 6 missions can be completed from start to finish with zero reading.
       Evidence: one e2e flow per mission.
-- [ ] AC7 Finishing all 3 Rookie missions awards the Cop badge with a ceremony. The badge is
+      _Evidence:_ `tests/e2e/cop.spec.ts`: one flow per mission (First Day starts by walking up to the chief; the others via the chief's `startMission` path), no DOM text.
+- [x] AC7 Finishing all 3 Rookie missions awards the Cop badge with a ceremony. The badge is
       saved and shown on the HUD. Evidence: e2e + unit test.
-- [ ] AC8 Pro missions stay locked (a padlock picture on the board, and the chief doesn't offer
+      _Evidence:_ unit test "GameState awards the badge once, saves it"; e2e Duck Crossing (badge saved, ceremony voice line).
+- [x] AC8 Pro missions stay locked (a padlock picture on the board, and the chief doesn't offer
       them) until the player has both the badge and the police bike. Evidence: unit test of
       `requires`.
-- [ ] AC9 The Shop sells the police bike for 90 coins.
+      _Evidence:_ unit test "Pro missions stay locked until … BOTH the badge and the police bike"; padlocks on the board (screenshot); e2e Pro lock + Shop.
+- [x] AC9 The Shop sells the police bike for 90 coins.
       - Buying it can't push coins below 0.
       - Coins only go down by buying.
       - It is saved in `owned`.
       - Evidence: unit test (economy `spend`) + e2e.
-- [ ] AC10 The police bike can be driven on roads and park paths, and the car can't use park
+      _Evidence:_ unit tests `Economy.spend` and "buying the police bike costs 90"; e2e Pro lock + Shop (not yet = no change; 100 → 10 coins; saved in `owned`).
+- [x] AC10 The police bike can be driven on roads and park paths, and the car can't use park
       paths. Evidence: unit test on the lane graph.
-- [ ] AC11 The net launcher catches a robber from one hit, with big aim help.
+      _Evidence:_ unit test "the bike can use park paths; the car cannot" (`cop.test.ts`).
+- [x] AC11 The net launcher catches a robber from one hit, with big aim help.
       - A miss costs nothing.
       - The Action button shows a net icon only when a robber is in range.
       - Evidence: unit test of the target cone + e2e catch.
-- [ ] AC12 After a catch, the robber can be seen in Time-Out Tower. He sneaks out at the start of
+      _Evidence:_ unit tests (cone, centre-line preference, homing hit, free miss); e2e Donut Dash (no net aim from far away; one net catches Pickles with fewer than 3 bumps).
+- [x] AC12 After a catch, the robber can be seen in Time-Out Tower. He sneaks out at the start of
       the next robber mission. Evidence: screenshot + e2e state check.
-- [ ] AC13 Who Took It?
+      _Evidence:_ e2e Donut Dash (`tower` = ['pickles'] after the catch, [] after the sneak-out at the replay, `tower-sneak` voice line); screenshot of the tower.
+- [x] AC13 Who Took It?
       - runs as its own scene;
       - pays 5/15/30;
       - a wrong tap gives a shrug and never a fail;
       - it gets harder on replay;
       - it can be played from the pad and inside Double Trouble.
       - Evidence: unit test + e2e.
-- [ ] AC14 Every mission gives 1–3 stars and always ends in a win. After about 3 failed tries, each
+      _Evidence:_ unit tests (right/wrong taps, tiers 5/15/30, smaller clue + shuffling on replay, always finishes); e2e Double Trouble (played inside the mission at the station pad).
+- [x] AC14 Every mission gives 1–3 stars and always ends in a win. After about 3 failed tries, each
       gets easier: the robber runs out of gas, the ducks wait for you, the puppy barks louder.
       Evidence: unit tests.
-- [ ] AC15 The mission board shows each mission's best stars and replays it on tap. Evidence: e2e.
-- [ ] AC16 There are 3 new errands, and they appear after missions. Coins still only come from
+      _Evidence:_ unit tests: chase out of gas (spec 002), escort "after 3 stops they hurry and stop waiting", find "gets easier after a while". Every mission ends in a win with 1–3 stars (`MissionRun.stars`).
+- [x] AC15 The mission board shows each mission's best stars and replays it on tap. Evidence: e2e.
+      _Evidence:_ e2e Donut Dash replays from the board; screenshot of the board (stars + padlocks).
+- [x] AC16 There are 3 new errands, and they appear after missions. Coins still only come from
       minigames, errands and missions. Evidence: unit test + the economy test.
-- [ ] AC17 Saves made by spec 002 still load. After a reload you keep your badges, owned items and
+      _Evidence:_ unit tests "3 new Cop errands, each offered once its mission is done", deliver goes to the destination, and the coin-source test; e2e Rooftop Run (find-rubber-duck offered).
+- [x] AC17 Saves made by spec 002 still load. After a reload you keep your badges, owned items and
       stars. Evidence: unit test (migrate) + e2e reload.
+      _Evidence:_ unit test "a 002 save … migrates and offers First Day"; e2e "Reload keeps badges, owned items and stars".
 
 ### Quality
-- [ ] AC18 Idle hints (20 s) point to the current goal of every mission. Evidence: unit test that
+- [x] AC18 Idle hints (20 s) point to the current goal of every mission. Evidence: unit test that
       every mission goal has a hint target.
-- [ ] AC19 Unit tests cover:
+      _Evidence:_ unit test "every goal points at something on the map"; each handler has a `hint()`; spec 002 e2e AC9 checks `hint-chief` then `hint-car`.
+- [x] AC19 Unit tests cover:
       - steering and arcs;
       - `requires` / unlocks;
       - `spend`;
@@ -187,10 +205,33 @@ Android phone) is still open and gets checked again here, as AC20.
       - the escort follow logic;
       - Who Took It? scoring;
       - save migration.
+      _Evidence:_ `tests/unit/cop.test.ts`, `driving.test.ts`, `roads.test.ts` (steering/arcs, requires, spend, net, escort, find, Who Took It?, migration).
 - [ ] AC20 At least 55 fps on Pixel 7 emulation with 4× CPU throttle during Double Trouble (two
       robbers). Works with touch on a real Android phone in Chrome (this carries over spec 002's AC12).
-- [ ] AC21 A playtest note template for 003 is in `docs/playtests/TEMPLATE.md`, updated with this
+      _Evidence so far:_ Pixel 7 + 4× throttle: Double Trouble 81 fps avg (p95 20 ms). **Not yet done: real Android phone with touch.**
+- [x] AC21 A playtest note template for 003 is in `docs/playtests/TEMPLATE.md`, updated with this
       spec's question.
+      _Evidence:_ `docs/playtests/TEMPLATE.md` has the spec 003 question and table.
+
+## Decisions made while building (agent, 2026-11-10; Chris to review)
+Chris chose to build 003–005 straight through, so these were decided without a stop:
+1. **Net numbers:** a 70° cone, 5 tiles long, and the net flies at 9 tiles/s and homes in. The
+   plan's 2.5 tiles/s could never reach a fleeing car (ADR-005).
+2. **Vehicle picker:** the bike is parked next to the car once bought; you tap the one you want,
+   instead of using picture buttons.
+3. **Siren on foot:** the siren button also works on foot, as a police whistle. It stops traffic
+   for the ducks.
+4. **Easier steps:**
+   - Ducks: after 3 stops they hurry and stop waiting at the kerb.
+   - Puppy: after 45 s on one spot, the barks go to full volume.
+5. **The chief's offers:** the chief offers missions in order. The first mission is no longer
+   started automatically at boot: a voice says "the chief is waiting" and the chief shows a
+   flag bubble.
+6. **New errands:**
+   - `return-socks`, after Double Trouble;
+   - `find-rubber-duck`, after Rooftop Run;
+   - `deliver-balloon`, after Lost Puppy.
+7. **Smudge's getaway car** is teal, so the two brothers' cars look different.
 
 ## Decisions (Chris, 2026-11-09)
 1. **Car controls.** The bug found in code (holding one direction flips back and forth at corners)

@@ -11,21 +11,27 @@ and what you think it means second. Findings feed the next spec (see `docs/roadm
 - **Sound on?** yes / no · **Voice prompts audible?** yes / no
 
 ## The question for this build
-Spec 002: **are driving, catching and the minigame fun on their own?**
+Spec 003: **does James feel like a real police officer? Do the six Cop missions make sense with no
+reading, and does driving now feel like "my car goes where I push"?**
 
 | Thing | Did it? | How long until? | Fun? (😀 / 😐 / 🙁) | Notes |
 | --- | --- | --- | --- | --- |
-| Got from title into the police car | | | | |
-| Drove around (thumb / arrows) | | | | |
-| Pressed the siren | | (how many times?) | | |
-| Chased Pickles | | | | |
-| Bumped him 3× / he ran out of gas | | | | |
-| Liked the "Aw, nuts!" + police van bit | | | | |
-| Picked up donuts | | | | |
-| Took donuts back to the donut shop | | | | |
-| Found + played Traffic Helper | | | | |
-| Noticed coins going up | | | | |
-| Came back after a reload and saw his coins | | | | |
+| Found the chief (star/flag bubble) without help | | | | |
+| First Day: got the cap, drove through the 3 flags | | | | |
+| Pressed the siren when asked | | | | |
+| Played Traffic Helper | | | | |
+| Donut Dash: caught Pickles (net or bumps?) | | | | |
+| Saw Pickles in Time-Out Tower / sneaking out | | | | |
+| Duck Crossing: ducks followed him to the pond | | | | |
+| Used the siren/whistle to stop the cars | | | | |
+| Badge ceremony: noticed it, liked it | | | | |
+| Shop: bought the police bike (or understood "not yet") | | | | |
+| Rooftop Run: chased Smudge's scooter through the park | | | | |
+| Lost Puppy: followed the barks / paw prints | | | | |
+| Double Trouble: caught both, played Who Took It? | | | | |
+| Used the mission board to replay something | | | | |
+| Driving: holding one direction goes where he pushes | | | | |
+| Driving: got between Downtown and the Plaza easily | | | | |
 
 ## Watch for
 - **Stuck moments:** where, for how long, did the bouncing arrow / voice hint help?

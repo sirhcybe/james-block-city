@@ -37,64 +37,89 @@
       Fixed: three roads across the seam; reverse from a stop within 85°; travel tests.
 
 ## B. Rookie Cop
-- [ ] T6 `MissionDirector` + goal handlers refactor.
+- [x] T6 `MissionDirector` + goal handlers refactor.
       - No behaviour change: all of 002's e2e and unit tests still pass.
-- [ ] T7 Missions schema:
+      Done: `src/missions/MissionDirector.ts` + `handlers.ts` + `world.ts` (ADR-005); spec 002's e2e still pass (updated only where the chief now starts missions).
+- [x] T7 Missions schema:
       - new goal types (`checkpoints`, `siren`, `escort`, `find`, `catch.robbers`);
       - `requires` against `badges` and `owned`;
       - badge award.
       - Update the Goal union in `architecture.md`.
       - Tests. (AC7, AC8)
-- [ ] T8 Map:
+      Done: `systems/missions.ts` (goal union, multi-part goals, `requires`, `nextMission`, `earnedBadges`; spec 002 `{robber}` still loads); `architecture.md` updated; tests in `cop.test.ts`.
+- [x] T8 Map:
       - `downtown.json` covers the full district: Tower, park and paths, pond, second crossing,
         chief, flags;
       - lane graph per vehicle class.
       - Test: walkers stay off roads; the car can't use paths. (AC10 part)
-- [ ] T9 Chief with a star bubble, and the mission board with stars, padlocks and replay.
+      Done: `content/downtown.json` (16×32: Tower, park + paths, pond, second crossing, chief, board, flags, spots); `water`/`path` tiles; `buildRoadGraph(map, 'car' | 'bike')`; tests: bike uses paths, car can't, water not walkable, places reachable.
+- [x] T9 Chief with a star bubble, and the mission board with stars, padlocks and replay.
       (AC6, AC15)
-- [ ] T10 Net launcher:
+      Done: chief (`Townsperson` + swappable bubble) driven by the director; `MissionBoardScene` (cards, stars, padlocks, replay). e2e: board replay in the Donut Dash test.
+- [x] T10 Net launcher:
       - `systems/net.ts` cone + tests;
       - `Net` entity;
       - net icon on the Action button;
       - catch on hit;
       - the robber generalised from `RobberChase`. (AC11)
-- [ ] T11 Time-Out Tower: the van drives there, robbers are visible inside, and they sneak out at
+      Done: `systems/net.ts` (cone 70°/5 tiles, homing shot at 9 tiles/s; the plan's 2.5 tiles/s could never catch a 4.4 tiles/s car: ADR-005) + tests; net icon on Action only with a target; one net = caught; `RobberChase` generalised (any robber, car or scooter).
+- [x] T11 Time-Out Tower: the van drives there, robbers are visible inside, and they sneak out at
       the next robber mission's intro. (AC12)
-- [ ] T12 Ambient `TrafficCar`s: wander on roads, wait for the siren, ducks and the player; check
+      Done: `entities/TimeOutTower.ts` (robbers sit behind the big window; tiptoe sneak-out at the next catch goal). e2e: tower state after a catch and after the sneak-out.
+- [x] T12 Ambient `TrafficCar`s: wander on roads, wait for the siren, ducks and the player; check
       perf.
-- [ ] T13 Mission **First Day**: checkpoint flags, siren goal, Traffic Helper. Voice lines + e2e.
+      Done: `entities/TrafficCar.ts` (3 cars, random branches, always stop for what's ahead, wait 5 s for a siren/whistle within 7 tiles). Perf: see T29.
+- [x] T13 Mission **First Day**: checkpoint flags, siren goal, Traffic Helper. Voice lines + e2e.
       (AC6)
-- [ ] T14 Mission **Donut Dash**: ends at the Tower; the net works. Update the e2e test. (AC6)
-- [ ] T15 Mission **Duck Crossing**: `systems/escort.ts` + tests; ducks follow; traffic waits for
+      Done: checkpoint flags, siren goal, Traffic Helper; the cap is given at the intro. e2e `First Day`.
+- [x] T14 Mission **Donut Dash**: ends at the Tower; the net works. Update the e2e test. (AC6)
+      Done: ends with Pickles in Time-Out Tower; the net catches him. e2e `Donut Dash` (+ spec 002 test).
+- [x] T15 Mission **Duck Crossing**: `systems/escort.ts` + tests; ducks follow; traffic waits for
       the siren; the "easier" step is that the ducks wait. e2e. (AC6, AC14)
-- [ ] T16 Cop badge ceremony + HUD badge slot; saved. e2e + unit tests. Commit. (AC7, AC17 part)
+      Done: `systems/escort.ts` + tests; `entities/DuckLine.ts`; ducks wait at the kerb when traffic comes; the siren (a whistle on foot) stops traffic; easier after 3 stops. e2e `Duck Crossing`.
+- [x] T16 Cop badge ceremony + HUD badge slot; saved. e2e + unit tests. Commit. (AC7, AC17 part)
+      Done: badge awarded by `GameState.completeMission` (saved), ceremony in `HudScene`, badge slot under the coins. e2e + unit test.
 - [ ] ⏸ T17 Quick play of the 3 Rookie missions (Chris and/or James). Record findings.
+      Skipped by Chris's choice on 2026-11-10 (build 003–005 straight through); covered by the next playtest.
 
 ## C. Pro Cop
-- [ ] T18 `Economy.spend` + `systems/shop.ts` + `content/shop.json`, with tests. (AC9)
-- [ ] T19 ShopScene: picture card, buy button, "not yet" wobble with a count of minigames still
+- [x] T18 `Economy.spend` + `systems/shop.ts` + `content/shop.json`, with tests. (AC9)
+      Done: `Economy.spend`, `systems/shop.ts`, `content/shop.json`, `GameState.buy`; tests.
+- [x] T19 ShopScene: picture card, buy button, "not yet" wobble with a count of minigames still
       needed. Shop door in the Plaza. e2e. (AC9)
-- [ ] T20 Police bike: art (8 facings), stats, road and park-path lane graph, vehicle picker at
+      Done: `ShopScene` (card, coin price, buy button, wobble + minigame-picture count); Shop door pad in the Plaza (`shop` building). e2e `Pro lock + Shop`.
+- [x] T20 Police bike: art (8 facings), stats, road and park-path lane graph, vehicle picker at
       the station. (AC10)
-- [ ] T21 Pro lock: padlocks on the board and the chief, until the player has both the badge and
+      Done: `POLICE_BIKE` (narrow vehicle with a cop rider, 8 facings), faster + zippier; bike lane graph includes park paths; the bike is parked by the car once bought (tap the one you want: ADR-005).
+- [x] T21 Pro lock: padlocks on the board and the chief, until the player has both the badge and
       the bike. Unit test + e2e. (AC8)
-- [ ] T22 Who Took It?:
+      Done: `requires` = badge + bike; padlocks on the board; the chief shows a bike bubble and says to buy one. Unit test + e2e.
+- [x] T22 Who Took It?:
       - `systems/whoTookIt.ts` + tests;
       - `WhoTookItScene`;
       - pad at the station;
       - `minigames.json` entry.
       - (AC13)
-- [ ] T23 Mission **Rooftop Run**: Smudge's scooter flees through the park and alleys; catch with
+      Done: `systems/whoTookIt.ts` + tests, `WhoTookItScene` (shared `MinigameScene` base in `minigameKit.ts`), pad at the station, `minigames.json` entry.
+- [x] T23 Mission **Rooftop Run**: Smudge's scooter flees through the park and alleys; catch with
       bike + net. e2e. (AC6)
-- [ ] T24 Mission **Lost Puppy**: `find` handler; bark volume grows as you get closer; paw prints;
+      Done: Smudge on the scooter flees on the bike graph (park paths); bike + net. e2e `Rooftop Run`.
+- [x] T24 Mission **Lost Puppy**: `find` handler; bark volume grows as you get closer; paw prints;
       3 spots; return to owner; the "easier" step is louder barks. e2e. (AC6, AC14)
-- [ ] T25 Mission **Double Trouble**: two robbers that split up, catch both, then Who Took It? at
+      Done: `systems/find.ts` + tests, `FindHandler` (barks by distance, paw prints, bush shakes, puppy follows you home); easier: full-volume barks after 45 s. e2e `Lost Puppy`.
+- [x] T25 Mission **Double Trouble**: two robbers that split up, catch both, then Who Took It? at
       the station. e2e. (AC6, AC13)
-- [ ] T26 Three new Cop errands that appear after missions; economy test still holds. (AC16)
-- [ ] T27 Hints for every goal (unit test: every goal has a target), plus voice lines for
+      Done: two getaway cars (Smudge's is teal), either order, then Who Took It? at the station. e2e `Double Trouble`.
+- [x] T26 Three new Cop errands that appear after missions; economy test still holds. (AC16)
+      Done: `return-socks` (Return), `find-rubber-duck` (Find), `deliver-balloon` (Deliver), each offered after a Pro mission (`after`). Unit tests; the economy test still holds.
+- [x] T27 Hints for every goal (unit test: every goal has a target), plus voice lines for
       everything. (AC18)
-- [ ] T28 Save round-trip + migrate from a spec 002 save; e2e reload. (AC17)
+      Done: every goal has a hint target (unit test AC18); voice lines for all intros, hints, catches and the badge in `voice.json`.
+- [x] T28 Save round-trip + migrate from a spec 002 save; e2e reload. (AC17)
+      Done: no save version bump needed (SaveV1 already had `badges`, `owned`, `missionsDone`); unit test loads a spec 002 save; e2e reload keeps badges, owned, stars and the bike.
 - [ ] T29 Perf: `SCENARIO=double`, Pixel 7 + 4× throttle; record the result. Real-phone touch
       check. (AC20)
-- [ ] T30 Update `docs/playtests/TEMPLATE.md` for 003; tick all ACs with evidence; update the
+      Done (emulated): `SCENARIO=double` in `scripts/perf.mjs`. Pixel 7 + 4× throttle, real GPU: Double Trouble 81 fps avg (p95 20 ms), chase 85 fps (p95 17 ms), walk 97 fps. **Real Android phone touch check: still to do** (carried to the playtest).
+- [x] T30 Update `docs/playtests/TEMPLATE.md` for 003; tick all ACs with evidence; update the
       roadmap and README; commit; hand over for James's playtest. (AC19, AC21)
+      Done: playtest template updated for 003; ACs ticked with evidence; roadmap + README updated.

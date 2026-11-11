@@ -19,6 +19,7 @@ src/
     HudScene.ts           # overlay: coins, buttons, joystick, hints
     minigames/            # one scene per minigame, launched over CityScene
   entities/               # Player, Vehicle, Robber, Townsperson, Bumpable, Fire, BuildSpot
+  missions/               # MissionDirector + one GoalHandler per goal type (ADR-005)
   systems/                # pure-ish TS state + logic                                 (unit-tested)
     economy.ts            # coins, rewards, shop purchases
     jobs.ts               # current job, badges, unlocks
@@ -69,20 +70,27 @@ Touch: floating joystick on the left half (appears where the thumb lands); butto
 Missions, errands, minigame tuning and shop items are JSON, validated at load (zod).
 
 ```ts
-// content/missions.json
+// content/missions.json  (zod: src/systems/missions.ts; ADR-005)
 type Goal =
-  | { type: 'goTo'; target: string }                 // named map marker
-  | { type: 'catch'; robber: string; bumps: number }
+  | { type: 'goTo'; target: string }                 // named map marker, or a vehicle id
+  | { type: 'catch'; robbers: { id: string; vehicle: 'car' | 'scooter'; start: string; drops?: string }[]; bumps: number }
+  | { type: 'checkpoints'; flags: string[] }         // drive through every flag (any order)
+  | { type: 'siren' }                                // press the siren while driving
+  | { type: 'escort'; group: string; from: string; to: string } // lead the ducks
+  | { type: 'find'; item: string; spots: string[] }  // follow barks; it's in the last spot
   | { type: 'minigame'; id: string }
   | { type: 'errand'; id: string }
   | { type: 'build'; spot: string }
-  | { type: 'spray'; fires: string[] };
+  | { type: 'spray'; fires: string[] }
+  | { type: 'rescue'; pet: string; at: string };
 interface Mission {
   id: string; job: 'cop' | 'fire' | 'builder'; tier: 'rookie' | 'pro' | 'finale';
-  voiceIntro: string;            // voice line id
+  icon: string;                  // picture on the boss's bubble and the mission board
+  voiceIntro: string; voiceDone: string; // voice line ids
   goals: Goal[];                 // in order
   reward: { coins: number; unlocks?: string[] };
-  requires?: string[];           // mission ids / badges / shop items
+  requires?: string[];           // mission ids / 'badge:<job>' / 'owned:<item>'
+  bonus?: StarBonus[];           // each adds a star (finishing = 1)
 }
 
 // content/errands.json
@@ -90,10 +98,15 @@ interface Errand {
   id: string; kind: 'find' | 'deliver' | 'return';
   giver: string;                 // townsperson marker id
   icon: string;                  // bubble picture key
-  item: string; destination?: string;
+  item: string; destination?: string; // deliver: who gets it
+  spot?: string;                 // find: where the lost thing lies
   reward: number;                // coins
   job?: 'cop' | 'fire' | 'builder';
+  after?: string;                // offered once this mission is done
 }
+
+// content/shop.json
+interface ShopItem { id: string; icon: string; price: number; job?: string; requires: string[] }
 
 // content/minigames.json
 interface MinigameDef {
