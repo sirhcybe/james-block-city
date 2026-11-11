@@ -1,0 +1,20 @@
+[
+  {
+    "id": "police-bike",
+    "icon": "bike",
+    "price": 90,
+    "job": "cop"
+  },
+  {
+    "id": "long-ladder",
+    "icon": "ladder",
+    "price": 90,
+    "job": "fire"
+  },
+  {
+    "id": "giant-drum",
+    "icon": "mixer",
+    "price": 90,
+    "job": "builder"
+  }
+]

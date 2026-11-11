@@ -1,0 +1,311 @@
+{
+  "id": "harbor",
+  "width": 16,
+  "height": 32,
+  "legend": {
+    "g": "grass",
+    "r": "road",
+    "s": "sidewalk",
+    "p": "plaza",
+    "k": "path",
+    "w": "water"
+  },
+  "tiles": [
+    "ggggggggggpwwwww",
+    "rrrrrrrrrrpwwwww",
+    "rrrrrrrrrrpwwwww",
+    "grrsssssrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrsssssrrpwwwww",
+    "rrrrrrrrrrpwwwww",
+    "rrrrrrrrrrpwwwww",
+    "grrsssssrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrspppsrrpwwwww",
+    "grrsssssrrpwwwww",
+    "rrrrrrrrrrpwwwww",
+    "rrrrrrrrrrpwwwww",
+    "grrsssssrrpwwggg",
+    "grrspppsrrpwwggg",
+    "grrspppsrrpwwggg",
+    "grrspppsrrpwwggg",
+    "grrspppsrrpwwggg",
+    "grrspppsrrpwwggg",
+    "grrspppsrrpwwggg",
+    "grrsssssrrpwwggg",
+    "rrrrrrrrrrpwwwww",
+    "rrrrrrrrrrpwwwww",
+    "gggggggggggwwwww"
+  ],
+  "spawn": {
+    "gx": 3.5,
+    "gy": 15.5
+  },
+  "markers": {
+    "foreman": {
+      "gx": 3.5,
+      "gy": 15.5
+    },
+    "mixer-truck": {
+      "gx": 2,
+      "gy": 8
+    },
+    "builder-board": {
+      "gx": 4.5,
+      "gy": 18.5
+    },
+    "block-stack": {
+      "gx": 6.5,
+      "gy": 15.5
+    },
+    "copy-the-build": {
+      "gx": 7.5,
+      "gy": 17.5
+    },
+    "cement-pour": {
+      "gx": 3.5,
+      "gy": 17.5
+    },
+    "bflag-1": {
+      "gx": 5,
+      "gy": 2
+    },
+    "bflag-2": {
+      "gx": 9,
+      "gy": 8
+    },
+    "bflag-3": {
+      "gx": 5,
+      "gy": 14
+    },
+    "practice-wall-at": {
+      "gx": 5,
+      "gy": 2
+    },
+    "dock-at": {
+      "gx": 9,
+      "gy": 6
+    },
+    "lighthouse-at": {
+      "gx": 9,
+      "gy": 23
+    },
+    "boat-shop-at": {
+      "gx": 5,
+      "gy": 20
+    },
+    "bridge-at": {
+      "gx": 9,
+      "gy": 25
+    },
+    "island": {
+      "gx": 14.5,
+      "gy": 25.5
+    },
+    "boat-owner": {
+      "gx": 10.5,
+      "gy": 9.5
+    },
+    "keeper": {
+      "gx": 10.5,
+      "gy": 21.5
+    },
+    "wrench-spot": {
+      "gx": 5.5,
+      "gy": 10.5
+    },
+    "traffic-6": {
+      "gx": 9,
+      "gy": 20
+    }
+  },
+  "buildings": [
+    {
+      "id": "foreman-office",
+      "kind": "office",
+      "gx": 4,
+      "gy": 16,
+      "w": 3,
+      "d": 2,
+      "h": 1.6,
+      "color": "builderYellow"
+    },
+    {
+      "id": "crane-1",
+      "kind": "crane",
+      "gx": 6,
+      "gy": 4,
+      "w": 1,
+      "d": 1,
+      "h": 5,
+      "color": "builderYellow"
+    },
+    {
+      "id": "practice-wall",
+      "kind": "wall",
+      "gx": 4,
+      "gy": 6,
+      "w": 3,
+      "d": 1,
+      "h": 0.8,
+      "color": "fireRed",
+      "site": true
+    },
+    {
+      "id": "dock",
+      "kind": "dock",
+      "gx": 11,
+      "gy": 5,
+      "w": 3,
+      "d": 2,
+      "h": 0.3,
+      "color": "trunk",
+      "site": true
+    },
+    {
+      "id": "lighthouse",
+      "kind": "lighthouse",
+      "gx": 14,
+      "gy": 23,
+      "w": 1,
+      "d": 1,
+      "h": 5,
+      "color": "fireRed",
+      "site": true
+    },
+    {
+      "id": "boat-shop",
+      "kind": "boatshop",
+      "gx": 4,
+      "gy": 23,
+      "w": 3,
+      "d": 2,
+      "h": 2,
+      "color": "harborTeal",
+      "site": true
+    },
+    {
+      "id": "bridge",
+      "kind": "bridge",
+      "gx": 11,
+      "gy": 24,
+      "w": 2,
+      "d": 2,
+      "h": 0.3,
+      "color": "trunk",
+      "site": true
+    },
+    {
+      "id": "hb-tree-1",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "hb-tree-2",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 10,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "hb-tree-3",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 23,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "hb-tree-4",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 27,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "hb-tree-5",
+      "kind": "tree",
+      "gx": 4,
+      "gy": 31,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "hb-tree-6",
+      "kind": "tree",
+      "gx": 13,
+      "gy": 21,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "hb-tree-7",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 27,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    }
+  ],
+  "props": [
+    {
+      "id": "hb-cone-1",
+      "kind": "cone",
+      "gx": 4.2,
+      "gy": 3.5
+    },
+    {
+      "id": "hb-cone-2",
+      "kind": "cone",
+      "gx": 6.8,
+      "gy": 3.5
+    },
+    {
+      "id": "hb-can-1",
+      "kind": "trashcan",
+      "gx": 10.5,
+      "gy": 14.5
+    }
+  ],
+  "walkers": [
+    {
+      "id": "walker-hb1",
+      "look": "walkerRed",
+      "from": {
+        "gx": 10.5,
+        "gy": 3.5
+      },
+      "to": {
+        "gx": 10.5,
+        "gy": 18.5
+      }
+    }
+  ],
+  "perches": []
+}

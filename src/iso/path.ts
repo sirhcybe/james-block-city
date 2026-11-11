@@ -15,6 +15,11 @@ const EasyStarJs = ns.js ?? ns.default?.js;
 export class PathFinder {
   private readonly star = new EasyStarJs();
 
+  /** Re-read the walk grid after it changed (something was built). */
+  refresh(): void {
+    this.star.setGrid(this.grid.toMatrix());
+  }
+
   constructor(private readonly grid: WalkGrid) {
     this.star.setGrid(grid.toMatrix());
     this.star.setAcceptableTiles([0]);

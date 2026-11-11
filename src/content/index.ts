@@ -2,9 +2,11 @@ import { z } from 'zod';
 import { ErrandList, type Errand } from '../systems/errands';
 import { MinigameList, type MinigameDef } from '../systems/minigames';
 import { MissionList, type Mission } from '../systems/missions';
+import { ShopList, type ShopItem } from '../systems/shop';
 import errandsRaw from './errands.json';
 import minigamesRaw from './minigames.json';
 import missionsRaw from './missions.json';
+import shopRaw from './shop.json';
 import voiceRaw from './voice.json';
 
 export const VoiceLines = z.record(z.string(), z.string().min(1));
@@ -14,6 +16,7 @@ export interface Content {
   missions: Mission[];
   errands: Errand[];
   minigames: MinigameDef[];
+  shop: ShopItem[];
   voice: VoiceLines;
 }
 
@@ -33,6 +36,7 @@ export function loadContent(): Content {
     missions: parse('missions.json', MissionList, missionsRaw),
     errands: parse('errands.json', ErrandList, errandsRaw),
     minigames: parse('minigames.json', MinigameList, minigamesRaw),
+    shop: parse('shop.json', ShopList, shopRaw),
     voice: parse('voice.json', VoiceLines, voiceRaw),
   };
 }

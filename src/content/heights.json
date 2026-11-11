@@ -1,0 +1,379 @@
+{
+  "id": "heights",
+  "width": 16,
+  "height": 16,
+  "legend": {
+    "g": "grass",
+    "r": "road",
+    "s": "sidewalk",
+    "p": "plaza",
+    "k": "path",
+    "w": "water"
+  },
+  "tiles": [
+    "grrggggggggggrrg",
+    "grrggggggggggrrg",
+    "grrggggggggggrrg",
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
+    "grrssssrrssssrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrssssrrssssrrg",
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
+    "gggggggggggggggg"
+  ],
+  "spawn": {
+    "gx": 3.5,
+    "gy": 7.5
+  },
+  "markers": {
+    "fire-chief": {
+      "gx": 3.5,
+      "gy": 7.5
+    },
+    "fire-truck": {
+      "gx": 2,
+      "gy": 8
+    },
+    "fire-board": {
+      "gx": 5.5,
+      "gy": 12.5
+    },
+    "window-splash": {
+      "gx": 6.5,
+      "gy": 7.5
+    },
+    "ladder-rescue": {
+      "gx": 6.5,
+      "gy": 10.5
+    },
+    "fflag-1": {
+      "gx": 5,
+      "gy": 4
+    },
+    "fflag-2": {
+      "gx": 8,
+      "gy": 9
+    },
+    "fflag-3": {
+      "gx": 11,
+      "gy": 14
+    },
+    "kitty-at": {
+      "gx": 8,
+      "gy": 7
+    },
+    "tallest-at": {
+      "gx": 8,
+      "gy": 10
+    },
+    "kitty-owner": {
+      "gx": 9.5,
+      "gy": 5.5
+    },
+    "kid-heights": {
+      "gx": 9.5,
+      "gy": 12.5
+    },
+    "balloon-spot": {
+      "gx": 11.5,
+      "gy": 1.5
+    },
+    "bbq-at": {
+      "gx": 7.5,
+      "gy": 2.5
+    },
+    "fireworks-at": {
+      "gx": 8,
+      "gy": 8
+    },
+    "traffic-4": {
+      "gx": 8,
+      "gy": 14
+    },
+    "traffic-5": {
+      "gx": 14,
+      "gy": 4
+    },
+    "pour-2": {
+      "gx": 8,
+      "gy": 14
+    }
+  },
+  "perches": [
+    {
+      "id": "practice-fire",
+      "gx": 5.5,
+      "gy": 5.4,
+      "z": 0
+    },
+    {
+      "id": "kitty-perch",
+      "gx": 11,
+      "gy": 8.05,
+      "z": 9.3
+    },
+    {
+      "id": "tallest-fire",
+      "gx": 11,
+      "gy": 11.05,
+      "z": 12.2
+    },
+    {
+      "id": "parrot-perch",
+      "gx": 11,
+      "gy": 10,
+      "z": 13.2
+    },
+    {
+      "id": "bbq-1",
+      "gx": 5.5,
+      "gy": 1.5,
+      "z": 0
+    },
+    {
+      "id": "bbq-2",
+      "gx": 8.5,
+      "gy": 0.7,
+      "z": 0
+    },
+    {
+      "id": "bbq-3",
+      "gx": 10.5,
+      "gy": 1.5,
+      "z": 0
+    },
+    {
+      "id": "fw-1",
+      "gx": 5,
+      "gy": 11.05,
+      "z": 3.3
+    },
+    {
+      "id": "fw-2",
+      "gx": 6.05,
+      "gy": 9.6,
+      "z": 5.3
+    },
+    {
+      "id": "fw-3",
+      "gx": 10.5,
+      "gy": 8.05,
+      "z": 4.3
+    },
+    {
+      "id": "fw-4",
+      "gx": 12.05,
+      "gy": 7,
+      "z": 6.3
+    }
+  ],
+  "buildings": [
+    {
+      "id": "fire-station",
+      "kind": "firestation",
+      "gx": 4,
+      "gy": 6,
+      "w": 2,
+      "d": 2,
+      "h": 2.4,
+      "color": "fireRed"
+    },
+    {
+      "id": "tower-h1",
+      "kind": "skyscraper",
+      "gx": 4,
+      "gy": 9,
+      "w": 2,
+      "d": 2,
+      "h": 8,
+      "color": "harborTeal"
+    },
+    {
+      "id": "kitty-tower",
+      "kind": "skyscraper",
+      "gx": 10,
+      "gy": 6,
+      "w": 2,
+      "d": 2,
+      "h": 10,
+      "color": "builderYellow"
+    },
+    {
+      "id": "tallest-tower",
+      "kind": "skyscraper",
+      "gx": 10,
+      "gy": 9,
+      "w": 2,
+      "d": 2,
+      "h": 13,
+      "color": "policeBlue"
+    },
+    {
+      "id": "h-tree-1",
+      "kind": "tree",
+      "gx": 3,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-2",
+      "kind": "tree",
+      "gx": 12,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-3",
+      "kind": "tree",
+      "gx": 5,
+      "gy": 2,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-4",
+      "kind": "tree",
+      "gx": 10,
+      "gy": 2,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-5",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-6",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 6,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-7",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-8",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-9",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 8,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-10",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-11",
+      "kind": "tree",
+      "gx": 4,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "h-tree-12",
+      "kind": "tree",
+      "gx": 11,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    }
+  ],
+  "props": [
+    {
+      "id": "grill",
+      "kind": "grill",
+      "gx": 7.5,
+      "gy": 1.5
+    },
+    {
+      "id": "h-bush-1",
+      "kind": "bush",
+      "gx": 3.5,
+      "gy": 1.5
+    },
+    {
+      "id": "h-cone-1",
+      "kind": "cone",
+      "gx": 6.8,
+      "gy": 4.5
+    },
+    {
+      "id": "h-light-1",
+      "kind": "trafficLight",
+      "gx": 6.5,
+      "gy": 12.6
+    }
+  ],
+  "walkers": [
+    {
+      "id": "walker-h1",
+      "look": "walkerGreen",
+      "from": {
+        "gx": 9.5,
+        "gy": 5.5
+      },
+      "to": {
+        "gx": 9.5,
+        "gy": 11.5
+      }
+    }
+  ]
+}

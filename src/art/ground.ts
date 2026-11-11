@@ -10,6 +10,8 @@ const TILE_COLOR: Record<TileKind, number> = {
   road: PALETTE.road,
   sidewalk: PALETTE.sidewalk,
   plaza: PALETTE.plaza,
+  path: PALETTE.parkPath,
+  water: PALETTE.water,
 };
 
 const EARTH = 0xb98a5a;
@@ -27,17 +29,41 @@ function hash(x: number, y: number, k: number): number {
  * Bake the map's ground (island slab edges, tiles, road lines, grass tufts) as chunk textures.
  * Every chunk's grid origin is world (0,0), so all chunk images are placed at gridToScreen(0,0).
  */
+export function groundChunkKey(m: MapDef, cx: number, cy: number): string {
+  return `ground:${m.id}:${cx},${cy}`;
+}
+
 export function bakeGround(scene: Phaser.Scene, m: MapDef): BakedMeta[] {
   const W = m.width;
   const H = m.height;
   const isRoad = (x: number, y: number) =>
     x >= 0 && y >= 0 && x < W && y < H && tileAt(m, x, y) === 'road';
+  const isSea = (x: number, y: number) =>
+    x < 0 || y < 0 || x >= W || y >= H || tileAt(m, x, y) === 'water';
+  // Open sea = water connected to the map edge; other water (the duck pond) is drawn.
+  const sea = new Set<number>();
+  const stack: [number, number][] = [];
+  for (let x = 0; x < W; x++) stack.push([x, 0], [x, H - 1]);
+  for (let y = 0; y < H; y++) stack.push([0, y], [W - 1, y]);
+  while (stack.length) {
+    const [x, y] = stack.pop()!;
+    if (x < 0 || y < 0 || x >= W || y >= H || sea.has(y * W + x) || tileAt(m, x, y) !== 'water')
+      continue;
+    sea.add(y * W + x);
+    stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+  const isSeaEdge = (x: number, y: number) => sea.has(y * W + x);
   const metas: BakedMeta[] = [];
 
   for (let cy = 0; cy < H; cy += GROUND_CHUNK) {
     for (let cx = 0; cx < W; cx += GROUND_CHUNK) {
       const x1 = Math.min(W, cx + GROUND_CHUNK);
       const y1 = Math.min(H, cy + GROUND_CHUNK);
+      // All-sea chunks need no texture: the camera background is the sea.
+      let land = false;
+      for (let y = cy; y < y1 && !land; y++)
+        for (let x = cx; x < x1; x++) if (!isSea(x, y)) land = true;
+      if (!land) continue;
       const bounds = [
         project(cx, cy, 0, 1),
         project(x1, cy, 0, 1),
@@ -47,7 +73,7 @@ export function bakeGround(scene: Phaser.Scene, m: MapDef): BakedMeta[] {
         project(x1, cy, -SLAB_H, 1),
       ];
       metas.push(
-        bakeParts(scene, `ground:${m.id}:${cx},${cy}`, [
+        bakeParts(scene, groundChunkKey(m, cx, cy), [
           {
             type: 'custom',
             bounds,
@@ -63,28 +89,57 @@ export function bakeGround(scene: Phaser.Scene, m: MapDef): BakedMeta[] {
                 g.lineStyle(2 * s, PALETTE.outline, 1);
                 g.lineBetween(pts[2]!.x, pts[2]!.y, pts[3]!.x, pts[3]!.y);
               };
-              if (y1 === H) {
+              // Earth sides wherever land meets water on its front (+x / +y) edges.
+              for (let y = cy; y < y1; y++) {
                 for (let x = cx; x < x1; x++) {
-                  side([P(x, H), P(x + 1, H), P(x + 1, H, -SLAB_H), P(x, H, -SLAB_H)], EARTH);
-                }
-              }
-              if (x1 === W) {
-                for (let y = cy; y < y1; y++) {
-                  side(
-                    [P(W, y + 1), P(W, y), P(W, y, -SLAB_H), P(W, y + 1, -SLAB_H)],
-                    darken(EARTH, 0.2),
-                  );
+                  if (isSea(x, y)) continue;
+                  if (isSea(x, y + 1))
+                    side(
+                      [
+                        P(x, y + 1),
+                        P(x + 1, y + 1),
+                        P(x + 1, y + 1, -SLAB_H),
+                        P(x, y + 1, -SLAB_H),
+                      ],
+                      EARTH,
+                    );
+                  if (isSea(x + 1, y))
+                    side(
+                      [
+                        P(x + 1, y + 1),
+                        P(x + 1, y),
+                        P(x + 1, y, -SLAB_H),
+                        P(x + 1, y + 1, -SLAB_H),
+                      ],
+                      darken(EARTH, 0.2),
+                    );
                 }
               }
 
               for (let y = cy; y < y1; y++) {
                 for (let x = cx; x < x1; x++) {
                   const kind = tileAt(m, x, y);
+                  if (kind === 'water' && isSeaEdge(x, y)) continue; // open sea: background
                   const c = TILE_COLOR[kind];
                   const pts = [P(x, y), P(x + 1, y), P(x + 1, y + 1), P(x, y + 1)];
                   g.fillStyle(c, 1);
                   g.fillPoints(pts, true);
-                  if (kind !== 'grass') {
+                  if (kind === 'water') {
+                    // Pond: a darker middle and a couple of ripples.
+                    g.fillStyle(PALETTE.pondDeep, 1);
+                    g.fillPoints(
+                      [
+                        P(x + 0.2, y + 0.2),
+                        P(x + 0.8, y + 0.2),
+                        P(x + 0.8, y + 0.8),
+                        P(x + 0.2, y + 0.8),
+                      ],
+                      true,
+                    );
+                    g.lineStyle(Math.max(1, 1.5 * s), lighten(PALETTE.water, 0.4), 1);
+                    const r = P(x + 0.3 + hash(x, y, 1) * 0.4, y + 0.3 + hash(y, x, 1) * 0.4);
+                    g.lineBetween(r.x - 6 * s, r.y, r.x + 6 * s, r.y);
+                  } else if (kind !== 'grass') {
                     g.lineStyle(Math.max(1, s), darken(c, 0.08), 1);
                     g.strokePoints(pts, true);
                   } else {

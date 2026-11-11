@@ -1,13 +1,15 @@
 import Phaser from 'phaser';
 import { voice } from '../audio/voice';
 import { bakeBuilding } from '../art/buildings';
-import { bakeCharacter, LOOKS } from '../art/characters';
+import { bakeBigCharacter, bakeCharacter, LOOKS } from '../art/characters';
 import { bakeGround } from '../art/ground';
 import { bakeHud } from '../art/hud';
 import { bakeMinigameArt } from '../art/minigame';
 import { bakeProps } from '../art/props';
 import { bakeUi } from '../art/ui';
-import { GETAWAY_CAR, GETAWAY_EMPTY, POLICE_CAR, POLICE_VAN, bakeVehicle } from '../art/vehicles';
+import { bakeMenuArt } from '../art/menu';
+import { bakeMissionProps } from '../art/missionProps';
+import { ALL_VEHICLES, bakeVehicle } from '../art/vehicles';
 import { loadContent } from '../content';
 import { loadWorld } from '../content/world';
 import { GameState } from '../systems/GameState';
@@ -39,8 +41,19 @@ export class BootScene extends Phaser.Scene {
     bakeGround(this, map);
     for (const b of map.buildings) bakeBuilding(this, b);
     for (const [name, look] of Object.entries(LOOKS)) bakeCharacter(this, name, look);
-    for (const v of [POLICE_CAR, GETAWAY_CAR, GETAWAY_EMPTY, POLICE_VAN]) bakeVehicle(this, v);
+    for (const name of [
+      'pickles',
+      'smudge',
+      'walkerRed',
+      'walkerGreen',
+      'walkerBlue',
+      'walkerPurple',
+    ])
+      bakeBigCharacter(this, name, LOOKS[name]!);
+    for (const v of ALL_VEHICLES) bakeVehicle(this, v);
     bakeProps(this);
+    bakeMissionProps(this);
+    bakeMenuArt(this);
     bakeUi(this);
     bakeHud(this);
     bakeMinigameArt(this);

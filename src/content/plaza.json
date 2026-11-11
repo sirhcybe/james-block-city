@@ -6,12 +6,14 @@
     "g": "grass",
     "r": "road",
     "s": "sidewalk",
-    "p": "plaza"
+    "p": "plaza",
+    "k": "path",
+    "w": "water"
   },
   "tiles": [
     "gggggggggggggggg",
-    "grrrrrrrrrrrrrrg",
-    "grrrrrrrrrrrrrrg",
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
     "grrssssssssssrrg",
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
@@ -22,9 +24,9 @@
     "grrsppppppppsrrg",
     "grrsppppppppsrrg",
     "grrssssssssssrrg",
-    "grrrrrrrrrrrrrrg",
-    "grrrrrrrrrrrrrrg",
-    "gggggggggggggggg"
+    "rrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrr",
+    "grrggggggggggrrg"
   ],
   "spawn": {
     "gx": 9.5,
@@ -63,7 +65,7 @@
     },
     {
       "id": "shop-north",
-      "kind": "house",
+      "kind": "shop",
       "gx": 7,
       "gy": 4,
       "w": 2,
@@ -272,7 +274,24 @@
       "color": "leaf"
     }
   ],
-  "markers": {},
+  "markers": {
+    "shop": {
+      "gx": 8,
+      "gy": 5.5
+    },
+    "job-center": {
+      "gx": 5.5,
+      "gy": 7.5
+    },
+    "toaster-door": {
+      "gx": 8,
+      "gy": 12.5
+    },
+    "pour-1": {
+      "gx": 8,
+      "gy": 14
+    }
+  },
   "props": [
     {
       "id": "cone-p1",

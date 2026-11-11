@@ -4,9 +4,13 @@ An isometric, blocky, comic-action city game for a 6-year-old (James) and kids a
 Pick a job (Cop, Firefighter, Builder), drive loud vehicles, catch goofy robbers, and earn
 coins through minigames and errands. Runs in Chrome on laptops and Android phones.
 
-**Status:** spec 002 (vertical slice "Donut Dash") built: drive the police car, chase Pickles,
-return the donuts, play Traffic Helper, earn and keep coins. Next: real-phone check + playtest with
-James. Development is spec-driven — see `specs/README.md`.
+**Status:** specs 003–005 built:
+- three jobs (Cop, Firefighter, Builder), each with 6 missions;
+- 7 minigames, the Job Center, the Shop, and mission boards;
+- four districts (Downtown, City Plaza, Skyscraper Heights, Harbor).
+
+Next: playtest with James on a real Android phone (`docs/playtests/TEMPLATE.md`), then spec 006 (Home
+& Shop). Development is spec-driven; see `specs/README.md`.
 
 ```sh
 npm install
@@ -32,5 +36,6 @@ npm run build
 
 ## Next step
 
-Playtest spec 002 with James (`docs/playtests/TEMPLATE.md`), including a real Android phone, then
-write spec 003 from the findings.
+Playtest specs 003–005 with James (`docs/playtests/TEMPLATE.md`), including a real Android phone.
+Then write spec 006 from the findings. Each spec's "Decisions made while building" section lists
+choices to review.

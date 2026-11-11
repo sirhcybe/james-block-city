@@ -5,34 +5,64 @@ import { maskFor, solidAt } from '../art/alphaMask';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
+import { groundChunkKey } from '../art/ground';
+import type { IconName } from '../art/icons';
+import { bubbleKey, MPROP, padKey } from '../art/missionProps';
 import { PROP } from '../art/props';
 import { RS, WT } from '../art/renderScale';
 import { UI } from '../art/ui';
-import { POLICE_CAR } from '../art/vehicles';
 import {
+  GETAWAY_CAR,
+  GETAWAY_CAR_2,
+  GETAWAY_EMPTY,
+  GETAWAY_EMPTY_2,
+  POLICE_BIKE,
+  POLICE_BIKE_RIDDEN,
+  POLICE_CAR,
+  SCOOTER,
+  SCOOTER_EMPTY,
+  FIRE_TRUCK,
+  MIXER_TRUCK,
+  TRAFFIC_CARS,
+} from '../art/vehicles';
+import {
+  BLOCK_H,
+  BUMP_DIST,
   CAMERA_LERP,
+  CAR_MAX_SPEED,
   ENTER_CAR_DIST,
   FADE_MS,
   OCCLUDED_ALPHA,
   PALETTE,
   WORLD_ZOOM,
 } from '../config';
-import { marker, tileAt, type BuildingDef, type MapDef } from '../content/schema';
-import { buildWalkGrid } from '../content/world';
+import { tileAt, type BuildingDef, type MapDef, type TileKind } from '../content/schema';
+import { buildRoadGraph, buildWalkGrid } from '../content/world';
+import { BuildSite } from '../entities/BuildSite';
 import { Bumpable } from '../entities/Bumpable';
+import { Fire } from '../entities/Fire';
 import { Pedestrian } from '../entities/Pedestrian';
 import { Pickup } from '../entities/Pickup';
 import { Player } from '../entities/Player';
-import { RobberChase } from '../entities/RobberChase';
+import { RobberChase, type RobberLooks } from '../entities/RobberChase';
+import { TimeOutTower } from '../entities/TimeOutTower';
 import { Townsperson } from '../entities/Townsperson';
+import { TrafficCar } from '../entities/TrafficCar';
 import { Vehicle } from '../entities/Vehicle';
 import { InputMapper, type PointerSample } from '../input/InputMapper';
 import type { WalkGrid } from '../iso/grid';
 import { PathFinder } from '../iso/path';
 import { depthOf, footprintDepth, gridToScreen, screenToGrid, type Vec2 } from '../iso/projection';
-import { buildLaneGraph, type LaneGraph } from '../iso/roads';
+import type { LaneGraph, LaneNode } from '../iso/roads';
+import { MissionDirector } from '../missions/MissionDirector';
+import type { MissionWorld, VehicleId } from '../missions/world';
 import type { GameState } from '../systems/GameState';
 import { IdleHints } from '../systems/hints';
+import type { MissionEvent, RobberSpec } from '../systems/missions';
+import { BUILD, pickSite } from '../systems/build';
+import { FIRE, pickFire, tooHigh } from '../systems/fire';
+import { JOBS, outfitFor } from '../systems/jobs';
+import { netTarget, NetShot } from '../systems/net';
 import { resolveOcclusion, type Occluder } from '../systems/occlusion';
 import {
   EV,
@@ -40,6 +70,7 @@ import {
   HUD_INFO_KEY,
   INPUT_KEY,
   MAP_KEY,
+  OPEN_JOBS_KEY,
   STATE_KEY,
   type HudInfo,
   type MinigameResult,
@@ -68,27 +99,101 @@ const CAR_SAMPLES: Vec2[] = [
   { x: 0, y: -26 },
 ];
 
-const MISSION_ID = 'donut-dash';
-const ERRAND_ID = 'return-donuts';
-const MINIGAME_ID = 'traffic-helper';
-const OWNER_ID = 'donut-owner';
-/** Seconds after a finished mission before Pickles sneaks out again. */
-const REPLAY_AFTER_SEC = 12;
+/** Minigame id → its scene key and pad picture. */
+export const MINIGAMES: Record<string, { scene: string; icon: IconName }> = {
+  'traffic-helper': { scene: 'TrafficHelper', icon: 'trafficLight' },
+  'who-took-it': { scene: 'WhoTookIt', icon: 'magnifier' },
+  'window-splash': { scene: 'WindowSplash', icon: 'window' },
+  'ladder-rescue': { scene: 'LadderRescue', icon: 'ladder' },
+  'block-stack': { scene: 'BlockStack', icon: 'crane' },
+  'copy-the-build': { scene: 'CopyBuild', icon: 'grid' },
+  'cement-pour': { scene: 'CementPour', icon: 'bucket' },
+};
 
-/** The isometric world and the vertical-slice gameplay: walk, drive, chase, errand, minigame. */
-export class CityScene extends Phaser.Scene {
+/** The vehicles each job may hop into. */
+const JOB_VEHICLES: Record<string, VehicleId[]> = {
+  cop: ['police-car', 'police-bike'],
+  fire: ['fire-truck'],
+  builder: ['mixer-truck'],
+};
+
+/** Townspeople who give missions or errands: marker id → look. */
+const TOWNSPEOPLE: Record<string, string> = {
+  chief: 'chief',
+  'donut-owner': 'baker',
+  mayor: 'mayor',
+  'puppy-owner': 'kid',
+  'sock-owner': 'grandma',
+  'fire-chief': 'fireChief',
+  'kitty-owner': 'grandma',
+  'kid-heights': 'kid',
+  foreman: 'foreman',
+  'boat-owner': 'walkerBlue',
+  keeper: 'mayor',
+};
+
+/** What each errand's giver says when it is offered. */
+const ERRAND_LINES: Record<string, string> = {
+  'return-donuts': 'errand-offer',
+  'return-socks': 'errand-socks',
+  'find-rubber-duck': 'errand-rubber-duck',
+  'deliver-balloon': 'errand-balloon',
+  'deliver-cake': 'errand-cake',
+  'find-balloon': 'errand-find-balloon',
+  'find-wrench': 'errand-wrench',
+  'deliver-pizza': 'errand-pizza',
+};
+
+/** Robber looks by who and what he drives. */
+function robberLooks(spec: RobberSpec, bumps: number): RobberLooks {
+  if (spec.vehicle === 'scooter')
+    return {
+      name: spec.id,
+      look: SCOOTER,
+      empty: SCOOTER_EMPTY,
+      bumpsNeeded: bumps,
+      speedScale: 0.85,
+    };
+  return spec.id === 'smudge'
+    ? { name: 'smudge', look: GETAWAY_CAR_2, empty: GETAWAY_EMPTY_2, bumpsNeeded: bumps }
+    : { name: spec.id, look: GETAWAY_CAR, empty: GETAWAY_EMPTY, bumpsNeeded: bumps };
+}
+
+/** Police bike: a bit faster, much zippier off the line. */
+const BIKE_MAX_SPEED = CAR_MAX_SPEED * 1.1;
+const BIKE_ACCEL = 1.6;
+
+/** The isometric world: walk, drive, missions, errands, minigame pads, the board and the shop. */
+export class CityScene extends Phaser.Scene implements MissionWorld {
   map!: MapDef;
   state!: GameState;
   player!: Player;
   input2!: InputMapper;
   car!: Vehicle;
-  robber!: RobberChase;
-  graph!: LaneGraph;
-  owner!: Townsperson;
+  bike: Vehicle | null = null;
+  fireTruck: Vehicle | null = null;
+  mixer: Vehicle | null = null;
+  /** Builder build spots by id (spec 005). */
+  readonly sites = new Map<string, BuildSite>();
+  private blastAim: string | null = null;
+  private blastCooldown = 0;
+  /** Fires burning right now, by perch id (spec 004). */
+  readonly fires = new Map<string, Fire>();
+  private spraying: { id: string; left: number } | null = null;
+  private hoseAim: string | null = null;
+  private dropT = 0;
+  carGraph!: LaneGraph;
+  bikeGraph!: LaneGraph;
+  tower!: TimeOutTower;
+  director!: MissionDirector;
   mode: 'foot' | 'car' = 'foot';
+  ridingId: VehicleId | null = null;
   readonly pickups: Pickup[] = [];
   readonly bumpables: Bumpable[] = [];
   readonly walkers: Pedestrian[] = [];
+  readonly robbers: RobberChase[] = [];
+  readonly traffic: TrafficCar[] = [];
+  readonly people = new Map<string, Townsperson>();
   private pathFinder!: PathFinder;
   private grid!: WalkGrid;
   private playerImg!: Phaser.GameObjects.Image;
@@ -96,52 +201,413 @@ export class CityScene extends Phaser.Scene {
   private target!: Phaser.GameObjects.Image;
   private bobTimer = 0;
   private bobFrame: 0 | 1 = 0;
-  private autoEnter = false;
-  private padPos!: Vec2;
-  private onPad = false;
+  private autoEnter: VehicleId | null = null;
+  /** Where you stand to play / open things, and whether you're on one now. */
+  private spots: { id: string; kind: 'minigame' | 'board' | 'shop' | 'jobs'; pos: Vec2 }[] = [];
+  private onSpot: string | null = null;
   private hints = new IdleHints();
-  private donutMeta!: BakedMeta;
-  private missionWaiting = false;
+  private obstacles = new Map<string, readonly Vec2[]>();
+  private nets: { shot: NetShot; img: Phaser.GameObjects.Image }[] = [];
+  private netCooldown = 0;
+  private netAim: string | null = null;
+  private findSpawned = new Set<string>();
+  private errandAsked = new Set<string>();
   sirenPresses = 0;
 
   constructor() {
     super('City');
   }
 
+  // ---------------------------------------------------------------------------------------------
+  // MissionWorld
+  // ---------------------------------------------------------------------------------------------
+
+  now(): number {
+    return this.time.now;
+  }
+
+  marker(id: string): Vec2 {
+    const p = this.map.markers[id];
+    if (!p) throw new Error(`map has no marker '${id}'`);
+    return { x: p.gx, y: p.gy };
+  }
+
+  hasMarker(id: string): boolean {
+    return id in this.map.markers;
+  }
+
+  tileKind(x: number, y: number): TileKind {
+    if (x < 0 || y < 0 || x >= this.map.width || y >= this.map.height) return 'water';
+    return tileAt(this.map, x, y);
+  }
+
+  focus(): Vec2 {
+    return this.riding()?.vehicle.pos ?? this.player.pos;
+  }
+
+  playerPos(): Vec2 {
+    return this.player.pos;
+  }
+
+  moveMode(): 'foot' | 'car' {
+    return this.mode;
+  }
+
+  get stage(): Phaser.Scene {
+    return this;
+  }
+
+  riding(): { id: VehicleId; vehicle: Vehicle } | null {
+    if (this.mode !== 'car' || !this.ridingId) return null;
+    const v = this.vehicle(this.ridingId);
+    return v ? { id: this.ridingId, vehicle: v } : null;
+  }
+
+  vehicle(id: VehicleId): Vehicle | null {
+    if (id === 'police-car') return this.car;
+    if (id === 'police-bike') return this.bike;
+    if (id === 'fire-truck') return this.fireTruck;
+    if (id === 'mixer-truck') return this.mixer;
+    return null;
+  }
+
+  townsperson(id: string): Townsperson | null {
+    return this.people.get(id) ?? null;
+  }
+
+  private nodeNear(graph: LaneGraph, p: Vec2): LaneNode {
+    const exact = graph.get(Math.round(p.x), Math.round(p.y));
+    if (exact) return exact;
+    let best: LaneNode | null = null;
+    let bestD = Infinity;
+    for (const n of graph.nodes.values()) {
+      const d = (n.x - p.x) ** 2 + (n.y - p.y) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = n;
+      }
+    }
+    return best!;
+  }
+
+  spawnRobber(spec: RobberSpec, bumps: number, onCaught: (name: string) => void): RobberChase {
+    const graph = spec.vehicle === 'scooter' ? this.bikeGraph : this.carGraph;
+    const home = this.nodeNear(graph, this.marker(spec.start));
+    const next = graph.node(home.links[0]!);
+    const heading = { x: Math.sign(next.x - home.x), y: Math.sign(next.y - home.y) };
+    let offered = false;
+    const r = new RobberChase(
+      this,
+      graph,
+      home,
+      heading,
+      getBaked(PROP.puff),
+      {
+        onDrop: (at) => {
+          if (!spec.drops) return;
+          this.dropPickup(spec.drops, at);
+          if (!offered) {
+            offered = true;
+            const e = this.state.errands.all.find(
+              (x) => x.kind === 'return' && x.item === spec.drops,
+            );
+            if (e && this.state.errands.statusOf(e.id) !== 'offered')
+              this.state.errands.offer(e.id);
+          }
+        },
+        onBump: () => undefined,
+        onOutOfGas: () => voice.say('out-of-gas'),
+        onCaught: () => onCaught(r.name),
+      },
+      Math.random,
+      robberLooks(spec, bumps),
+    );
+    r.car.img.setAlpha(0);
+    this.tweens.add({ targets: r.car.img, alpha: 1, duration: 400 });
+    this.puff(r.pos);
+    this.robbers.push(r);
+    return r;
+  }
+
+  removeRobber(r: RobberChase): void {
+    const i = this.robbers.indexOf(r);
+    if (i >= 0) this.robbers.splice(i, 1);
+    this.tweens.add({
+      targets: r.car.img,
+      alpha: 0,
+      delay: 1500,
+      duration: 500,
+      onComplete: () => r.destroy(),
+    });
+  }
+
+  dropPickup(item: string, at: Vec2): void {
+    const key = item === 'donut' ? PROP.donut : `pickup-${item}`;
+    const meta = this.textures.exists(key) ? getBaked(key) : getBaked(PROP.donut);
+    this.pickups.push(new Pickup(this, item, meta, at));
+    sfx.play('pop', 0.8);
+  }
+
+  setObstacles(key: string, pts: readonly Vec2[]): void {
+    this.obstacles.set(key, pts);
+  }
+
+  puff(at: Vec2): void {
+    const s = gridToScreen(at.x, at.y);
+    const img = addBakedImage(this, getBaked(PROP.puff), s.x, s.y - 10).setDepth(
+      depthOf(at.x, at.y) + 80,
+    );
+    const full = img.scaleX;
+    img.setScale(full * 0.3);
+    this.tweens.add({
+      targets: img,
+      scale: full * 1.2,
+      alpha: 0,
+      duration: 600,
+      onComplete: () => img.destroy(),
+    });
+  }
+
+  give(item: string): void {
+    this.state.give(item);
+    if (item === 'cap-cop') {
+      sfx.play('sparkle');
+      this.sparkleAt(this.player.pos);
+    }
+  }
+
+  perch(id: string): Vec2 & { z: number } {
+    const p = this.map.perches.find((x) => x.id === id);
+    if (!p) throw new Error(`map has no perch '${id}'`);
+    return { x: p.gx, y: p.gy, z: p.z };
+  }
+
+  lightFire(id: string): void {
+    if (this.fires.has(id)) return;
+    const p = this.perch(id);
+    this.fires.set(id, new Fire(this, { id, x: p.x, y: p.y, z: p.z }));
+  }
+
+  fireBurning(id: string): boolean {
+    const f = this.fires.get(id);
+    return !!f && !f.state.out;
+  }
+
+  removeFire(id: string): void {
+    const f = this.fires.get(id);
+    if (!f) return;
+    this.fires.delete(id);
+    if (!f.state.out) f.destroy();
+  }
+
+  ladderReach(): number {
+    return this.state.owns('long-ladder') ? FIRE.ladderZ.long : FIRE.ladderZ.standard;
+  }
+
+  raiseLadder(from: Vec2, to: Vec2 & { z: number }, ms: number): { destroy(): void } {
+    const a = gridToScreen(from.x, from.y);
+    a.y -= 26;
+    const b = gridToScreen(to.x, to.y);
+    b.y -= to.z * BLOCK_H;
+    const g = this.add.graphics().setDepth(depthOf(to.x, to.y) + 210);
+    const k = { v: 0 };
+    const draw = () => {
+      g.clear();
+      const ex = a.x + (b.x - a.x) * k.v;
+      const ey = a.y + (b.y - a.y) * k.v;
+      const nx = -(ey - a.y);
+      const ny = ex - a.x;
+      const len = Math.hypot(nx, ny) || 1;
+      const ox = (nx / len) * 5;
+      const oy = (ny / len) * 5;
+      g.lineStyle(4, PALETTE.outline, 1);
+      g.lineBetween(a.x + ox, a.y + oy, ex + ox, ey + oy);
+      g.lineBetween(a.x - ox, a.y - oy, ex - ox, ey - oy);
+      g.lineStyle(2.5, 0xe4e7ee, 1);
+      g.lineBetween(a.x + ox, a.y + oy, ex + ox, ey + oy);
+      g.lineBetween(a.x - ox, a.y - oy, ex - ox, ey - oy);
+      const steps = Math.floor(Math.hypot(ex - a.x, ey - a.y) / 12);
+      for (let i = 1; i <= steps; i++) {
+        const t = i / (steps + 1);
+        const x = a.x + (ex - a.x) * t;
+        const y = a.y + (ey - a.y) * t;
+        g.lineBetween(x + ox, y + oy, x - ox, y - oy);
+      }
+    };
+    this.tweens.add({ targets: k, v: 1, duration: ms, ease: 'Sine.easeOut', onUpdate: draw });
+    return { destroy: () => g.destroy() };
+  }
+
+  private builtIds(): Set<string> {
+    return new Set(
+      this.state.progress.owned.filter((o) => o.startsWith('built:')).map((o) => o.slice(6)),
+    );
+  }
+
+  startSite(id: string): void {
+    this.sites.get(id)?.begin();
+  }
+
+  stopSite(id: string): void {
+    this.sites.get(id)?.cancel(this.builtIds().has(id));
+  }
+
+  siteDone(id: string): boolean {
+    const s = this.sites.get(id);
+    return !!s && s.built && !s.active;
+  }
+
+  /** The active build spot the blaster would build on (builder job only), or null. */
+  aimBlast(): string | null {
+    if (this.state.job !== 'builder') return null;
+    const r = this.riding();
+    const mode = r ? (r.id === 'mixer-truck' ? 'truck' : null) : 'foot';
+    if (!mode) return null;
+    const active = [...this.sites.values()]
+      .filter((x) => x.active)
+      .map((x) => ({ id: x.id, ...x.centre }));
+    return pickSite(this.focus(), mode, active);
+  }
+
+  /** One press of the block blaster. */
+  blast(id: string): void {
+    const site = this.sites.get(id);
+    if (!site || !site.active || this.blastCooldown > 0) return;
+    this.blastCooldown = BUILD.cooldownSec;
+    const from = gridToScreen(this.focus().x, this.focus().y);
+    from.y -= 30;
+    sfx.play('thunk');
+    const n = this.state.owns('giant-drum') ? BUILD.giantPerPress : BUILD.perPress;
+    if (site.addBlocks(n, from)) {
+      this.time.delayedCall(560, () => {
+        this.state.give(`built:${id}`);
+        this.state.save.flush();
+        this.refreshWalkGrid();
+        // Built things block the way (or, for docks and bridges, let you walk on the water).
+        if (!this.props.some((p) => p.def.id === id)) {
+          const depth = footprintDepth({
+            x: site.def.gx,
+            y: site.def.gy,
+            w: site.def.w,
+            d: site.def.d,
+          });
+          this.props.push({
+            def: site.def,
+            image: site.img,
+            bounds: site.img.getBounds(),
+            depth,
+            faded: false,
+          });
+        }
+        sfx.play('tada');
+        this.sparkleAt(site.centre);
+        voice.say('built', { interrupt: true });
+        this.notifyMission({ type: 'built', spot: id });
+      });
+    }
+  }
+
+  private refreshWalkGrid(): void {
+    this.grid.copyFrom(buildWalkGrid(this.map, this.builtIds()));
+    this.pathFinder.refresh();
+  }
+
+  goInside(room: string): void {
+    this.pauseForOverlay();
+    this.scene.launch('Interior', { room });
+  }
+
+  private onInteriorDone(r: { room: string }): void {
+    this.notifyMission({ type: 'insideDone', room: r.room });
+  }
+
+  private sparkleAt(at: Vec2): void {
+    const s = gridToScreen(at.x, at.y);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const img = addBakedImage(this, getBaked(MPROP.sparkle), s.x, s.y - 40).setDepth(
+        depthOf(at.x, at.y) + 90,
+      );
+      this.tweens.add({
+        targets: img,
+        x: s.x + Math.cos(a) * 46,
+        y: s.y - 40 + Math.sin(a) * 30,
+        alpha: 0,
+        duration: 700,
+        onComplete: () => img.destroy(),
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------------------------------
+
   create(): void {
     this.map = this.registry.get(MAP_KEY) as MapDef;
     this.state = this.registry.get(STATE_KEY) as GameState;
-    const grid = buildWalkGrid(this.map);
+    const built = new Set(
+      this.state.progress.owned.filter((o) => o.startsWith('built:')).map((o) => o.slice(6)),
+    );
+    const grid = buildWalkGrid(this.map, built);
     this.grid = grid;
     this.pathFinder = new PathFinder(grid);
-    this.graph = buildLaneGraph(
-      (x, y) => tileAt(this.map, x, y) === 'road',
-      this.map.width,
-      this.map.height,
-    );
+    this.carGraph = buildRoadGraph(this.map, 'car');
+    this.bikeGraph = buildRoadGraph(this.map, 'bike');
     this.player = new Player(grid, { x: this.map.spawn.gx, y: this.map.spawn.gy });
     this.input2 = new InputMapper();
     this.registry.set(INPUT_KEY, this.input2);
+    this.registry.set(OPEN_JOBS_KEY, () => this.openMenu('JobCenter'));
     this.props = [];
     this.pickups.length = 0;
     this.bumpables.length = 0;
     this.walkers.length = 0;
+    this.robbers.length = 0;
+    this.traffic.length = 0;
+    this.people.clear();
+    this.spots = [];
+    this.nets = [];
+    this.obstacles.clear();
+    this.findSpawned.clear();
+    this.errandAsked.clear();
     this.mode = 'foot';
+    this.ridingId = null;
+    this.bike = null;
+    this.fireTruck = null;
+    this.mixer = null;
+    this.sites.clear();
+    this.fires.clear();
+    this.spraying = null;
 
     const cam = this.cameras.main;
     cam.setZoom(RS * WORLD_ZOOM).setBackgroundColor(PALETTE.water);
 
-    // Ground chunks.
+    // Ground chunks (all-sea chunks have no texture).
     for (let cy = 0; cy < this.map.height; cy += 16) {
       for (let cx = 0; cx < this.map.width; cx += 16) {
-        addBakedImage(this, getBaked(`ground:${this.map.id}:${cx},${cy}`), 0, 0).setDepth(
-          -1_000_000,
-        );
+        const key = groundChunkKey(this.map, cx, cy);
+        if (!this.textures.exists(key)) continue;
+        addBakedImage(this, getBaked(key), 0, 0).setDepth(-1_000_000);
       }
     }
 
-    // Buildings, trees, fountain.
+    // Buildings, trees, fountain, Time-Out Tower.
     for (const def of this.map.buildings) {
+      if (def.site) {
+        const site = new BuildSite(this, def, built.has(def.id));
+        this.sites.set(def.id, site);
+        if (built.has(def.id)) {
+          const depth = footprintDepth({ x: def.gx, y: def.gy, w: def.w, d: def.d });
+          this.props.push({
+            def,
+            image: site.img,
+            bounds: site.img.getBounds(),
+            depth,
+            faded: false,
+          });
+        }
+        continue;
+      }
       const meta = getBaked(buildingTextureKey(def));
       const p = gridToScreen(def.gx, def.gy);
       const depth = footprintDepth({ x: def.gx, y: def.gy, w: def.w, d: def.d });
@@ -149,33 +615,54 @@ export class CityScene extends Phaser.Scene {
       image.setName(def.id);
       this.props.push({ def, image, bounds: image.getBounds(), depth, faded: false });
       maskFor(this.textures, meta.key); // build occlusion masks now, not mid-chase
+      if (def.kind === 'timeout') this.tower = new TimeOutTower(this, def);
     }
 
-    // Small props: cones and cans tumble; the traffic light just stands there.
+    // Small props: cones and cans tumble; lights, bushes and the board just stand there.
     for (const p of this.map.props) {
+      const s = gridToScreen(p.gx, p.gy);
       if (p.kind === 'trafficLight') {
-        const s = gridToScreen(p.gx, p.gy);
         addBakedImage(this, getBaked(PROP.trafficLight), s.x, s.y).setDepth(
           depthOf(p.gx, p.gy) + 30,
         );
+      } else if (p.kind === 'bush') {
+        addBakedImage(this, getBaked(MPROP.bush), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20);
+      } else if (p.kind === 'grill') {
+        addBakedImage(this, getBaked(MPROP.grill), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
+      } else if (p.kind === 'board') {
+        addBakedImage(this, getBaked(MPROP.board), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
       } else {
         const meta = getBaked(p.kind === 'cone' ? PROP.cone : PROP.trashcan);
         this.bumpables.push(new Bumpable(this, p.id, meta, { x: p.gx, y: p.gy }));
       }
     }
 
-    // Minigame pad.
-    const pad = marker(this.map, MINIGAME_ID);
-    this.padPos = { x: pad.gx, y: pad.gy };
-    const ps = gridToScreen(pad.gx, pad.gy);
-    const padImg = addBakedImage(this, getBaked(PROP.pad), ps.x, ps.y).setDepth(-999_990);
-    this.tweens.add({
-      targets: padImg,
-      scaleY: padImg.scaleY * 1.08,
-      duration: 700,
-      yoyo: true,
-      repeat: -1,
-    });
+    // Pads: minigames, the mission board, the shop door.
+    for (const [id, mg] of Object.entries(MINIGAMES)) {
+      if (!this.hasMarker(id)) continue;
+      const at = this.marker(id);
+      this.spots.push({ id, kind: 'minigame', pos: at });
+      const s = gridToScreen(at.x, at.y);
+      const padImg = addBakedImage(this, getBaked(padKey(mg.icon)), s.x, s.y).setDepth(-999_990);
+      this.tweens.add({
+        targets: padImg,
+        scaleY: padImg.scaleY * 1.08,
+        duration: 700,
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+    for (const j of Object.values(JOBS))
+      if (this.hasMarker(j.board))
+        this.spots.push({ id: j.board, kind: 'board', pos: this.marker(j.board) });
+    if (this.hasMarker('job-center')) {
+      const at = this.marker('job-center');
+      this.spots.push({ id: 'job-center', kind: 'jobs', pos: at });
+      const s = gridToScreen(at.x, at.y);
+      addBakedImage(this, getBaked(padKey('uniforms')), s.x, s.y).setDepth(-999_990);
+    }
+    if (this.hasMarker('shop'))
+      this.spots.push({ id: 'shop', kind: 'shop', pos: this.marker('shop') });
 
     // Go-to marker.
     this.target = this.add
@@ -187,44 +674,49 @@ export class CityScene extends Phaser.Scene {
     // Player.
     const s = gridToScreen(this.player.pos.x, this.player.pos.y);
     this.playerImg = this.add
-      .image(s.x, s.y, characterFrameKey('player', this.player.facing, 0))
+      .image(s.x, s.y, characterFrameKey(this.playerLook(), this.player.facing, 0))
       .setOrigin(0.5, CHAR_FOOT_Y / CHAR_H)
       .setScale(1 / WT);
 
-    // Police car, parked by the station.
-    const carAt = marker(this.map, 'police-car');
-    this.car = new Vehicle(this, this.graph, POLICE_CAR, this.graph.get(carAt.gx, carAt.gy)!, {
+    // Police car (and bike, once bought), parked by the station.
+    const carAt = this.marker('police-car');
+    this.car = new Vehicle(this, this.carGraph, POLICE_CAR, this.carGraph.get(carAt.x, carAt.y)!, {
       x: 1,
       y: 0,
     });
     this.car.img.setName('police-car');
+    if (this.state.owns('police-bike')) this.spawnBike(false);
+    if (this.hasMarker('mixer-truck')) {
+      const node = this.nodeNear(this.carGraph, this.marker('mixer-truck'));
+      this.mixer = new Vehicle(this, this.carGraph, MIXER_TRUCK, node, { x: 0, y: 1 });
+      this.mixer.img.setName('mixer-truck');
+    }
+    if (this.hasMarker('fire-truck')) {
+      const node = this.nodeNear(this.carGraph, this.marker('fire-truck'));
+      this.fireTruck = new Vehicle(this, this.carGraph, FIRE_TRUCK, node, { x: 0, y: 1 });
+      this.fireTruck.img.setName('fire-truck');
+    }
 
-    // Pickles and his getaway car.
-    const gaAt = marker(this.map, 'getaway-start');
-    this.donutMeta = getBaked(PROP.donut);
-    this.robber = new RobberChase(
-      this,
-      this.graph,
-      this.graph.get(gaAt.gx, gaAt.gy)!,
-      { x: 1, y: 0 },
-      getBaked(PROP.puff),
-      {
-        onDrop: (at) => this.dropDonut(at),
-        onBump: () => undefined,
-        onOutOfGas: () => voice.say('out-of-gas'),
-        onCaught: () => this.onRobberCaught(),
-      },
-    );
+    // Town traffic.
+    for (let i = 1; i <= 6; i++) {
+      const id = `traffic-${i}`;
+      if (!this.hasMarker(id)) continue;
+      const node = this.nodeNear(this.carGraph, this.marker(id));
+      const next = this.carGraph.node(node.links[0]!);
+      this.traffic.push(
+        new TrafficCar(this, this.carGraph, TRAFFIC_CARS[(i - 1) % TRAFFIC_CARS.length]!, node, {
+          x: Math.sign(next.x - node.x),
+          y: Math.sign(next.y - node.y),
+        }),
+      );
+    }
 
-    // Donut shop owner and townspeople.
-    const own = marker(this.map, OWNER_ID);
-    this.owner = new Townsperson(
-      this,
-      OWNER_ID,
-      'baker',
-      { x: own.gx, y: own.gy },
-      getBaked(PROP.bubble),
-    );
+    // Townspeople (bubble pictures for missions and errands) and strollers.
+    for (const [id, look] of Object.entries(TOWNSPEOPLE)) {
+      if (!this.hasMarker(id)) continue;
+      const m = this.marker(id);
+      this.people.set(id, new Townsperson(this, id, look, m, getBaked(bubbleKey('star'))));
+    }
     for (const w of this.map.walkers) this.walkers.push(new Pedestrian(this, w, w.look));
 
     // Camera: follow softly, clamp to the island.
@@ -241,17 +733,66 @@ export class CityScene extends Phaser.Scene {
     cam.startFollow(this.playerImg, false, CAMERA_LERP, CAMERA_LERP);
     cam.centerOn(s.x, s.y);
 
+    this.director = new MissionDirector(this);
+
     this.wireInput();
     this.game.events.on(EV.minigameComplete, this.onMinigameComplete, this);
+    this.game.events.on(EV.menuClosed, this.onMenuClosed, this);
+    this.game.events.on(EV.interiorDone, this.onInteriorDone, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off(EV.minigameComplete, this.onMinigameComplete, this);
+      this.game.events.off(EV.menuClosed, this.onMenuClosed, this);
+      this.game.events.off(EV.interiorDone, this.onInteriorDone, this);
       this.scene.stop('Hud');
     });
     this.scene.launch('Hud');
 
-    // The mission starts right away: "You're a police officer! Hop in your police car!"
-    this.state.startMission(MISSION_ID, this.time.now);
-    this.time.delayedCall(700, () => voice.say('intro-donut-dash'));
+    this.time.delayedCall(800, () => {
+      if (!this.director.busy && this.state.nextMission()?.id === 'first-day') voice.say('welcome');
+    });
+  }
+
+  private playerLook(): string {
+    return outfitFor(this.state.job, this.state.progress.owned);
+  }
+
+  /** Put on another uniform (Job Center closed with a job): spin, sparkle, new boss. */
+  private applyJob(): void {
+    if (this.mode === 'car') this.exitCar();
+    if (this.director.run && this.director.run.mission.job !== this.state.job)
+      this.director.abort();
+    const look = this.playerLook();
+    this.playerImg.setTexture(characterFrameKey(look, this.player.facing, 0));
+    this.tweens.add({
+      targets: this.playerImg,
+      angle: 360,
+      duration: 600,
+      onComplete: () => this.playerImg.setAngle(0),
+    });
+    this.sparkleAt(this.player.pos);
+    sfx.play('sparkle');
+    voice.say(`job-${this.state.job}`, { interrupt: true });
+  }
+
+  /** The police bike appears next to the car (just bought: with a puff). */
+  spawnBike(puff: boolean): void {
+    if (this.bike) return;
+    const at = this.marker('police-bike');
+    const node = this.nodeNear(this.bikeGraph, at);
+    this.bike = new Vehicle(
+      this,
+      this.bikeGraph,
+      POLICE_BIKE,
+      node,
+      { x: 1, y: 0 },
+      BIKE_MAX_SPEED,
+      BIKE_ACCEL,
+    );
+    this.bike.img.setName('police-bike');
+    if (puff) {
+      this.puff(this.bike.pos);
+      sfx.play('sparkle');
+    }
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -334,7 +875,7 @@ export class CityScene extends Phaser.Scene {
   }
 
   // ---------------------------------------------------------------------------------------------
-  // Player on foot / in the car
+  // Player on foot / driving
   // ---------------------------------------------------------------------------------------------
 
   /** Request a walk to a tile (tap/click and the debug hook). */
@@ -360,40 +901,67 @@ export class CityScene extends Phaser.Scene {
     this.tweens.add({ targets: this.target, scale: 1 / WT, duration: 260, ease: 'Back.easeOut' });
   }
 
-  private distToCar(): number {
-    return Math.hypot(this.player.pos.x - this.car.pos.x, this.player.pos.y - this.car.pos.y);
+  private distTo(v: Vehicle): number {
+    return Math.hypot(this.player.pos.x - v.pos.x, this.player.pos.y - v.pos.y);
   }
 
-  enterCar(): void {
+  /** The closest vehicle the player can hop into right now. */
+  private nearestVehicle(): VehicleId | null {
+    let best: VehicleId | null = null;
+    let bestD = ENTER_CAR_DIST;
+    for (const id of JOB_VEHICLES[this.state.job] ?? []) {
+      const v = this.vehicle(id);
+      if (!v) continue;
+      const d = this.distTo(v);
+      if (d <= bestD) {
+        bestD = d;
+        best = id;
+      }
+    }
+    return best;
+  }
+
+  /** Hop in (the police car by default). */
+  enterCar(id: VehicleId = 'police-car'): void {
     if (this.mode === 'car') return;
+    const v = this.vehicle(id);
+    if (!v) return;
     this.mode = 'car';
-    this.autoEnter = false;
+    this.ridingId = id;
+    this.autoEnter = null;
     this.player.cancelPath();
     this.target.setVisible(false);
     sfx.play('pop');
+    if (id === 'police-bike') v.setLook(POLICE_BIKE_RIDDEN);
     this.tweens.add({
       targets: this.playerImg,
       scale: 0,
       duration: 160,
       onComplete: () => this.playerImg.setVisible(false).setScale(1 / WT),
     });
-    this.tweens.add({ targets: this.car, hop: 10, duration: 120, yoyo: true });
-    this.cameras.main.startFollow(this.car.img, false, CAMERA_LERP, CAMERA_LERP);
-    this.notifyMission({ type: 'reached', target: 'police-car' });
+    this.tweens.add({ targets: v, hop: 10, duration: 120, yoyo: true });
+    this.cameras.main.startFollow(v.img, false, CAMERA_LERP, CAMERA_LERP);
+    this.notifyMission({ type: 'reached', target: id });
   }
 
   exitCar(): void {
-    if (this.mode !== 'car') return;
+    const r = this.riding();
+    if (!r) return;
+    const v = r.vehicle;
     this.mode = 'foot';
-    this.car.driver.speed = 0;
-    this.car.driver.cancelPath();
+    this.ridingId = null;
+    v.driver.speed = 0;
+    v.driver.cancelPath();
+    if (v === this.bike) v.setLook(POLICE_BIKE);
     // Hop out onto the nearest sidewalk/grass tile.
-    const c = this.car.pos;
+    const c = v.pos;
     let best: Vec2 = { ...c };
     let bestD = Infinity;
     for (let y = Math.floor(c.y) - 3; y <= Math.floor(c.y) + 3; y++) {
       for (let x = Math.floor(c.x) - 3; x <= Math.floor(c.x) + 3; x++) {
-        if (!this.grid.isWalkable(x, y) || tileAt(this.map, x, y) === 'road') continue;
+        if (!this.grid.isWalkable(x, y)) continue;
+        const k = tileAt(this.map, x, y);
+        if (k === 'road' || k === 'path') continue;
         const d = (x + 0.5 - c.x) ** 2 + (y + 0.5 - c.y) ** 2;
         if (d < bestD) {
           bestD = d;
@@ -414,92 +982,256 @@ export class CityScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.playerImg, false, CAMERA_LERP, CAMERA_LERP);
   }
 
-  private focusPos(): Vec2 {
-    return this.mode === 'car' ? this.car.pos : this.player.pos;
-  }
-
   // ---------------------------------------------------------------------------------------------
-  // Mission, errand, minigame
+  // Missions, errands, minigames, menus
   // ---------------------------------------------------------------------------------------------
 
-  private notifyMission(e: Parameters<NonNullable<GameState['mission']>['notify']>[0]): void {
-    const run = this.state.mission;
-    if (!run) return;
-    const r = run.notify(e, this.time.now);
-    if (!r) return;
-    if (r === 'complete') {
-      const res = this.state.completeMission();
-      this.missionWaiting = true;
-      this.time.delayedCall(1300, () => {
-        sfx.play('tada');
-        voice.say('mission-done');
-        this.game.events.emit(EV.missionComplete, res);
-      });
-      this.time.delayedCall(REPLAY_AFTER_SEC * 1000, () => this.replayMission());
-      return;
-    }
-    if (run.goal?.type === 'catch') this.startChase();
+  notifyMission(e: MissionEvent): void {
+    this.director.notify(e);
   }
 
-  private startChase(): void {
-    if (this.robber.phase !== 'parked') this.robber.reset();
-    this.time.delayedCall(900, () => {
-      voice.say('chase-start', { interrupt: true });
-      this.robber.start();
-    });
-  }
-
-  private replayMission(): void {
-    this.missionWaiting = false;
-    this.robber.reset();
-    this.state.startMission(MISSION_ID, this.time.now);
-    voice.say('pickles-back');
-    if (this.mode === 'car') this.notifyMission({ type: 'reached', target: 'police-car' });
-  }
-
-  private onRobberCaught(): void {
-    this.notifyMission({ type: 'caught', robber: 'pickles' });
-  }
-
-  private dropDonut(at: Vec2): void {
-    this.pickups.push(new Pickup(this, 'donut', this.donutMeta, at));
-    sfx.play('pop', 0.8);
-    if (this.state.errands.statusOf(ERRAND_ID) !== 'offered') {
-      this.state.errands.offer(ERRAND_ID);
-      this.owner.setOffering(true);
-    }
-  }
-
-  private updateErrand(): void {
-    if (!this.owner.offering) return;
-    const f = this.focusPos();
-    const d = Math.hypot(f.x - this.owner.pos.x, f.y - this.owner.pos.y);
-    const donuts = this.state.inventory.donut ?? 0;
-    if (d < 2.2 && donuts > 0) {
-      const reward = this.state.completeErrand(ERRAND_ID);
-      if (reward !== null) {
-        this.owner.setOffering(false);
-        this.owner.cheer();
-        sfx.coin();
-        voice.say('errand-done', { interrupt: true });
+  private updateErrands(): void {
+    const f = this.focus();
+    const book = this.state.errands;
+    const inv = this.state.inventory;
+    const showing = new Map<string, IconName>();
+    for (const e of book.all) {
+      if (book.statusOf(e.id) !== 'offered') continue;
+      // Find errands: the lost thing lies at its spot.
+      if (e.kind === 'find' && e.spot && !this.findSpawned.has(e.id) && this.hasMarker(e.spot)) {
+        this.findSpawned.add(e.id);
+        this.dropPickup(e.item, this.marker(e.spot));
       }
-    } else if (d < 4 && !this.owner.asked) {
-      this.owner.asked = true;
-      voice.say('errand-offer');
+      const carrying = (inv[e.item] ?? 0) > 0;
+      const receiver = book.receiver(e.id);
+      const giver = this.people.get(e.giver);
+      // Deliver: the giver hands the item over when you come by.
+      if (e.kind === 'deliver' && !carrying && giver) {
+        showing.set(e.giver, e.icon as IconName);
+        if (Math.hypot(f.x - giver.pos.x, f.y - giver.pos.y) < 2.2) {
+          this.state.pickUp(e.item);
+          sfx.play('pop', 1.2);
+          voice.say('got-it', { interrupt: true });
+          giver.cheer();
+        }
+        continue;
+      }
+      const who = this.people.get(receiver);
+      if (!who) continue;
+      showing.set(receiver, e.icon as IconName);
+      const d = Math.hypot(f.x - who.pos.x, f.y - who.pos.y);
+      if (d < 2.2 && carrying) {
+        const reward = this.state.completeErrand(e.id);
+        if (reward !== null) {
+          who.cheer();
+          sfx.coin();
+          voice.say('errand-done', { interrupt: true });
+          this.notifyMission({ type: 'errandDone', id: e.id });
+        }
+      } else if (d < 4 && !this.errandAsked.has(e.id)) {
+        this.errandAsked.add(e.id);
+        voice.say(ERRAND_LINES[e.id] ?? 'hint-errand');
+      }
+    }
+    // Errand bubbles (the chief's own bubble is the director's).
+    for (const [id, p] of this.people) {
+      if (id === this.director.bossId() && (this.director.offer() || !showing.has(id))) continue;
+      const icon = showing.get(id);
+      if (icon) {
+        p.setBubble(getBaked(bubbleKey(icon)));
+        p.setOffering(true);
+      } else p.setOffering(false);
     }
   }
 
-  startMinigame(): void {
+  /** Stand on a pad: play a minigame, open the board, or the shop. */
+  private updateSpots(): void {
+    if (this.mode !== 'foot') return;
+    let on: (typeof this.spots)[number] | null = null;
+    for (const s of this.spots) {
+      if (Math.hypot(this.player.pos.x - s.pos.x, this.player.pos.y - s.pos.y) < 0.6) on = s;
+    }
+    if (on && this.onSpot !== on.id) {
+      this.onSpot = on.id;
+      if (on.kind === 'minigame') this.startMinigame(on.id);
+      else if (on.kind === 'board') this.openMenu('MissionBoard');
+      else if (on.kind === 'jobs') this.openMenu('JobCenter');
+      else this.openMenu('Shop');
+    } else if (!on) {
+      // Step well off before it can trigger again.
+      const cur = this.spots.find((s) => s.id === this.onSpot);
+      if (!cur || Math.hypot(this.player.pos.x - cur.pos.x, this.player.pos.y - cur.pos.y) > 1.0)
+        this.onSpot = null;
+    }
+  }
+
+  private pauseForOverlay(): void {
     this.input2.reset();
     this.player.cancelPath();
     this.scene.pause();
     this.scene.sleep('Hud');
-    this.scene.launch('TrafficHelper', { id: MINIGAME_ID, plays: this.state.plays(MINIGAME_ID) });
   }
 
-  private onMinigameComplete(_r: MinigameResult): void {
+  startMinigame(id = 'traffic-helper'): void {
+    const mg = MINIGAMES[id];
+    if (!mg) return;
+    this.onSpot = id;
+    this.pauseForOverlay();
+    this.scene.launch(mg.scene, { id, plays: this.state.plays(id) });
+  }
+
+  openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter'): void {
+    if (!this.scene.isActive()) return;
+    this.pauseForOverlay();
+    this.scene.launch(key);
+  }
+
+  private onMinigameComplete(r: MinigameResult): void {
     // Coins were already paid by GameState.finishMinigame; the HUD shows them.
-    this.onPad = true; // don't relaunch until the player steps off the pad
+    this.notifyMission({ type: 'minigameDone', id: r.id });
+  }
+
+  private onMenuClosed(r: { replay?: string; bought?: string; job?: string }): void {
+    if (r.job) this.time.delayedCall(150, () => this.applyJob());
+    if (r.bought === 'police-bike') this.time.delayedCall(300, () => this.spawnBike(true));
+    if (r.replay) {
+      const id = r.replay;
+      this.time.delayedCall(300, () => this.director.begin(id));
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // Net launcher and siren
+  // ---------------------------------------------------------------------------------------------
+
+  aimNet(): string | null {
+    const r = this.riding();
+    if (!r || this.netCooldown > 0) return null;
+    const a = r.vehicle.driver.headingAngle;
+    const fleeing = this.robbers
+      .filter((x) => x.phase === 'fleeing')
+      .map((x) => ({ id: x.name, pos: x.pos }));
+    if (fleeing.length === 0) return null;
+    return netTarget(r.vehicle.pos, { x: Math.cos(a), y: Math.sin(a) }, fleeing);
+  }
+
+  fireNet(target: string): void {
+    const r = this.riding()!;
+    const shot = new NetShot(r.vehicle.pos, target);
+    const s = gridToScreen(shot.pos.x, shot.pos.y);
+    const img = addBakedImage(this, getBaked(MPROP.net), s.x, s.y - 20).setDepth(
+      depthOf(shot.pos.x, shot.pos.y) + 90,
+    );
+    this.tweens.add({ targets: img, angle: 360, duration: 500, repeat: -1 });
+    this.nets.push({ shot, img });
+    this.netCooldown = 0.6;
+    sfx.play('whoosh');
+  }
+
+  private updateNets(dt: number): void {
+    if (this.netCooldown > 0) this.netCooldown -= dt;
+    for (const n of this.nets) {
+      const robber = this.robbers.find((x) => x.name === n.shot.target && x.phase === 'fleeing');
+      const st = n.shot.step(dt, robber ? robber.pos : null);
+      const s = gridToScreen(n.shot.pos.x, n.shot.pos.y);
+      n.img.setPosition(s.x, s.y - 20).setDepth(depthOf(n.shot.pos.x, n.shot.pos.y) + 90);
+      if (st === 'hit') {
+        robber?.netted();
+        n.img.destroy();
+      } else if (st === 'missed') {
+        voice.say('net-miss', { minGapMs: 4000 });
+        this.tweens.killTweensOf(n.img);
+        this.tweens.add({
+          targets: n.img,
+          alpha: 0,
+          duration: 250,
+          onComplete: () => n.img.destroy(),
+        });
+      }
+    }
+    this.nets = this.nets.filter((n) => n.shot.state === 'flying');
+  }
+
+  /** The fire the hose would spray right now (fire job only), or null. */
+  aimHose(): string | null {
+    if (this.state.job !== 'fire' || this.fires.size === 0) return null;
+    const r = this.riding();
+    const mode = r ? (r.id === 'fire-truck' ? 'truck' : null) : 'foot';
+    if (!mode) return null;
+    const from = this.focus();
+    const ladder = this.state.owns('long-ladder') ? 'long' : 'standard';
+    const spots = [...this.fires.values()].filter((f) => !f.state.out).map((f) => f.spot);
+    const aim = pickFire(from, mode, ladder, spots);
+    if (!aim && mode === 'truck' && tooHigh(from, mode, ladder, spots))
+      voice.say('too-high', { minGapMs: 8000 });
+    return aim;
+  }
+
+  /** One press of the hose: a burst of water at the aimed fire. */
+  spray(id: string): void {
+    const f = this.fires.get(id);
+    if (!f || f.state.out) return;
+    f.state.startBurst();
+    this.spraying = { id, left: FIRE.burstSec };
+    sfx.play('splash');
+  }
+
+  private updateFires(dt: number): void {
+    if (this.spraying) {
+      this.spraying.left -= dt;
+      const f = this.fires.get(this.spraying.id);
+      // Droplets from the nozzle to the fire.
+      this.dropT += dt;
+      if (f && this.dropT > 0.05) {
+        this.dropT = 0;
+        const from = gridToScreen(this.focus().x, this.focus().y);
+        from.y -= this.riding() ? 30 : 34;
+        const to = f.screen;
+        const img = addBakedImage(this, getBaked(MPROP.drop), from.x, from.y).setDepth(
+          f.img.depth + 1,
+        );
+        this.tweens.add({
+          targets: img,
+          x: to.x + (Math.random() - 0.5) * 12,
+          y: to.y - 10,
+          duration: 260,
+          onComplete: () => img.destroy(),
+        });
+      }
+      if (this.spraying.left <= 0) this.spraying = null;
+    }
+    for (const [id, f] of this.fires) {
+      const sprayed = this.spraying?.id === id;
+      if (f.update(dt, sprayed)) {
+        sfx.play('pop', 0.7);
+        this.puff({ x: f.spot.x, y: f.spot.y });
+        this.notifyMission({ type: 'sprayed', fire: id });
+      }
+    }
+    for (const [id, f] of this.fires) if (f.state.out) this.fires.delete(id);
+  }
+
+  private siren(): void {
+    this.sirenPresses++;
+    const r = this.riding();
+    if (r?.id === 'mixer-truck') {
+      sfx.play('horn');
+      sfx.play('honk', 0.9);
+    } else if (r) {
+      sfx.sirenBlast();
+      r.vehicle.flash(2.5);
+    } else {
+      sfx.play('whistle');
+    }
+    const at = this.focus();
+    let stopped = false;
+    for (const t of this.traffic) {
+      const was = t.stoppedForSiren;
+      t.hearSiren(at);
+      if (!was && t.stoppedForSiren) stopped = true;
+    }
+    if (stopped) voice.say('traffic-stop', { minGapMs: 5000 });
+    this.director.onSiren();
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -508,19 +1240,36 @@ export class CityScene extends Phaser.Scene {
 
   update(time: number, deltaMs: number): void {
     const dt = Math.min(deltaMs, 50) / 1000;
-    const focusWorld = gridToScreen(this.focusPos().x, this.focusPos().y);
+    const focusWorld = gridToScreen(this.focus().x, this.focus().y);
     const a = this.input2.update(time, focusWorld);
     const moving = Math.hypot(a.move.x, a.move.y) > 0;
     const hadInput = moving || !!a.goTo || a.action || a.siren;
 
+    if (a.siren) this.siren();
+    this.netAim = this.state.job === 'cop' ? this.aimNet() : null;
+    this.hoseAim = this.aimHose();
+    if (this.blastCooldown > 0) this.blastCooldown -= Math.min(deltaMs, 50) / 1000;
+    this.blastAim = this.aimBlast();
     if (this.mode === 'foot') this.updateOnFoot(dt, a);
     else this.updateDriving(dt, a);
 
-    this.robber.update(dt, this.focusPos(), this.mode === 'car' ? this.car : null);
-    if (this.mode === 'foot') this.car.update(dt, { stick: null });
+    const r = this.riding();
+    for (const robber of this.robbers) robber.update(dt, this.focus(), r?.vehicle ?? null);
+    if (this.mode === 'foot' || this.ridingId !== 'police-car')
+      this.car.update(dt, { stick: null });
+    if (this.bike && (this.mode === 'foot' || this.ridingId !== 'police-bike'))
+      this.bike.update(dt, { stick: null });
+    if (this.mixer && (this.mode === 'foot' || this.ridingId !== 'mixer-truck'))
+      this.mixer.update(dt, { stick: null });
+    if (this.fireTruck && (this.mode === 'foot' || this.ridingId !== 'fire-truck'))
+      this.fireTruck.update(dt, { stick: null });
+    this.updateNets(dt);
+    this.updateFires(dt);
+    this.updateTraffic(dt);
 
     // Vehicles knock over cones and cans (pays nothing).
-    for (const v of [this.car, this.robber.car]) {
+    const vehicles = this.allVehicles();
+    for (const v of vehicles) {
       if (Math.abs(v.driver.speed) < 0.3) continue;
       for (const b of this.bumpables) {
         if (Math.hypot(v.pos.x - b.home.x, v.pos.y - b.home.y) < 0.55 && b.bump(v.pos)) {
@@ -530,7 +1279,7 @@ export class CityScene extends Phaser.Scene {
     }
 
     // Pickups.
-    const f = this.focusPos();
+    const f = this.focus();
     for (const p of this.pickups) {
       if (p.near(f)) {
         p.collect();
@@ -542,14 +1291,14 @@ export class CityScene extends Phaser.Scene {
       if (!this.pickups[i]!.alive) this.pickups.splice(i, 1);
 
     // Pedestrians hop when a moving vehicle comes near.
-    const movingVehicles = [this.car, this.robber.car]
-      .filter((v) => Math.abs(v.driver.speed) > 0.5)
-      .map((v) => v.pos);
+    const movingVehicles = vehicles.filter((v) => Math.abs(v.driver.speed) > 0.5).map((v) => v.pos);
     for (const w of this.walkers) {
       if (w.update(dt, movingVehicles)) voice.say('whoa', { minGapMs: 5000 });
     }
 
-    this.updateErrand();
+    this.director.update(dt);
+    this.updateErrands();
+    this.updateSpots();
 
     // Idle hints.
     if (this.hints.update(dt, hadInput)) {
@@ -561,33 +1310,81 @@ export class CityScene extends Phaser.Scene {
     this.publishHud();
   }
 
+  private allVehicles(): Vehicle[] {
+    const out: Vehicle[] = [this.car];
+    if (this.bike) out.push(this.bike);
+    if (this.fireTruck) out.push(this.fireTruck);
+    if (this.mixer) out.push(this.mixer);
+    for (const r of this.robbers) out.push(r.car);
+    for (const t of this.traffic) out.push(t.vehicle);
+    return out;
+  }
+
+  private updateTraffic(dt: number): void {
+    if (this.traffic.length === 0) return;
+    const extra: Vec2[] = [];
+    for (const pts of this.obstacles.values()) extra.push(...pts);
+    if (this.mode === 'foot') extra.push(this.player.pos);
+    for (const w of this.walkers) extra.push(w.pos);
+    const others = this.allVehicles();
+    const r = this.riding();
+    for (const t of this.traffic) {
+      const obs = extra.concat(others.filter((v) => v !== t.vehicle).map((v) => v.pos));
+      t.update(dt, obs);
+      // Boing: bumping a town car stops you (and it hops), nothing else.
+      if (
+        r &&
+        Math.abs(r.vehicle.driver.speed) > 1 &&
+        Math.hypot(r.vehicle.pos.x - t.pos.x, r.vehicle.pos.y - t.pos.y) < BUMP_DIST
+      ) {
+        r.vehicle.driver.speed = 0;
+        sfx.play('boing', 1.2, 0.6);
+        this.tweens.add({ targets: t.vehicle, hop: 14, duration: 140, yoyo: true });
+      }
+    }
+  }
+
   private updateOnFoot(dt: number, a: ReturnType<InputMapper['update']>): void {
     if (a.goTo) {
       const world = this.input2.lastGoToWorld;
-      if (world && this.opaqueAt(this.car.img, world.x, world.y)) {
-        // Tapped the police car: walk over and hop in.
-        if (this.distToCar() <= ENTER_CAR_DIST) this.enterCar();
+      const tapped = world
+        ? (JOB_VEHICLES[this.state.job] ?? []).find((id) => {
+            const v = this.vehicle(id);
+            return v && this.opaqueAt(v.img, world.x, world.y);
+          })
+        : undefined;
+      if (tapped) {
+        // Tapped a vehicle: walk over and hop in.
+        const v = this.vehicle(tapped)!;
+        if (this.distTo(v) <= ENTER_CAR_DIST) this.enterCar(tapped);
         else {
-          const c = this.car.pos;
-          this.goTo(Math.floor(c.x), Math.floor(c.y));
-          this.autoEnter = true;
+          this.goTo(Math.floor(v.pos.x), Math.floor(v.pos.y));
+          this.autoEnter = tapped;
         }
       } else {
-        this.autoEnter = false;
+        this.autoEnter = null;
         let hit = world ? this.buildingAt(world) : null;
         if (hit && hit.def.h < 1 && this.grid.isWalkable(a.goTo.gx, a.goTo.gy)) hit = null;
         this.goTo(a.goTo.gx, a.goTo.gy, hit);
       }
     }
-    if (a.action && this.distToCar() <= ENTER_CAR_DIST) this.enterCar();
+    if (a.action) {
+      const near = this.nearestVehicle();
+      if (this.hoseAim) this.spray(this.hoseAim);
+      else if (this.blastAim) this.blast(this.blastAim);
+      else if (near) this.enterCar(near);
+    }
     if (this.mode !== 'foot') return;
 
-    if (Math.hypot(a.move.x, a.move.y) > 0) this.autoEnter = false;
+    if (Math.hypot(a.move.x, a.move.y) > 0) this.autoEnter = null;
     this.player.update(dt, a.move);
     if (!this.player.following) this.target.setVisible(false);
-    if (this.autoEnter && this.distToCar() <= ENTER_CAR_DIST) {
-      this.enterCar();
-      return;
+    if (this.autoEnter) {
+      const v = this.vehicle(this.autoEnter);
+      if (v && this.distTo(v) <= ENTER_CAR_DIST) {
+        this.enterCar(this.autoEnter);
+        return;
+      }
     }
 
     const p = gridToScreen(this.player.pos.x, this.player.pos.y);
@@ -602,43 +1399,40 @@ export class CityScene extends Phaser.Scene {
       this.bobFrame = 0;
       this.bobTimer = 0;
     }
-    this.playerImg.setTexture(characterFrameKey('player', this.player.facing, this.bobFrame));
-
-    // Minigame pad: step on it to play.
-    const dPad = Math.hypot(this.player.pos.x - this.padPos.x, this.player.pos.y - this.padPos.y);
-    if (dPad < 0.55 && !this.onPad) {
-      this.onPad = true;
-      this.startMinigame();
-    } else if (dPad > 1.0) this.onPad = false;
+    this.playerImg.setTexture(
+      characterFrameKey(this.playerLook(), this.player.facing, this.bobFrame),
+    );
   }
 
   private updateDriving(dt: number, a: ReturnType<InputMapper['update']>): void {
-    if (a.action && Math.abs(this.car.driver.speed) < 1.5) {
-      this.exitCar();
-      return;
-    }
-    if (a.siren) {
-      this.sirenPresses++;
-      sfx.sirenBlast();
-      this.car.flash(2.5);
+    const r = this.riding();
+    if (!r) return;
+    const v = r.vehicle;
+    if (a.action) {
+      if (this.netAim) this.fireNet(this.netAim);
+      else if (this.hoseAim) this.spray(this.hoseAim);
+      else if (this.blastAim) this.blast(this.blastAim);
+      else if (Math.abs(v.driver.speed) < 1.5) {
+        this.exitCar();
+        return;
+      }
     }
     if (a.goTo) {
       const world = this.input2.lastGoToWorld;
-      if (world && this.opaqueAt(this.car.img, world.x, world.y)) {
+      if (world && this.opaqueAt(v.img, world.x, world.y)) {
         sfx.play('horn');
       } else if (world) {
         const g = screenToGrid(world.x, world.y);
-        if (this.car.driver.goToward(g)) {
-          const end = this.graph.node(this.car.driver.path.at(-1) ?? this.car.driver.to.id);
+        if (v.driver.goToward(g)) {
+          const end = v.driver.graph.node(v.driver.path.at(-1) ?? v.driver.to.id);
           this.showTarget(gridToScreen(end.x, end.y));
         }
       }
     }
     // Road assist steers by screen direction (ADR-004).
     const stick = Math.hypot(a.move.x, a.move.y) > 0 ? a.move : null;
-    this.car.update(dt, { stick });
-    if (this.car.driver.path.length === 0 && this.car.driver.speed === 0)
-      this.target.setVisible(false);
+    v.update(dt, { stick });
+    if (v.driver.path.length === 0 && v.driver.speed === 0) this.target.setVisible(false);
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -672,13 +1466,13 @@ export class CityScene extends Phaser.Scene {
 
   private updateDepths(): void {
     let hiding: Set<string>;
-    if (this.mode === 'foot') {
-      hiding = this.sortMover(this.playerImg, this.player.pos, this.player.radius, CHAR_SAMPLES);
-      this.sortMover(this.car.img, this.car.pos, 0.4, null);
-    } else {
-      hiding = this.sortMover(this.car.img, this.car.pos, 0.4, CAR_SAMPLES);
+    const r = this.riding();
+    if (r) hiding = this.sortMover(r.vehicle.img, r.vehicle.pos, 0.4, CAR_SAMPLES);
+    else hiding = this.sortMover(this.playerImg, this.player.pos, this.player.radius, CHAR_SAMPLES);
+    for (const v of this.allVehicles()) {
+      if (v === r?.vehicle) continue;
+      this.sortMover(v.img, v.pos, 0.4, null);
     }
-    this.sortMover(this.robber.car.img, this.robber.pos, 0.4, null);
     for (const w of this.walkers) this.sortMover(w.img, w.pos, 0.25, null);
 
     for (const prop of this.props) {
@@ -696,15 +1490,17 @@ export class CityScene extends Phaser.Scene {
 
   /** Where the "can't get stuck" arrow should point, and what to say. */
   hintTarget(): { at: Vec2; line: string } | null {
-    const goal = this.state.mission?.goal;
-    if (goal && !this.missionWaiting) {
-      if (goal.type === 'goTo' || (goal.type === 'catch' && this.mode === 'foot')) {
-        return { at: this.car.pos, line: 'hint-car' };
-      }
-      if (goal.type === 'catch') return { at: this.robber.pos, line: 'hint-chase' };
-    }
-    if (this.owner.offering && (this.state.inventory.donut ?? 0) > 0) {
-      return { at: this.owner.pos, line: 'hint-errand' };
+    const h = this.director.hint();
+    if (h) return h;
+    // Errands: someone with a bubble you can help.
+    const book = this.state.errands;
+    for (const e of book.all) {
+      if (book.statusOf(e.id) !== 'offered') continue;
+      const carrying = (this.state.inventory[e.item] ?? 0) > 0;
+      const who = carrying || e.kind !== 'deliver' ? book.receiver(e.id) : e.giver;
+      if (e.kind === 'return' && !carrying) continue;
+      const p = this.people.get(who);
+      if (p) return { at: p.pos, line: 'hint-errand' };
     }
     return null;
   }
@@ -722,19 +1518,37 @@ export class CityScene extends Phaser.Scene {
         };
       }
     }
+    const r = this.riding();
     const info: HudInfo = {
       mode: this.mode,
-      action: this.mode === 'car' ? 'exit' : this.distToCar() <= ENTER_CAR_DIST ? 'enter' : 'none',
+      action: this.blastAim
+        ? 'blast'
+        : this.hoseAim
+          ? 'hose'
+          : r
+            ? this.netAim
+              ? 'net'
+              : 'exit'
+            : this.nearestVehicle()
+              ? 'enter'
+              : 'none',
       donuts: this.state.inventory.donut ?? 0,
-      sirenOn: this.car.flashing,
+      sirenOn: r?.vehicle.flashing ?? false,
       hint,
     };
     this.registry.set(HUD_INFO_KEY, info);
   }
 
+  /** The first robber on the map (spec 002 tests and the debug hook). */
+  get robber(): RobberChase | undefined {
+    return this.robbers[0];
+  }
+
   /** Snapshot for tests / debugging. */
   debugState() {
-    const run = this.state.mission;
+    const run = this.director.run;
+    const rb = this.robbers[0];
+    const riding = this.riding();
     return {
       gx: this.player.pos.x,
       gy: this.player.pos.y,
@@ -744,26 +1558,61 @@ export class CityScene extends Phaser.Scene {
       faded: this.props.filter((p) => p.faded).map((p) => p.def.id),
       screen: gridToScreen(this.player.pos.x, this.player.pos.y),
       mode: this.mode,
+      riding: this.ridingId,
+      job: this.state.job,
+      fires: [...this.fires.keys()],
+      hoseAim: this.hoseAim,
+      blastAim: this.blastAim,
+      sites: Object.fromEntries(
+        [...this.sites.values()].map((x) => [
+          x.id,
+          { active: x.active, added: x.state.added, needed: x.state.needed, built: x.built },
+        ]),
+      ),
+      mixer: this.mixer ? { ...this.mixer.pos } : null,
+      truck: this.fireTruck ? { ...this.fireTruck.pos, speed: this.fireTruck.driver.speed } : null,
       car: { ...this.car.pos, speed: this.car.driver.speed, flashing: this.car.flashing },
+      bike: this.bike ? { ...this.bike.pos, speed: this.bike.driver.speed } : null,
       sirenPresses: this.sirenPresses,
       coins: this.state.economy.coins,
       donuts: this.state.inventory.donut ?? 0,
+      inventory: { ...this.state.inventory },
+      badges: [...this.state.progress.badges],
+      owned: [...this.state.progress.owned],
+      stars: { ...this.state.progress.missionsDone },
       mission: run
-        ? { id: run.mission.id, goal: run.goal?.type ?? 'done', waiting: this.missionWaiting }
+        ? {
+            id: run.mission.id,
+            goal: run.goal?.type ?? 'done',
+            goalIndex: run.goalIndex,
+            waiting: false,
+          }
         : null,
-      chase: {
-        phase: this.robber.phase,
-        bumps: this.robber.chase.bumps,
-        misses: this.robber.chase.misses,
-        outOfGas: this.robber.chase.outOfGas,
-        dropped: this.robber.chase.dropped,
-        x: this.robber.pos.x,
-        y: this.robber.pos.y,
-      },
-      errand: this.state.errands.statusOf(ERRAND_ID),
+      offer: this.director.offer()?.id ?? null,
+      chase: rb
+        ? {
+            phase: rb.phase,
+            bumps: rb.chase.bumps,
+            misses: rb.chase.misses,
+            outOfGas: rb.chase.outOfGas,
+            dropped: rb.chase.dropped,
+            x: rb.pos.x,
+            y: rb.pos.y,
+          }
+        : { phase: 'none', bumps: 0, misses: 0, outOfGas: false, dropped: 0, x: 0, y: 0 },
+      robbers: this.robbers.map((x) => ({ name: x.name, phase: x.phase, x: x.pos.x, y: x.pos.y })),
+      tower: [...this.tower.inmates],
+      netAim: this.netAim,
+      nets: this.nets.length,
+      traffic: this.traffic.map((t) => ({ x: t.pos.x, y: t.pos.y, waiting: t.stoppedForSiren })),
+      errand: this.state.errands.statusOf('return-donuts'),
+      errands: Object.fromEntries(
+        this.state.errands.all.map((e) => [e.id, this.state.errands.statusOf(e.id)]),
+      ),
       pickups: this.pickups.length,
       bumpables: this.bumpables.map((b) => ({ id: b.id, tumbling: b.tumbling, bumps: b.bumps })),
       hintShowing: this.hints.showing,
+      riddenSpeed: riding?.vehicle.driver.speed ?? 0,
     };
   }
 
@@ -775,3 +1624,5 @@ export class CityScene extends Phaser.Scene {
     }
   }
 }
+
+export type { BakedMeta };

@@ -16,6 +16,13 @@ export const MAX_BRANCH_DEG = 100;
 export const UTURN_DEG = 110;
 /** …and not within this many seconds of the last change of direction. */
 export const UTURN_COOLDOWN = 0.3;
+/**
+ * From a stop, go back the way you came if that is within this angle of the stick. Under 90°, so
+ * a sideways push can never bounce the car between the two ends of a road (d and −d can't both
+ * be within it). Was 70° (180 − UTURN_DEG), which left a diagonal push 72° off the way back with
+ * the car parked for good (playtest 2026-11-10).
+ */
+export const BACK_FROM_STOP_DEG = 85;
 /** Angles closer than this count as a tie. */
 const TIE_DEG = 3;
 
@@ -72,9 +79,9 @@ export function pickBranch(
   let best: { i: number; diff: number; turn: number } | null = null;
   for (const { o, i } of pool) {
     const diff = stickDiff(stickScreen, o);
-    // Going back needs the stick clearly behind (same rule as a U-turn), so a sideways push
-    // can't bounce the car between two corners.
-    const limit = opposite(o, heading) ? 180 - UTURN_DEG : MAX_BRANCH_DEG;
+    // Going back needs the stick mostly behind, so a sideways push can't bounce the car between
+    // two corners.
+    const limit = opposite(o, heading) ? BACK_FROM_STOP_DEG : MAX_BRANCH_DEG;
     if (diff > limit) continue;
     const turn = angleDeg(toScreen(heading), toScreen(o));
     if (

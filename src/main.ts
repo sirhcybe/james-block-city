@@ -5,7 +5,17 @@ import { installDebugHook } from './debug';
 import { BootScene } from './scenes/BootScene';
 import { CityScene } from './scenes/CityScene';
 import { GalleryScene } from './scenes/GalleryScene';
+import { BlockStackScene } from './scenes/BlockStackScene';
+import { CementPourScene } from './scenes/CementPourScene';
+import { CopyBuildScene } from './scenes/CopyBuildScene';
 import { HudScene } from './scenes/HudScene';
+import { InteriorScene } from './scenes/InteriorScene';
+import { JobCenterScene } from './scenes/JobCenterScene';
+import { LadderRescueScene } from './scenes/LadderRescueScene';
+import { WindowSplashScene } from './scenes/WindowSplashScene';
+import { MissionBoardScene } from './scenes/MissionBoardScene';
+import { ShopScene } from './scenes/ShopScene';
+import { WhoTookItScene } from './scenes/WhoTookItScene';
 import { TitleScene } from './scenes/TitleScene';
 import { TrafficHelperScene } from './scenes/TrafficHelperScene';
 
@@ -15,6 +25,16 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   CityScene,
   HudScene,
   TrafficHelperScene,
+  WhoTookItScene,
+  MissionBoardScene,
+  ShopScene,
+  JobCenterScene,
+  InteriorScene,
+  WindowSplashScene,
+  LadderRescueScene,
+  BlockStackScene,
+  CopyBuildScene,
+  CementPourScene,
 ];
 if (import.meta.env.DEV) scenes.push(GalleryScene);
 

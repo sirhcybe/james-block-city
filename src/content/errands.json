@@ -7,5 +7,81 @@
     "item": "donut",
     "reward": 10,
     "job": "cop"
+  },
+  {
+    "id": "return-socks",
+    "kind": "return",
+    "giver": "sock-owner",
+    "icon": "sock",
+    "item": "sock",
+    "reward": 10,
+    "job": "cop",
+    "after": "double-trouble"
+  },
+  {
+    "id": "find-rubber-duck",
+    "kind": "find",
+    "giver": "mayor",
+    "icon": "rubberDuck",
+    "item": "rubberDuck",
+    "spot": "rubber-duck-spot",
+    "reward": 10,
+    "job": "cop",
+    "after": "rooftop-run"
+  },
+  {
+    "id": "deliver-balloon",
+    "kind": "deliver",
+    "giver": "puppy-owner",
+    "icon": "balloon",
+    "item": "balloon",
+    "destination": "chief",
+    "reward": 10,
+    "job": "cop",
+    "after": "lost-puppy"
+  },
+  {
+    "id": "deliver-cake",
+    "kind": "deliver",
+    "giver": "donut-owner",
+    "icon": "cake",
+    "item": "cake",
+    "destination": "fire-chief",
+    "reward": 10,
+    "job": "fire",
+    "after": "siren-school"
+  },
+  {
+    "id": "find-balloon",
+    "kind": "find",
+    "giver": "kid-heights",
+    "icon": "balloon",
+    "item": "balloon",
+    "spot": "balloon-spot",
+    "reward": 10,
+    "job": "fire",
+    "after": "barbecue-blaze"
+  },
+  {
+    "id": "find-wrench",
+    "kind": "find",
+    "giver": "foreman",
+    "icon": "wrench",
+    "item": "wrench",
+    "spot": "wrench-spot",
+    "reward": 10,
+    "job": "builder",
+    "after": "hard-hat-day"
+  },
+  {
+    "id": "deliver-pizza",
+    "kind": "deliver",
+    "giver": "donut-owner",
+    "icon": "pizza",
+    "item": "pizza",
+    "destination": "boat-owner",
+    "reward": 10,
+    "job": "builder",
+    "after": "boat-shop"
   }
 ]

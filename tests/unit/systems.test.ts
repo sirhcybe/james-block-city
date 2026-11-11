@@ -48,7 +48,8 @@ describe('economy', () => {
     const methods = Object.getOwnPropertyNames(Economy.prototype).filter(
       (m) => m !== 'constructor',
     );
-    expect(methods.sort()).toEqual(['award', 'coins', 'onChange']);
+    // spend() only ever takes coins away (Shop purchases).
+    expect(methods.sort()).toEqual(['award', 'coins', 'onChange', 'spend']);
   });
 });
 
@@ -111,7 +112,7 @@ describe('missions', () => {
     const r = new MissionRun(dd, 0);
     expect(r.notify({ type: 'caught', robber: 'pickles' }, 1000)).toBeNull();
     expect(r.notify({ type: 'reached', target: 'police-car' }, 2000)).toBe('goal');
-    expect(r.goal).toEqual({ type: 'catch', robber: 'pickles', bumps: 3 });
+    expect(r.goal).toMatchObject({ type: 'catch', robbers: [{ id: 'pickles' }], bumps: 3 });
     expect(r.notify({ type: 'caught', robber: 'someone-else' }, 3000)).toBeNull();
     expect(r.notify({ type: 'caught', robber: 'pickles' }, 4000)).toBe('complete');
     expect(r.done).toBe(true);
@@ -294,7 +295,7 @@ describe('GameState', () => {
 
     a.mission!.notify({ type: 'reached', target: 'police-car' }, 0);
     a.mission!.notify({ type: 'caught', robber: 'pickles' }, 30_000);
-    expect(a.completeMission()).toEqual({ stars: 2, coins: 20 });
+    expect(a.completeMission()).toEqual({ stars: 2, coins: 20, badge: null });
     expect(a.economy.coins).toBe(45);
 
     const b = new GameState(content, st); // "reload the page"

@@ -110,6 +110,8 @@ export class LaneDriver {
     start: LaneNode,
     heading: Vec2,
     private readonly ownMaxSpeed?: number,
+    /** Multiplies acceleration (the police bike is zippier). */
+    private readonly accelScale = 1,
   ) {
     this.from = start;
     this.to = graph.get(start.x + heading.x, start.y + heading.y) ?? graph.node(start.links[0]!);
@@ -466,7 +468,7 @@ export class LaneDriver {
         Math.sqrt(DRIVE_TUNING.cornerSpeed ** 2 + 2 * DRIVE_TUNING.brake * toCurve),
       );
     }
-    const rate = target > this.speed ? DRIVE_TUNING.accel : DRIVE_TUNING.brake;
+    const rate = target > this.speed ? DRIVE_TUNING.accel * this.accelScale : DRIVE_TUNING.brake;
     this.speed +=
       Math.sign(target - this.speed) * Math.min(Math.abs(target - this.speed), rate * dt);
 

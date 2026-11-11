@@ -37,9 +37,10 @@ export class Vehicle {
     start: LaneNode,
     heading: Vec2,
     maxSpeed?: number,
+    accelScale = 1,
   ) {
     this.look = look;
-    this.driver = new LaneDriver(graph, start, heading, maxSpeed);
+    this.driver = new LaneDriver(graph, start, heading, maxSpeed, accelScale);
     const meta = getBaked(vehicleFrameKey(look.name, this.driver.dir8, 0));
     this.img = scene.add
       .image(0, 0, meta.key)

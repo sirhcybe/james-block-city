@@ -3,7 +3,7 @@ import { PALETTE, type PaletteKey } from '../config';
 
 const paletteKeys = Object.keys(PALETTE) as [PaletteKey, ...PaletteKey[]];
 
-export const TileKind = z.enum(['grass', 'road', 'sidewalk', 'plaza']);
+export const TileKind = z.enum(['grass', 'road', 'sidewalk', 'plaza', 'path', 'water']);
 export type TileKind = z.infer<typeof TileKind>;
 
 export const BuildingKind = z.enum([
@@ -14,6 +14,17 @@ export const BuildingKind = z.enum([
   'tree',
   'police',
   'donutshop',
+  'timeout',
+  'shop',
+  'firestation',
+  'skyscraper',
+  'wall',
+  'dock',
+  'lighthouse',
+  'boatshop',
+  'bridge',
+  'office',
+  'crane',
 ]);
 export type BuildingKind = z.infer<typeof BuildingKind>;
 
@@ -26,12 +37,14 @@ export const BuildingDef = z.object({
   d: z.number().int().positive(),
   h: z.number().positive(),
   color: z.enum(paletteKeys),
+  /** A build spot (spec 005): not there until the Builder builds it. */
+  site: z.boolean().optional(),
 });
 export type BuildingDef = z.infer<typeof BuildingDef>;
 
 const Point = z.object({ gx: z.number(), gy: z.number() });
 
-export const PropKind = z.enum(['cone', 'trashcan', 'trafficLight']);
+export const PropKind = z.enum(['cone', 'trashcan', 'trafficLight', 'bush', 'board', 'grill']);
 export type PropKind = z.infer<typeof PropKind>;
 
 export const PropDef = z.object({
@@ -64,6 +77,10 @@ export const MapDef = z
     markers: z.record(z.string(), Point).default({}),
     props: z.array(PropDef).default([]),
     walkers: z.array(WalkerDef).default([]),
+    /** Points up in the air (z in block units): fires on a tower's windows, a kitten on a ledge. */
+    perches: z
+      .array(z.object({ id: z.string(), gx: z.number(), gy: z.number(), z: z.number() }))
+      .default([]),
   })
   .superRefine((m, ctx) => {
     if (m.tiles.length !== m.height) {
@@ -119,14 +136,28 @@ export interface MapPiece {
 
 /**
  * Merge map pieces into one world map. Tiles, buildings, props, walkers and markers are shifted by
- * each piece's offset; gaps are grass. The world spawn is the first piece's spawn.
+ * each piece's offset; gaps are water (the sea around the island). The world spawn is the first piece's spawn.
  */
 export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
   const width = Math.max(...pieces.map((p) => p.ox + p.map.width));
   const height = Math.max(...pieces.map((p) => p.oy + p.map.height));
-  const legend: Record<string, TileKind> = { g: 'grass', r: 'road', s: 'sidewalk', p: 'plaza' };
-  const code: Record<TileKind, string> = { grass: 'g', road: 'r', sidewalk: 's', plaza: 'p' };
-  const rows = [...Array(height)].map(() => Array<string>(width).fill('g'));
+  const legend: Record<string, TileKind> = {
+    g: 'grass',
+    r: 'road',
+    s: 'sidewalk',
+    p: 'plaza',
+    k: 'path',
+    w: 'water',
+  };
+  const code: Record<TileKind, string> = {
+    grass: 'g',
+    road: 'r',
+    sidewalk: 's',
+    plaza: 'p',
+    path: 'k',
+    water: 'w',
+  };
+  const rows = [...Array(height)].map(() => Array<string>(width).fill('w'));
   const shift = <T extends { gx: number; gy: number }>(o: T, p: MapPiece): T => ({
     ...o,
     gx: o.gx + p.ox,
@@ -143,6 +174,7 @@ export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
     markers: {},
     props: [],
     walkers: [],
+    perches: [],
   };
   for (const p of pieces) {
     const m = p.map;
@@ -151,6 +183,7 @@ export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
     }
     merged.buildings.push(...m.buildings.map((b) => shift(b, p)));
     merged.props.push(...m.props.map((o) => shift(o, p)));
+    merged.perches.push(...m.perches.map((o) => shift(o, p)));
     merged.walkers.push(
       ...m.walkers.map((w) => ({ ...w, from: shift(w.from, p), to: shift(w.to, p) })),
     );

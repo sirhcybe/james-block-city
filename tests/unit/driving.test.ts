@@ -140,3 +140,37 @@ describe('AC1: holding one direction never makes the car flip back and forth', (
     }
   }, 60_000);
 });
+
+describe('Downtown ↔ Plaza (playtest 2026-11-10: "hard to travel between the two blocks")', () => {
+  const PLAZA_X = 16;
+  const run = (
+    start: { x: number; y: number },
+    heading: { x: number; y: number },
+    stick: { x: number; y: number },
+  ) => {
+    const car = new LaneDriver(graph, graph.get(start.x, start.y)!, heading);
+    for (let i = 0; i < 60 * 25; i++) {
+      car.update(DT, { stick });
+      if (stick.x > 0 ? car.centre.x > PLAZA_X + 1 : car.centre.x < PLAZA_X - 1) return true;
+    }
+    return false;
+  };
+  for (const [key, toward] of [
+    ['right', 'plaza'],
+    ['downRight', 'plaza'],
+    ['left', 'downtown'],
+    ['upLeft', 'downtown'],
+  ] as const) {
+    it(`holding ${key} from anywhere in the other block reaches ${toward}`, () => {
+      const nodes = [...graph.nodes.values()].filter((n) =>
+        toward === 'plaza' ? n.x < PLAZA_X - 1 : n.x > PLAZA_X + 1,
+      );
+      for (const n of nodes) {
+        for (const id of n.links) {
+          const heading = dirBetween(n, graph.node(id));
+          expect(run(n, heading, KEYS[key]!), `${key} from ${n.id}`).toBe(true);
+        }
+      }
+    }, 30_000);
+  }
+});

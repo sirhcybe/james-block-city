@@ -1,15 +1,24 @@
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
-import { ACTION_SIZE, COIN_SIZE, HUD, SIREN_SIZE } from '../art/hud';
+import { ACTION_SIZE, COIN_SIZE, HUD, SIREN_SIZE, UNIFORM_SIZE } from '../art/hud';
 import { RS } from '../art/renderScale';
 import { UI } from '../art/ui';
 import { GAME_H, GAME_W } from '../config';
 import type { InputMapper } from '../input/InputMapper';
 import type { GameState } from '../systems/GameState';
-import { EV, HUD_HIT_KEY, HUD_INFO_KEY, INPUT_KEY, STATE_KEY, type HudInfo } from './keys';
+import {
+  EV,
+  HUD_HIT_KEY,
+  HUD_INFO_KEY,
+  INPUT_KEY,
+  OPEN_JOBS_KEY,
+  STATE_KEY,
+  type HudInfo,
+} from './keys';
 
 const ACTION_POS = { x: GAME_W - 110, y: GAME_H - 110 };
 const SIREN_POS = { x: GAME_W - 110, y: GAME_H - 270 };
+const UNIFORM_POS = { x: GAME_W - 80, y: 70 };
 
 /**
  * Screen-space overlay: coin counter (icon + number), carried donuts, the big Action button,
@@ -26,6 +35,9 @@ export class HudScene extends Phaser.Scene {
   private action!: Phaser.GameObjects.Image;
   private siren!: Phaser.GameObjects.Image;
   private arrow!: Phaser.GameObjects.Image;
+  private badges: Phaser.GameObjects.Image[] = [];
+  private uniform!: Phaser.GameObjects.Image;
+  private state!: GameState;
   private shownCoins = 0;
   private lastAction: HudInfo['action'] | null = null;
 
@@ -36,6 +48,7 @@ export class HudScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
     const state = this.registry.get(STATE_KEY) as GameState;
+    this.state = state;
 
     // Coins (top-left): icon + number. Numbers are fine for a 6-year-old.
     this.coinIcon = this.add.image(54, 50, HUD.coin).setScale(1 / RS);
@@ -53,13 +66,17 @@ export class HudScene extends Phaser.Scene {
       .text(54 + COIN_SIZE / 2 + 10, 50, `${this.shownCoins}`, textStyle)
       .setOrigin(0, 0.5);
     this.donutIcon = this.add
-      .image(54, 118, HUD.donut)
+      .image(54, 186, HUD.donut)
       .setScale(1 / RS)
       .setVisible(false);
     this.donutText = this.add
-      .text(54 + 34, 118, '0', { ...textStyle, fontSize: '36px' })
+      .text(54 + 34, 186, '0', { ...textStyle, fontSize: '36px' })
       .setOrigin(0, 0.5)
       .setVisible(false);
+
+    // Badges earned (under the coins).
+    this.badges = [];
+    for (const b of state.save.data.badges) this.addBadge(b, false);
 
     // Big Action button (bottom-right) and Siren above it. Both ≥ 64 CSS px.
     this.action = this.add
@@ -79,12 +96,24 @@ export class HudScene extends Phaser.Scene {
       this.mapper()?.pressSiren();
       this.press(this.siren);
     });
+    // Quick change (spec 005): with all three badges, switch uniforms from anywhere.
+    this.uniform = this.add
+      .image(UNIFORM_POS.x, UNIFORM_POS.y, HUD.uniform)
+      .setScale(1 / RS)
+      .setVisible(false)
+      .setInteractive(this.circleHit(UNIFORM_SIZE), Phaser.Geom.Circle.Contains);
+    this.uniform.on('pointerdown', () => {
+      this.press(this.uniform);
+      (this.registry.get(OPEN_JOBS_KEY) as (() => void) | undefined)?.();
+    });
+
     // The world ignores pointers that land on these buttons.
     this.registry.set(HUD_HIT_KEY, (x: number, y: number) => {
       const near = (p: { x: number; y: number }, r: number) => Math.hypot(x - p.x, y - p.y) <= r;
       return (
         near(ACTION_POS, ACTION_SIZE / 2 + 6) ||
-        (this.siren.visible && near(SIREN_POS, SIREN_SIZE / 2 + 6))
+        (this.siren.visible && near(SIREN_POS, SIREN_SIZE / 2 + 6)) ||
+        (this.uniform.visible && near(UNIFORM_POS, UNIFORM_SIZE / 2 + 6))
       );
     });
 
@@ -111,11 +140,89 @@ export class HudScene extends Phaser.Scene {
 
     const offCoins = state.economy.onChange((c) => this.flyCoins(c.delta, c.coins));
     const onMission = (r: { stars: number }) => this.celebrate(r.stars);
+    const onBadge = (job: string) => this.ceremony(job);
     this.game.events.on(EV.missionComplete, onMission);
+    this.game.events.on(EV.badge, onBadge);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       offCoins();
       this.game.events.off(EV.missionComplete, onMission);
+      this.game.events.off(EV.badge, onBadge);
       this.registry.remove(HUD_HIT_KEY);
+    });
+  }
+
+  private addBadge(job: string, pop: boolean): Phaser.GameObjects.Image {
+    const img = this.add
+      .image(54 + this.badges.length * 70, 118, HUD.badge(job))
+      .setScale(pop ? 0 : 1 / RS);
+    this.badges.push(img);
+    if (pop) this.tweens.add({ targets: img, scale: 1 / RS, duration: 300, ease: 'Back.easeOut' });
+    return img;
+  }
+
+  /** Badge ceremony: a big shiny badge spins in with sparkles, then flies to its HUD slot. */
+  private ceremony(job: string): void {
+    sfx.play('tada');
+    sfx.play('sparkle');
+    const cx = GAME_W / 2;
+    const cy = GAME_H / 2 - 20;
+    const shade = this.add
+      .rectangle(0, 0, GAME_W, GAME_H, 0x000000, 0)
+      .setOrigin(0, 0)
+      .setDepth(70);
+    this.tweens.add({ targets: shade, fillAlpha: 0.45, duration: 300 });
+    const big = this.add
+      .image(cx, cy, `${HUD.badge(job)}-big`)
+      .setScale(0)
+      .setDepth(72);
+    this.tweens.add({
+      targets: big,
+      scale: 1 / RS,
+      angle: 360,
+      duration: 900,
+      ease: 'Back.easeOut',
+    });
+    const sparkles: Phaser.GameObjects.Image[] = [];
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      const st = this.add
+        .image(cx, cy, HUD.star)
+        .setScale(0.3 / RS)
+        .setDepth(71);
+      sparkles.push(st);
+      this.tweens.add({
+        targets: st,
+        x: cx + Math.cos(a) * 230,
+        y: cy + Math.sin(a) * 170,
+        angle: 180,
+        duration: 900,
+        delay: 300,
+        ease: 'Quad.easeOut',
+      });
+      this.tweens.add({ targets: st, alpha: 0, delay: 1800, duration: 600 });
+    }
+    this.time.delayedCall(3200, () => {
+      const slot = { x: 54 + this.badges.length * 70, y: 118 };
+      this.tweens.add({
+        targets: shade,
+        fillAlpha: 0,
+        duration: 400,
+        onComplete: () => shade.destroy(),
+      });
+      this.tweens.add({
+        targets: big,
+        x: slot.x,
+        y: slot.y,
+        scale: 64 / 300 / RS,
+        duration: 700,
+        ease: 'Cubic.easeIn',
+        onComplete: () => {
+          big.destroy();
+          for (const s of sparkles) s.destroy();
+          this.addBadge(job, true);
+          sfx.play('pop', 1.3);
+        },
+      });
     });
   }
 
@@ -214,12 +321,20 @@ export class HudScene extends Phaser.Scene {
           ? HUD.actionEnter
           : info.action === 'exit'
             ? HUD.actionExit
-            : HUD.actionIdle,
+            : info.action === 'net'
+              ? HUD.actionNet
+              : info.action === 'hose'
+                ? HUD.actionHose
+                : info.action === 'blast'
+                  ? HUD.actionBlast
+                  : HUD.actionIdle,
       );
       if (info.action !== 'none')
         this.tweens.add({ targets: this.action, scale: 1.12 / RS, duration: 140, yoyo: true });
     }
-    this.siren.setVisible(info.mode === 'car');
+    // Siren while driving; on foot the same button blows a police whistle.
+    this.siren.setVisible(true);
+    this.uniform.setVisible(this.state.progress.badges.length >= 3);
     this.siren.setTexture(info.sirenOn ? HUD.sirenOn : HUD.siren);
 
     const donuts = info.donuts > 0;

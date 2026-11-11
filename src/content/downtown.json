@@ -1,0 +1,541 @@
+{
+  "id": "downtown",
+  "width": 16,
+  "height": 32,
+  "legend": {
+    "g": "grass",
+    "r": "road",
+    "s": "sidewalk",
+    "p": "plaza",
+    "k": "path",
+    "w": "water"
+  },
+  "tiles": [
+    "gggggggggggggggg",
+    "grrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrr",
+    "grrssssrrssssrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrssssrrssssrrg",
+    "grrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrr",
+    "grrssssrrssssrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrssssrrssssrrg",
+    "grrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrr",
+    "grrssssrrssssrrg",
+    "grrsppsrrsppsrrg",
+    "grrsppsrrsppsrrg",
+    "grrssssrrssssrrg",
+    "grrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrr",
+    "grrsssskkssssrrg",
+    "grrsgggkkgggsrrg",
+    "grrsgggkkgggsrrg",
+    "grrkkkkkkkkkkrrg",
+    "grrkkkkkkkkkkrrg",
+    "grrsgggkkwwwsrrg",
+    "grrsgggkkwwwsrrg",
+    "grrsssskkssssrrg",
+    "grrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrr",
+    "gggggggggggggggg"
+  ],
+  "spawn": {
+    "gx": 6.5,
+    "gy": 5.5
+  },
+  "markers": {
+    "police-car": {
+      "gx": 5,
+      "gy": 8
+    },
+    "getaway-start": {
+      "gx": 11,
+      "gy": 8
+    },
+    "donut-owner": {
+      "gx": 10.5,
+      "gy": 6.5
+    },
+    "traffic-helper": {
+      "gx": 9.5,
+      "gy": 5.5
+    },
+    "police-van": {
+      "gx": 2,
+      "gy": 5
+    },
+    "chief": {
+      "gx": 6.5,
+      "gy": 3.5
+    },
+    "mission-board": {
+      "gx": 4.5,
+      "gy": 6.5
+    },
+    "who-took-it": {
+      "gx": 4.5,
+      "gy": 3.5
+    },
+    "police-bike": {
+      "gx": 3,
+      "gy": 8
+    },
+    "flag-1": {
+      "gx": 11,
+      "gy": 8
+    },
+    "flag-2": {
+      "gx": 14,
+      "gy": 11
+    },
+    "flag-3": {
+      "gx": 8,
+      "gy": 14
+    },
+    "ducks": {
+      "gx": 10.5,
+      "gy": 19.5
+    },
+    "pond": {
+      "gx": 10.5,
+      "gy": 25.5
+    },
+    "spot-1": {
+      "gx": 6.5,
+      "gy": 22.5
+    },
+    "spot-2": {
+      "gx": 9.5,
+      "gy": 23.5
+    },
+    "spot-3": {
+      "gx": 4.5,
+      "gy": 26.5
+    },
+    "puppy-owner": {
+      "gx": 12.5,
+      "gy": 15.5
+    },
+    "smudge-start": {
+      "gx": 8,
+      "gy": 23
+    },
+    "getaway-2": {
+      "gx": 5,
+      "gy": 20
+    },
+    "traffic-1": {
+      "gx": 8,
+      "gy": 2
+    },
+    "traffic-2": {
+      "gx": 14,
+      "gy": 20
+    },
+    "traffic-3": {
+      "gx": 2,
+      "gy": 26
+    },
+    "mayor": {
+      "gx": 12.5,
+      "gy": 9.5
+    },
+    "sock-owner": {
+      "gx": 3.5,
+      "gy": 15.5
+    },
+    "rubber-duck-spot": {
+      "gx": 5.5,
+      "gy": 23.5
+    },
+    "pour-3": {
+      "gx": 8,
+      "gy": 20
+    }
+  },
+  "buildings": [
+    {
+      "id": "police-station",
+      "kind": "police",
+      "gx": 4,
+      "gy": 4,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "policeBlue"
+    },
+    {
+      "id": "donut-shop",
+      "kind": "donutshop",
+      "gx": 10,
+      "gy": 4,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "bank",
+      "kind": "tower",
+      "gx": 10,
+      "gy": 10,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "coinGold"
+    },
+    {
+      "id": "house-dt",
+      "kind": "house",
+      "gx": 4,
+      "gy": 10,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "harborTeal"
+    },
+    {
+      "id": "dt-tree-1",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-2",
+      "kind": "tree",
+      "gx": 5,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-3",
+      "kind": "tree",
+      "gx": 10,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-4",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-5",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-6",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 10,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-7",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-8",
+      "kind": "tree",
+      "gx": 5,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-9",
+      "kind": "tree",
+      "gx": 10,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-10",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "timeout-tower",
+      "kind": "timeout",
+      "gx": 4,
+      "gy": 16,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "buildingWhite"
+    },
+    {
+      "id": "house-dt2",
+      "kind": "house",
+      "gx": 10,
+      "gy": 16,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "builderYellow"
+    },
+    {
+      "id": "park-tree-1",
+      "kind": "tree",
+      "gx": 4,
+      "gy": 22,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "park-tree-2",
+      "kind": "tree",
+      "gx": 11,
+      "gy": 23,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "park-tree-3",
+      "kind": "tree",
+      "gx": 5,
+      "gy": 27,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-s1",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 17,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-s2",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 23,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-s3",
+      "kind": "tree",
+      "gx": 0,
+      "gy": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-s4",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 18,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-s5",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 24,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-s7",
+      "kind": "tree",
+      "gx": 4,
+      "gy": 31,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "dt-tree-s8",
+      "kind": "tree",
+      "gx": 10,
+      "gy": 31,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    }
+  ],
+  "props": [
+    {
+      "id": "light-1",
+      "kind": "trafficLight",
+      "gx": 9.5,
+      "gy": 6.5
+    },
+    {
+      "id": "cone-1",
+      "kind": "cone",
+      "gx": 4.5,
+      "gy": 7.2
+    },
+    {
+      "id": "cone-2",
+      "kind": "cone",
+      "gx": 7.2,
+      "gy": 11.5
+    },
+    {
+      "id": "cone-3",
+      "kind": "cone",
+      "gx": 2.3,
+      "gy": 11.5
+    },
+    {
+      "id": "can-1",
+      "kind": "trashcan",
+      "gx": 11.5,
+      "gy": 1.15
+    },
+    {
+      "id": "can-2",
+      "kind": "trashcan",
+      "gx": 13.15,
+      "gy": 4.5
+    },
+    {
+      "id": "light-2",
+      "kind": "trafficLight",
+      "gx": 6.5,
+      "gy": 18.5
+    },
+    {
+      "id": "bush-1",
+      "kind": "bush",
+      "gx": 6.5,
+      "gy": 22.5
+    },
+    {
+      "id": "bush-2",
+      "kind": "bush",
+      "gx": 9.5,
+      "gy": 23.5
+    },
+    {
+      "id": "bush-3",
+      "kind": "bush",
+      "gx": 4.5,
+      "gy": 26.5
+    },
+    {
+      "id": "bush-4",
+      "kind": "bush",
+      "gx": 10.5,
+      "gy": 22.5
+    },
+    {
+      "id": "board",
+      "kind": "board",
+      "gx": 4.5,
+      "gy": 6.5
+    },
+    {
+      "id": "cone-4",
+      "kind": "cone",
+      "gx": 13.2,
+      "gy": 24.5
+    }
+  ],
+  "walkers": [
+    {
+      "id": "walker-1",
+      "look": "walkerRed",
+      "from": {
+        "gx": 3.5,
+        "gy": 4.5
+      },
+      "to": {
+        "gx": 3.5,
+        "gy": 6.5
+      }
+    },
+    {
+      "id": "walker-2",
+      "look": "walkerGreen",
+      "from": {
+        "gx": 9.5,
+        "gy": 12.5
+      },
+      "to": {
+        "gx": 12.5,
+        "gy": 12.5
+      }
+    },
+    {
+      "id": "walker-5",
+      "look": "walkerBlue",
+      "from": {
+        "gx": 3.5,
+        "gy": 21.5
+      },
+      "to": {
+        "gx": 3.5,
+        "gy": 28.5
+      }
+    }
+  ]
+}

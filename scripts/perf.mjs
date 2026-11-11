@@ -1,6 +1,9 @@
 // Perf check: Pixel 7 emulation (landscape) + CPU throttle (RATE, default 4) for 12 s.
-// SCENARIO=walk (spec 001: walking around the plaza) or SCENARIO=chase (spec 002, default: in the
-// police car chasing Pickles, donuts dropping, pedestrians hopping, siren on).
+// SCENARIO=walk (spec 001: walking around the plaza), SCENARIO=chase (spec 002, default: in the
+// police car chasing Pickles, donuts dropping, pedestrians hopping, siren on), or SCENARIO=double
+// (spec 003 AC20: Double Trouble, two getaway cars, socks dropping, 3 town cars, siren on), or
+// SCENARIO=fire (spec 004 AC14: fire truck among the Skyscraper Heights towers, 4 fires, hose on),
+// or SCENARIO=build (spec 005 AC12: the mixer building the boat shop in the Harbor, horn on).
 // Uses the installed Chrome with the real GPU and vsync off, so fps = uncapped throughput.
 // Usage: npm run dev, then `node scripts/perf.mjs` (URL=..., RATE=..., SCENARIO=... to override).
 import { chromium, devices } from 'playwright';
@@ -36,10 +39,49 @@ console.log(
     })
     .catch(() => null),
 );
-if (SCENARIO === 'chase') {
-  await p.evaluate(() => window.__jbc.enterCar());
-  await p.waitForFunction(() => window.__jbc.player().chase.phase === 'fleeing', null, {
-    timeout: 30000,
+if (SCENARIO === 'chase' || SCENARIO === 'double') {
+  const id = SCENARIO === 'double' ? 'double-trouble' : 'donut-dash';
+  await p.evaluate((mission) => {
+    window.__jbc.grant({
+      done: ['first-day', 'donut-dash', 'duck-crossing'],
+      badges: ['cop'],
+      owned: ['police-bike'],
+    });
+    window.__jbc.startMission(mission);
+    window.__jbc.enterCar();
+  }, id);
+  await p.waitForFunction(
+    () => window.__jbc.player().robbers.some((r) => r.phase === 'fleeing'),
+    null,
+    {
+      timeout: 30000,
+    },
+  );
+} else if (SCENARIO === 'fire') {
+  await p.evaluate(() => {
+    const j = window.__jbc;
+    j.grant({
+      done: ['siren-school', 'kitty-floor-10', 'toaster-trouble'],
+      badges: ['cop', 'fire'],
+      owned: ['long-ladder'],
+    });
+    j.game.scene.getScene('City').state.switchJob('fire');
+    j.startMission('fireworks-fiasco');
+    j.ride('fire-truck');
+    j.driveTo('fireworks-at');
+  });
+} else if (SCENARIO === 'build') {
+  await p.evaluate(() => {
+    const j = window.__jbc;
+    j.grant({
+      done: ['hard-hat-day', 'dock-it', 'mixer-mayhem'],
+      badges: ['cop', 'builder'],
+      owned: ['giant-drum'],
+    });
+    j.game.scene.getScene('City').state.switchJob('builder');
+    j.startMission('boat-shop');
+    j.ride('mixer-truck');
+    j.driveTo('boat-shop-at');
   });
 } else {
   await p.evaluate(() => window.__jbc.teleport(24.5, 9.5));
@@ -67,7 +109,9 @@ const result = await p.evaluate(async (scenario) => {
   for (let i = 0; i < 12; i++) {
     const [x, y] = dirs[i % dirs.length];
     j.setMove(x, y);
-    if (scenario === 'chase') window.__jbc.game.scene.getScene('City').input2.pressSiren();
+    if (scenario !== 'walk') window.__jbc.game.scene.getScene('City').input2.pressSiren();
+    if (scenario === 'fire') j.hose();
+    if (scenario === 'build') j.blast();
     await new Promise((r) => setTimeout(r, 1000));
   }
   run = false;
@@ -79,7 +123,7 @@ const result = await p.evaluate(async (scenario) => {
     frames: frames.length,
     avgFps: Math.round(1000 / avg),
     p95ms: frames[Math.floor(frames.length * 0.95)],
-    chase: s.chase,
+    chase: s?.chase ?? null,
   };
 }, SCENARIO);
 console.log({ rate: RATE, scenario: SCENARIO, ...result });

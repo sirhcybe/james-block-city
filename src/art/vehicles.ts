@@ -28,10 +28,34 @@ export interface VehicleLook {
   bodyH: number;
   lightBar: boolean;
   star: boolean;
-  /** Draw a masked driver sitting in an open-top car. */
-  robberDriver?: boolean;
+  /** Who sits on top in the open (robbers in open-top cars, anyone riding a bike/scooter). */
+  rider?: RiderName;
   stripe?: number;
+  /** Where the cabin sits along the length (− = back, + = front). Default −0.08. */
+  cabinAt?: number;
+  /** Cabin length as a share of the vehicle length (default 0.52). */
+  cabinLen?: number;
+  /** A fire ladder lying along the roof (fire truck). */
+  ladder?: boolean;
+  /** A big striped mixing drum on the back (cement mixer). */
+  drum?: number;
 }
+
+export type RiderName = 'pickles' | 'smudge' | 'cop';
+
+interface RiderStyle {
+  shirt: number;
+  stripes: boolean;
+  mask: boolean;
+  hair: number;
+  cap: boolean;
+}
+
+const RIDERS: Record<RiderName, RiderStyle> = {
+  pickles: { shirt: 0xffffff, stripes: true, mask: true, hair: 0xd9822b, cap: false },
+  smudge: { shirt: 0xffffff, stripes: true, mask: true, hair: 0x2b1d14, cap: false },
+  cop: { shirt: PALETTE.policeBlue, stripes: false, mask: false, hair: 0x6b4226, cap: true },
+};
 
 export const POLICE_CAR: VehicleLook = {
   name: 'police-car',
@@ -54,8 +78,63 @@ export const GETAWAY_CAR: VehicleLook = {
   bodyH: 0.36,
   lightBar: false,
   star: false,
-  robberDriver: true,
+  rider: 'pickles',
 };
+
+/** Smudge's getaway car (Double Trouble): same wobbly car, teal, with Smudge at the wheel. */
+export const GETAWAY_CAR_2: VehicleLook = {
+  ...GETAWAY_CAR,
+  name: 'getaway-car-2',
+  body: PALETTE.harborTeal,
+  rider: 'smudge',
+};
+
+/** The police bike (spec 003): narrow, quick, with a little light bar on the back rack. */
+export const POLICE_BIKE: VehicleLook = {
+  name: 'police-bike',
+  body: PALETTE.policeBlue,
+  cabin: null,
+  length: 0.9,
+  width: 0.22,
+  bodyH: 0.2,
+  lightBar: true,
+  star: false,
+};
+export const POLICE_BIKE_RIDDEN: VehicleLook = {
+  ...POLICE_BIKE,
+  name: 'police-bike-ridden',
+  rider: 'cop',
+};
+
+/** Smudge's purple scooter (Rooftop Run). */
+export const SCOOTER: VehicleLook = {
+  name: 'scooter',
+  body: PALETTE.getawayPurple,
+  cabin: null,
+  length: 0.85,
+  width: 0.24,
+  bodyH: 0.14,
+  lightBar: false,
+  star: false,
+  rider: 'smudge',
+};
+export const SCOOTER_EMPTY: VehicleLook = { ...SCOOTER, name: 'scooter-empty', rider: undefined };
+
+/** Ambient traffic cars: plain, friendly colours. */
+export const TRAFFIC_CARS: VehicleLook[] = [
+  PALETTE.fireRed,
+  PALETTE.builderYellow,
+  PALETTE.harborTeal,
+].map((body, i) => ({
+  name: `traffic-${i}`,
+  body,
+  cabin: lighten(body, 0.3),
+  length: 1.2,
+  width: 0.7,
+  bodyH: 0.36,
+  lightBar: false,
+  star: false,
+}));
 
 export const POLICE_VAN: VehicleLook = {
   name: 'police-van',
@@ -92,7 +171,7 @@ function roofOf(v: VehicleLook): number {
 /** The two light-bar blocks on the roof, back one first. */
 function lightBar(v: VehicleLook, angle: number): { box: OrientedBox; red: boolean }[] {
   const { f, r } = orientedAxes(angle);
-  const back = -0.08;
+  const back = v.cabinAt ?? -0.08;
   const z = roofOf(v);
   const at = (side: number) => ({
     cx: f.x * back + r.x * side * 0.085,
@@ -204,10 +283,11 @@ function drawVehicle(
 
   // Cabin, a little toward the back.
   if (v.cabin !== null) {
+    const at = v.cabinAt ?? -0.08;
     const cabin: OrientedBox = {
-      cx: f.x * -0.08,
-      cy: f.y * -0.08,
-      halfL: L * 0.26,
+      cx: f.x * at,
+      cy: f.y * at,
+      halfL: (L * (v.cabinLen ?? 0.52)) / 2,
       halfW: Wd / 2 - 0.05,
       z0: zTop,
       z1: zTop + 0.26,
@@ -227,6 +307,56 @@ function drawVehicle(
     }
   }
 
+  if (v.ladder) {
+    // Two grey rails with rungs, lying along the back of the roof.
+    const { r } = orientedAxes(angle);
+    const back = -L * 0.18;
+    for (const side of [-1, 1]) {
+      const rail: OrientedBox = {
+        cx: f.x * back + r.x * side * 0.13,
+        cy: f.y * back + r.y * side * 0.13,
+        halfL: L * 0.32,
+        halfW: 0.035,
+        z0: zTop,
+        z1: zTop + 0.12,
+        angle,
+      };
+      drawOrientedBlock(g, rail, { color: 0xc9ced8, bevel: 1 }, ox, oy, s);
+    }
+    for (let k = -2; k <= 2; k++) {
+      const u = back + k * L * 0.12;
+      const rung: OrientedBox = {
+        cx: f.x * u,
+        cy: f.y * u,
+        halfL: 0.025,
+        halfW: 0.13,
+        z0: zTop + 0.08,
+        z1: zTop + 0.12,
+        angle,
+      };
+      drawOrientedBlock(g, rung, { color: 0xe4e7ee, bevel: 0 }, ox, oy, s);
+    }
+  }
+
+  if (v.drum !== undefined) {
+    // Mixing drum: a stack of boxes that read as a fat barrel, with a stripe.
+    const back = -L * 0.2;
+    const drum: OrientedBox = {
+      cx: f.x * back,
+      cy: f.y * back,
+      halfL: L * 0.26,
+      halfW: Wd / 2 - 0.08,
+      z0: zTop,
+      z1: zTop + 0.42,
+      angle,
+    };
+    const ds = drawOrientedBlock(g, drum, { color: 0xf4f6fa, top: 0xe4e7ee, bevel: 6 }, ox, oy, s);
+    for (const fc of ds) {
+      if (!fc.visible) continue;
+      drawOrientedWindow(g, fc, 0.1, 0.9, zTop + 0.14, zTop + 0.26, ox, oy, v.drum, s, false);
+    }
+  }
+
   if (v.lightBar) {
     for (const { box, red } of lightBar(v, angle)) {
       const c = red ? PALETTE.fireRed : PALETTE.policeBlue;
@@ -234,40 +364,54 @@ function drawVehicle(
     }
   }
 
-  if (v.robberDriver) drawRobberDriver(g, ox, oy, s, roofOf(v), showsFront);
+  if (v.rider)
+    drawRider(g, ox, oy, s, roofOf(v) - (v.width < 0.4 ? 0.02 : 0), showsFront, RIDERS[v.rider]);
 }
 
-/** Pickles at the wheel of his open-top getaway car: striped body + masked head. */
-function drawRobberDriver(
+/** Someone sitting on top in the open: a Bandit Brother (stripes + mask) or a cop with a cap. */
+function drawRider(
   g: Phaser.GameObjects.Graphics,
   ox: number,
   oy: number,
   s: number,
   roofZ: number,
   showsFront: boolean,
+  r: RiderStyle,
 ): void {
   const c = project(0, 0, roofZ, s);
   const x = c.x + ox;
   const y = c.y + oy;
   g.lineStyle(2 * s, PALETTE.outline, 1);
-  g.fillStyle(0xffffff, 1);
+  g.fillStyle(r.shirt, 1);
   g.fillRoundedRect(x - 9 * s, y - 16 * s, 18 * s, 15 * s, 5 * s);
-  g.fillStyle(PALETTE.robberBlack, 1);
-  g.fillRect(x - 8 * s, y - 12 * s, 16 * s, 2.5 * s);
-  g.fillRect(x - 8 * s, y - 7 * s, 16 * s, 2.5 * s);
+  if (r.stripes) {
+    g.fillStyle(PALETTE.robberBlack, 1);
+    g.fillRect(x - 8 * s, y - 12 * s, 16 * s, 2.5 * s);
+    g.fillRect(x - 8 * s, y - 7 * s, 16 * s, 2.5 * s);
+  }
   g.strokeRoundedRect(x - 9 * s, y - 16 * s, 18 * s, 15 * s, 5 * s);
   g.fillStyle(PALETTE.skin, 1);
   g.fillCircle(x, y - 26 * s, 10 * s);
-  g.fillStyle(0xd9822b, 1);
+  g.fillStyle(r.hair, 1);
   g.slice(x, y - 26 * s, 10 * s, Math.PI * 1.05, Math.PI * 1.95, false);
   g.fillPath();
   g.strokeCircle(x, y - 26 * s, 10 * s);
-  g.fillStyle(PALETTE.robberBlack, 1);
-  g.fillRoundedRect(x - 9 * s, y - 29 * s, 18 * s, 6 * s, 2 * s);
+  if (r.mask) {
+    g.fillStyle(PALETTE.robberBlack, 1);
+    g.fillRoundedRect(x - 9 * s, y - 29 * s, 18 * s, 6 * s, 2 * s);
+  }
+  if (r.cap) {
+    g.fillStyle(PALETTE.policeBlue, 1);
+    g.fillRoundedRect(x - 10 * s, y - 38 * s, 20 * s, 9 * s, 4 * s);
+    g.strokeRoundedRect(x - 10 * s, y - 38 * s, 20 * s, 9 * s, 4 * s);
+    g.fillStyle(PALETTE.outline, 1);
+    g.fillRect(x - 11 * s, y - 30 * s, 22 * s, 3 * s);
+    drawStar(g, x, y - 34 * s, 3 * s, PALETTE.coinGold, 1 * s);
+  }
   if (showsFront) {
-    g.fillStyle(0xffffff, 1);
-    g.fillCircle(x - 3.5 * s, y - 26 * s, 2 * s);
-    g.fillCircle(x + 3.5 * s, y - 26 * s, 2 * s);
+    g.fillStyle(r.mask ? 0xffffff : PALETTE.outline, 1);
+    g.fillCircle(x - 3.5 * s, y - 26 * s, (r.mask ? 2 : 1.6) * s);
+    g.fillCircle(x + 3.5 * s, y - 26 * s, (r.mask ? 2 : 1.6) * s);
     g.lineStyle(1.5 * s, PALETTE.outline, 1);
     g.beginPath();
     g.arc(x, y - 22 * s, 3.5 * s, Math.PI * 0.1, Math.PI * 0.9, false);
@@ -299,8 +443,8 @@ function lightParts(v: VehicleLook, dir8: number, light: 1 | 2): Part[] {
     {
       type: 'custom',
       bounds: [
-        { x: -34, y: -(z + 0.1) * 32 - 20 },
-        { x: 34, y: -z * 32 + 20 },
+        { x: -54, y: -(z + 0.1) * 32 - 34 },
+        { x: 54, y: -z * 32 + 34 },
       ],
       draw: (g, ox, oy, s) => {
         for (const { box, red } of lightBar(v, angle)) {
@@ -315,7 +459,9 @@ function lightParts(v: VehicleLook, dir8: number, light: 1 | 2): Part[] {
             s,
           );
         }
-        const c = project(0, 0, z + 0.1, s);
+        const { f } = orientedAxes(angle);
+        const at = v.cabinAt ?? 0;
+        const c = project(f.x * at, f.y * at, z + 0.1, s);
         g.fillStyle(light === 1 ? PALETTE.fireRed : PALETTE.policeBlue, 0.35);
         g.fillCircle(c.x + ox, c.y + oy, 15 * s);
       },
@@ -341,5 +487,58 @@ export function bakeVehicle(scene: Phaser.Scene, v: VehicleLook): BakedMeta[] {
 export const GETAWAY_EMPTY: VehicleLook = {
   ...GETAWAY_CAR,
   name: 'getaway-empty',
-  robberDriver: false,
+  rider: undefined,
 };
+export const GETAWAY_EMPTY_2: VehicleLook = {
+  ...GETAWAY_CAR_2,
+  name: 'getaway-empty-2',
+  rider: undefined,
+};
+
+/** The fire truck (spec 004): long, red, cabin at the front, ladder on the back. */
+export const FIRE_TRUCK: VehicleLook = {
+  name: 'fire-truck',
+  body: PALETTE.fireRed,
+  cabin: PALETTE.fireRed,
+  length: 1.6,
+  width: 0.78,
+  bodyH: 0.42,
+  lightBar: true,
+  star: false,
+  stripe: 0xffffff,
+  cabinAt: 0.42,
+  cabinLen: 0.32,
+  ladder: true,
+};
+
+/** The cement mixer (spec 005): yellow, cabin in front, a striped drum on the back. */
+export const MIXER_TRUCK: VehicleLook = {
+  name: 'mixer-truck',
+  body: PALETTE.builderYellow,
+  cabin: PALETTE.builderYellow,
+  length: 1.5,
+  width: 0.78,
+  bodyH: 0.38,
+  lightBar: false,
+  star: false,
+  cabinAt: 0.42,
+  cabinLen: 0.3,
+  drum: PALETTE.coneOrange,
+};
+
+/** Every vehicle look baked at boot. */
+export const ALL_VEHICLES: VehicleLook[] = [
+  POLICE_CAR,
+  GETAWAY_CAR,
+  GETAWAY_EMPTY,
+  GETAWAY_CAR_2,
+  GETAWAY_EMPTY_2,
+  POLICE_VAN,
+  POLICE_BIKE,
+  POLICE_BIKE_RIDDEN,
+  SCOOTER,
+  SCOOTER_EMPTY,
+  FIRE_TRUCK,
+  MIXER_TRUCK,
+  ...TRAFFIC_CARS,
+];
