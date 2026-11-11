@@ -22,7 +22,7 @@ src/
   missions/               # MissionDirector + one GoalHandler per goal type (ADR-005)
   systems/                # pure-ish TS state + logic                                 (unit-tested)
     economy.ts            # coins, rewards, shop purchases
-    jobs.ts               # current job, badges, unlocks
+    jobs.ts               # JOBS table (boss, vehicle, tool, outfit), switching rules (ADR-006)
     missions.ts           # mission state machine driven by JSON goals
     errands.ts            # errand lifecycle
     save.ts               # versioned localStorage save
@@ -82,7 +82,8 @@ type Goal =
   | { type: 'errand'; id: string }
   | { type: 'build'; spot: string }
   | { type: 'spray'; fires: string[] }
-  | { type: 'rescue'; pet: string; at: string };
+  | { type: 'rescue'; pet: string; at: string; perch: string } // ladder up to a perch
+  | { type: 'inside'; at: string; room: string };   // walk in through a door to a room scene
 interface Mission {
   id: string; job: 'cop' | 'fire' | 'builder'; tier: 'rookie' | 'pro' | 'finale';
   icon: string;                  // picture on the boss's bubble and the mission board

@@ -1,7 +1,8 @@
 // Perf check: Pixel 7 emulation (landscape) + CPU throttle (RATE, default 4) for 12 s.
 // SCENARIO=walk (spec 001: walking around the plaza), SCENARIO=chase (spec 002, default: in the
 // police car chasing Pickles, donuts dropping, pedestrians hopping, siren on), or SCENARIO=double
-// (spec 003 AC20: Double Trouble, two getaway cars, socks dropping, 3 town cars, siren on).
+// (spec 003 AC20: Double Trouble, two getaway cars, socks dropping, 3 town cars, siren on), or
+// SCENARIO=fire (spec 004 AC14: fire truck among the Skyscraper Heights towers, 4 fires, hose on).
 // Uses the installed Chrome with the real GPU and vsync off, so fps = uncapped throughput.
 // Usage: npm run dev, then `node scripts/perf.mjs` (URL=..., RATE=..., SCENARIO=... to override).
 import { chromium, devices } from 'playwright';
@@ -55,6 +56,19 @@ if (SCENARIO === 'chase' || SCENARIO === 'double') {
       timeout: 30000,
     },
   );
+} else if (SCENARIO === 'fire') {
+  await p.evaluate(() => {
+    const j = window.__jbc;
+    j.grant({
+      done: ['siren-school', 'kitty-floor-10', 'toaster-trouble'],
+      badges: ['cop', 'fire'],
+      owned: ['long-ladder'],
+    });
+    j.game.scene.getScene('City').state.switchJob('fire');
+    j.startMission('fireworks-fiasco');
+    j.ride('fire-truck');
+    j.driveTo('fireworks-at');
+  });
 } else {
   await p.evaluate(() => window.__jbc.teleport(24.5, 9.5));
 }
@@ -82,6 +96,7 @@ const result = await p.evaluate(async (scenario) => {
     const [x, y] = dirs[i % dirs.length];
     j.setMove(x, y);
     if (scenario !== 'walk') window.__jbc.game.scene.getScene('City').input2.pressSiren();
+    if (scenario === 'fire') j.hose();
     await new Promise((r) => setTimeout(r, 1000));
   }
   run = false;

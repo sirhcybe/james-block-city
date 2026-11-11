@@ -56,8 +56,8 @@ board, the Shop, the badge ceremony and the minigame kit.
   - nobody is ever trapped in danger.
 - **Reach:**
   - on foot, ground fires within 3 tiles;
-  - from the truck, fires within 3.5 tiles, up to floor 8 with the standard ladder and floor 14
-    with the extra-long ladder.
+  - from the truck, fires within 3.5 tiles, up to floor 10 with the standard ladder and floor 14
+    with the extra-long ladder (ADR-006).
   - A fire that is too high says so in pictures and voice: a ladder picture, and "you need a
     longer ladder".
 - **Easier after about 3 tries:** after 3 bursts on the same fire, every burst puts out twice as
@@ -126,52 +126,66 @@ board, the Shop, the badge ceremony and the minigame kit.
 ## Acceptance criteria
 
 ### Job Center
-- [ ] AC1 Before any badge, the Job Center shows padlocks on the other jobs, and switching is not
+- [x] AC1 Before any badge, the Job Center shows padlocks on the other jobs, and switching is not
       possible. After the Cop badge, tapping the Firefighter card switches job (spin + sparkle),
       and it is saved. Evidence: unit test (rules) + e2e.
-- [ ] AC2 After a switch:
+      _Evidence:_ unit tests "Job Center rules"; e2e "Job Center: locked before a badge…".
+- [x] AC2 After a switch:
   - the player's outfit matches the job;
   - the job's boss is the one offering missions;
   - the mission board shows that job's missions;
   - the Shop shows that job's upgrade.
   - Evidence: e2e.
+      _Evidence:_ e2e Job Center (fire chief offers Siren School, job saved); unit test (shop shows the long ladder for fire); screenshot of the Job Center and the red outfit.
 
 ### Firefighter
-- [ ] AC3 Skyscraper Heights is on the map:
+- [x] AC3 Skyscraper Heights is on the map:
   - it is reachable by road from the Plaza and from Downtown;
   - the fire station, three skyscrapers and the park strip are there.
   - Evidence: unit tests (roads connect, places reachable) + screenshot.
-- [ ] AC4 The fire truck drives with road assist, a siren and lights. Evidence: e2e + screenshot.
-- [ ] AC5 The hose:
+      _Evidence:_ unit tests "Skyscraper Heights map" (road links both ways, places reachable); screenshots.
+- [x] AC4 The fire truck drives with road assist, a siren and lights. Evidence: e2e + screenshot.
+      _Evidence:_ e2e Siren School (drive through flags, siren); screenshots of the truck in 8 facings via `?gallery=vehicles`.
+- [x] AC5 The hose:
   - puts out a fire in reach with aim help;
   - shows the hose on the Action button only when a fire is in reach;
   - respects height (standard vs. extra-long ladder);
   - gets easier after 3 bursts.
   - Evidence: unit tests of the fire model and reach + e2e.
-- [ ] AC6 All 6 Fire missions can be completed from start to finish with no reading. Evidence: one
+      _Evidence:_ unit tests "Fire and hose" (bursts, regrow, easier, reach by height/ladder); e2e Siren School (hose aim appears next to the fire) and Fireworks.
+- [x] AC6 All 6 Fire missions can be completed from start to finish with no reading. Evidence: one
       e2e flow per mission.
-- [ ] AC7 Finishing the 3 Rookie Fire missions awards the Fire badge with the ceremony, and it is
+      _Evidence:_ `tests/e2e/fire.spec.ts`, one flow per mission.
+- [x] AC7 Finishing the 3 Rookie Fire missions awards the Fire badge with the ceremony, and it is
       saved. Evidence: e2e + unit test.
-- [ ] AC8 Pro Fire missions stay locked until the Fire badge and the extra-long ladder. Evidence:
+      _Evidence:_ e2e Toaster Trouble (badges = cop, fire; ceremony voice); unit test (`earnedBadges`).
+- [x] AC8 Pro Fire missions stay locked until the Fire badge and the extra-long ladder. Evidence:
       unit test.
-- [ ] AC9 Toaster Trouble happens inside a kitchen: a separate scene you walk into from a door,
+      _Evidence:_ unit test "Pro Fire missions need the Fire badge AND the extra-long ladder"; e2e Tallest Tower (no offer without the ladder).
+- [x] AC9 Toaster Trouble happens inside a kitchen: a separate scene you walk into from a door,
       and come back out of. Evidence: e2e.
-- [ ] AC10 Window Splash and Ladder Rescue:
+      _Evidence:_ e2e Toaster Trouble (Interior scene runs, HUD hidden, back to the city).
+- [x] AC10 Window Splash and Ladder Rescue:
   - each runs as its own scene;
   - each pays 5/15/30 and can't be failed;
   - each gets harder on replay;
   - Ladder Rescue gets easier after misses.
   - Evidence: unit tests + e2e.
-- [ ] AC11 Two new errands appear after Fire missions, and coins still only come from minigames,
+      _Evidence:_ unit tests (Window Splash, Ladder Rescue); e2e pads pay 30 and 15.
+- [x] AC11 Two new errands appear after Fire missions, and coins still only come from minigames,
       errands and missions. Evidence: unit test.
+      _Evidence:_ unit test "2 new Fire errands"; the coin-source test still holds.
 
 ### Quality
-- [ ] AC12 Idle hints point to the current goal of every Fire mission. Evidence: unit test (every
+- [x] AC12 Idle hints point to the current goal of every Fire mission. Evidence: unit test (every
       goal has a target).
-- [ ] AC13 Spec 003 saves still load, and all spec 003 tests still pass. Evidence: test runs.
-- [ ] AC14 At least 55 fps on Pixel 7 emulation with 4× CPU throttle while spraying fires from the
+      _Evidence:_ unit test "every goal points at something on the map" (Fire); each handler has `hint()`.
+- [x] AC13 Spec 003 saves still load, and all spec 003 tests still pass. Evidence: test runs.
+      _Evidence:_ all unit tests (150) and the 003 e2e suite pass with 004 in place.
+- [x] AC14 At least 55 fps on Pixel 7 emulation with 4× CPU throttle while spraying fires from the
       truck in Skyscraper Heights (the tallest towers on screen). Evidence: `SCENARIO=fire` perf
       record.
+      _Evidence:_ fire scenario 77 fps avg on Pixel 7 + 4× (production build).
 
 ## Decisions made while building (agent, 2026-11-10; Chris to review)
 1. **The Cop is still the first job.** The uniform rack is the Job Center, and it unlocks after
@@ -182,4 +196,6 @@ board, the Shop, the badge ceremony and the minigame kit.
 3. **Floors:** the towers are 8, 10 and 13 blocks tall; "floor 10" and "floor 20" in the GDD
    become the top floors of the towers that fit on screen.
 4. **Interiors:** one kitchen, as its own scene, entered through a door pad.
-5. **Shop:** it shows only your current job's upgrade, so a 6-year-old doesn't buy the wrong one.
+5. **Ladder reach:** the standard ladder reaches 10 blocks, not 8, so Kitty on Floor 10 works
+   without the Pro upgrade.
+6. **Shop:** it shows only your current job's upgrade, so a 6-year-old doesn't buy the wrong one.

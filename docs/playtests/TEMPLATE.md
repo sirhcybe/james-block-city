@@ -33,6 +33,20 @@ reading, and does driving now feel like "my car goes where I push"?**
 | Driving: holding one direction goes where he pushes | | | | |
 | Driving: got between Downtown and the Plaza easily | | | | |
 
+Spec 004: **is switching jobs at City Hall clear, and is being a firefighter fun?**
+
+| Thing | Did it? | How long until? | Fun? (😀 / 😐 / 🙁) | Notes |
+| --- | --- | --- | --- | --- |
+| Found the Job Center (uniforms pad at City Hall) | | | | |
+| Switched to the red uniform | | | | |
+| Found the fire chief in Skyscraper Heights | | | | |
+| Drove the fire truck, used the siren | | | | |
+| Sprayed fires with the hose button | | | | |
+| Rescued the kitten (parked by the tower) | | | | |
+| Went into the kitchen and put the flames out | | | | |
+| Bought the extra-long ladder | | | | |
+| Played Window Splash / Ladder Rescue | | | | |
+
 ## Watch for
 - **Stuck moments:** where, for how long, did the bouncing arrow / voice hint help?
 - **Needed reading or a grown-up to explain?** (should be never)
