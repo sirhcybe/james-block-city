@@ -3,7 +3,7 @@ import { PALETTE, type PaletteKey } from '../config';
 
 const paletteKeys = Object.keys(PALETTE) as [PaletteKey, ...PaletteKey[]];
 
-export const TileKind = z.enum(['grass', 'road', 'sidewalk', 'plaza']);
+export const TileKind = z.enum(['grass', 'road', 'sidewalk', 'plaza', 'path', 'water']);
 export type TileKind = z.infer<typeof TileKind>;
 
 export const BuildingKind = z.enum([
@@ -14,6 +14,8 @@ export const BuildingKind = z.enum([
   'tree',
   'police',
   'donutshop',
+  'timeout',
+  'shop',
 ]);
 export type BuildingKind = z.infer<typeof BuildingKind>;
 
@@ -31,7 +33,7 @@ export type BuildingDef = z.infer<typeof BuildingDef>;
 
 const Point = z.object({ gx: z.number(), gy: z.number() });
 
-export const PropKind = z.enum(['cone', 'trashcan', 'trafficLight']);
+export const PropKind = z.enum(['cone', 'trashcan', 'trafficLight', 'bush', 'board']);
 export type PropKind = z.infer<typeof PropKind>;
 
 export const PropDef = z.object({
@@ -119,14 +121,28 @@ export interface MapPiece {
 
 /**
  * Merge map pieces into one world map. Tiles, buildings, props, walkers and markers are shifted by
- * each piece's offset; gaps are grass. The world spawn is the first piece's spawn.
+ * each piece's offset; gaps are water (the sea around the island). The world spawn is the first piece's spawn.
  */
 export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
   const width = Math.max(...pieces.map((p) => p.ox + p.map.width));
   const height = Math.max(...pieces.map((p) => p.oy + p.map.height));
-  const legend: Record<string, TileKind> = { g: 'grass', r: 'road', s: 'sidewalk', p: 'plaza' };
-  const code: Record<TileKind, string> = { grass: 'g', road: 'r', sidewalk: 's', plaza: 'p' };
-  const rows = [...Array(height)].map(() => Array<string>(width).fill('g'));
+  const legend: Record<string, TileKind> = {
+    g: 'grass',
+    r: 'road',
+    s: 'sidewalk',
+    p: 'plaza',
+    k: 'path',
+    w: 'water',
+  };
+  const code: Record<TileKind, string> = {
+    grass: 'g',
+    road: 'r',
+    sidewalk: 's',
+    plaza: 'p',
+    path: 'k',
+    water: 'w',
+  };
+  const rows = [...Array(height)].map(() => Array<string>(width).fill('w'));
   const shift = <T extends { gx: number; gy: number }>(o: T, p: MapPiece): T => ({
     ...o,
     gx: o.gx + p.ox,

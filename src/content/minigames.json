@@ -5,5 +5,12 @@
     "durationSec": 120,
     "tiers": [0, 8, 16],
     "difficultyStepPerReplay": 0.1
+  },
+  {
+    "id": "who-took-it",
+    "job": "cop",
+    "durationSec": 110,
+    "tiers": [0, 6, 11],
+    "difficultyStepPerReplay": 0.15
   }
 ]

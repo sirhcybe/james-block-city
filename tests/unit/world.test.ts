@@ -13,7 +13,8 @@ describe('plaza content', () => {
     const kinds = plaza.buildings.map((b) => b.kind);
     expect(kinds.filter((k) => k === 'cityhall')).toHaveLength(1);
     expect(kinds.filter((k) => k === 'tower')).toHaveLength(2);
-    expect(kinds.filter((k) => k === 'house')).toHaveLength(3);
+    expect(kinds.filter((k) => k === 'house')).toHaveLength(2);
+    expect(kinds.filter((k) => k === 'shop')).toHaveLength(1);
     expect(kinds.filter((k) => k === 'fountain')).toHaveLength(1);
     expect(kinds.filter((k) => k === 'tree').length).toBeGreaterThan(3);
     expect(tileAt(plaza, 1, 1)).toBe('road');

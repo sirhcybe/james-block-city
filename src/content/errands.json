@@ -7,5 +7,37 @@
     "item": "donut",
     "reward": 10,
     "job": "cop"
+  },
+  {
+    "id": "return-socks",
+    "kind": "return",
+    "giver": "sock-owner",
+    "icon": "sock",
+    "item": "sock",
+    "reward": 10,
+    "job": "cop",
+    "after": "double-trouble"
+  },
+  {
+    "id": "find-rubber-duck",
+    "kind": "find",
+    "giver": "mayor",
+    "icon": "rubberDuck",
+    "item": "rubberDuck",
+    "spot": "rubber-duck-spot",
+    "reward": 10,
+    "job": "cop",
+    "after": "rooftop-run"
+  },
+  {
+    "id": "deliver-balloon",
+    "kind": "deliver",
+    "giver": "puppy-owner",
+    "icon": "balloon",
+    "item": "balloon",
+    "destination": "chief",
+    "reward": 10,
+    "job": "cop",
+    "after": "lost-puppy"
   }
 ]

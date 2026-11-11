@@ -6,7 +6,9 @@
     "g": "grass",
     "r": "road",
     "s": "sidewalk",
-    "p": "plaza"
+    "p": "plaza",
+    "k": "path",
+    "w": "water"
   },
   "tiles": [
     "gggggggggggggggg",
@@ -63,7 +65,7 @@
     },
     {
       "id": "shop-north",
-      "kind": "house",
+      "kind": "shop",
       "gx": 7,
       "gy": 4,
       "w": 2,
@@ -272,7 +274,12 @@
       "color": "leaf"
     }
   ],
-  "markers": {},
+  "markers": {
+    "shop": {
+      "gx": 8,
+      "gy": 5.5
+    }
+  },
   "props": [
     {
       "id": "cone-p1",

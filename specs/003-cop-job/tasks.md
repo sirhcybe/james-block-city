@@ -31,8 +31,10 @@
       ADR-004; commit.
       Done: `src/driveTuning.ts` (`?play&drive`, dev build only); ADR-004. Defaults kept from
       spec 002 except the new corner speed 3.6, curve 0.9 and spin 0.35 s.
-- [ ] ⏸ T5 Chris drives with keys, mouse and thumb (emulated, and on a phone if possible) and
+- [x] ⏸ T5 Chris drives with keys, mouse and thumb (emulated, and on a phone if possible) and
       confirms it feels right. Record the result in the playtest note. (AC5)
+      Done: "better, but hard to travel between the two blocks" (`docs/playtests/2026-11-10.md`).
+      Fixed: three roads across the seam; reverse from a stop within 85°; travel tests.
 
 ## B. Rookie Cop
 - [ ] T6 `MissionDirector` + goal handlers refactor.

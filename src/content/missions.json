@@ -1,17 +1,115 @@
 [
   {
+    "id": "first-day",
+    "job": "cop",
+    "tier": "rookie",
+    "icon": "flag",
+    "voiceIntro": "intro-first-day",
+    "voiceDone": "done-first-day",
+    "goals": [
+      { "type": "goTo", "target": "police-car" },
+      { "type": "checkpoints", "flags": ["flag-1", "flag-2", "flag-3"] },
+      { "type": "siren" },
+      { "type": "minigame", "id": "traffic-helper" }
+    ],
+    "reward": { "coins": 15 },
+    "bonus": [{ "type": "fastGoal", "goal": 1, "seconds": 60 }]
+  },
+  {
     "id": "donut-dash",
     "job": "cop",
     "tier": "rookie",
+    "icon": "donut",
     "voiceIntro": "intro-donut-dash",
+    "voiceDone": "mission-done",
+    "requires": ["first-day"],
     "goals": [
       { "type": "goTo", "target": "police-car" },
-      { "type": "catch", "robber": "pickles", "bumps": 3 }
+      {
+        "type": "catch",
+        "robbers": [
+          { "id": "pickles", "vehicle": "car", "start": "getaway-start", "drops": "donut" }
+        ],
+        "bumps": 3
+      }
     ],
     "reward": { "coins": 20 },
     "bonus": [
       { "type": "collect", "item": "donut", "count": 3 },
       { "type": "fastGoal", "goal": 1, "seconds": 90 }
+    ]
+  },
+  {
+    "id": "duck-crossing",
+    "job": "cop",
+    "tier": "rookie",
+    "icon": "duck",
+    "voiceIntro": "intro-duck-crossing",
+    "voiceDone": "done-duck-crossing",
+    "requires": ["donut-dash"],
+    "goals": [{ "type": "escort", "group": "ducks", "from": "ducks", "to": "pond" }],
+    "reward": { "coins": 20, "unlocks": ["badge:cop"] },
+    "bonus": [{ "type": "fastGoal", "goal": 0, "seconds": 120 }]
+  },
+  {
+    "id": "rooftop-run",
+    "job": "cop",
+    "tier": "pro",
+    "icon": "scooter",
+    "voiceIntro": "intro-rooftop-run",
+    "voiceDone": "done-rooftop-run",
+    "requires": ["badge:cop", "owned:police-bike"],
+    "goals": [
+      { "type": "goTo", "target": "police-bike" },
+      {
+        "type": "catch",
+        "robbers": [{ "id": "smudge", "vehicle": "scooter", "start": "smudge-start" }],
+        "bumps": 3
+      },
+      { "type": "goTo", "target": "mayor" }
+    ],
+    "reward": { "coins": 30 },
+    "bonus": [{ "type": "fastGoal", "goal": 1, "seconds": 90 }]
+  },
+  {
+    "id": "lost-puppy",
+    "job": "cop",
+    "tier": "pro",
+    "icon": "puppy",
+    "voiceIntro": "intro-lost-puppy",
+    "voiceDone": "done-lost-puppy",
+    "requires": ["badge:cop", "owned:police-bike"],
+    "goals": [
+      { "type": "find", "item": "puppy", "spots": ["spot-1", "spot-2", "spot-3"] },
+      { "type": "goTo", "target": "puppy-owner" }
+    ],
+    "reward": { "coins": 30 },
+    "bonus": [{ "type": "fastGoal", "goal": 0, "seconds": 120 }]
+  },
+  {
+    "id": "double-trouble",
+    "job": "cop",
+    "tier": "pro",
+    "icon": "twoRobbers",
+    "voiceIntro": "intro-double-trouble",
+    "voiceDone": "done-double-trouble",
+    "requires": ["badge:cop", "owned:police-bike"],
+    "goals": [
+      { "type": "goTo", "target": "police-car" },
+      {
+        "type": "catch",
+        "robbers": [
+          { "id": "pickles", "vehicle": "car", "start": "getaway-start", "drops": "sock" },
+          { "id": "smudge", "vehicle": "car", "start": "getaway-2", "drops": "sock" }
+        ],
+        "bumps": 3
+      },
+      { "type": "minigame", "id": "who-took-it" }
+    ],
+    "reward": { "coins": 40 },
+    "bonus": [
+      { "type": "collect", "item": "sock", "count": 3 },
+      { "type": "fastGoal", "goal": 1, "seconds": 150 }
     ]
   }
 ]

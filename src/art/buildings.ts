@@ -5,7 +5,7 @@ import { darken, lighten } from './color';
 import { bakeParts, type BakedMeta, type Part } from './blocks';
 import type { BlockGeom } from './isoShapes';
 import { facePoint, project } from './isoShapes';
-import { drawDonut, drawStar } from './shapes2d';
+import { drawCoin, drawDonut, drawStar } from './shapes2d';
 
 function windowsOn(
   body: BlockGeom,
@@ -275,6 +275,133 @@ function donutShopParts(b: BuildingDef): Part[] {
   ];
 }
 
+/** Where the robbers sit behind Time-Out Tower's big window (offset from the building origin). */
+export function timeoutWindowPoint(b: BuildingDef, slot: number): { x: number; y: number } {
+  const body: BlockGeom = { w: b.w, d: b.d, h: b.h - 0.3 };
+  return facePoint(body, 'left', 0.55 + slot * 0.75, 0.3, 1);
+}
+
+/**
+ * Time-Out Tower: a tall white tower with a big ground-floor window (the robbers sit in the corner
+ * behind it) and a sand-timer sign on the roof. Nothing scary: it's a "time-out", not a jail.
+ */
+function timeoutParts(b: BuildingDef): Part[] {
+  const roofH = 0.3;
+  const body: BlockGeom = { w: b.w, d: b.d, h: b.h - roofH };
+  const parts: Part[] = [{ type: 'block', ...body, color: PALETTE.buildingWhite }];
+  parts.push({
+    type: 'window',
+    block: body,
+    face: 'left',
+    u0: 0.15,
+    u1: b.w - 0.15,
+    z0: 0.15,
+    z1: 1.35,
+    color: 0xbfe6fa,
+  });
+  for (let f = 2; f < Math.floor(body.h); f++) {
+    for (const face of ['left', 'right'] as const) {
+      const span = face === 'left' ? b.w : b.d;
+      for (let i = 0; i < span; i++)
+        parts.push({
+          type: 'window',
+          block: body,
+          face,
+          u0: i + 0.25,
+          u1: i + 0.75,
+          z0: f + 0.3,
+          z1: f + 0.8,
+        });
+    }
+  }
+  parts.push({
+    type: 'window',
+    block: body,
+    face: 'right',
+    u0: 0.6,
+    u1: 1.4,
+    z0: 0,
+    z1: 0.9,
+    color: PALETTE.policeBlue,
+  });
+  parts.push({ type: 'block', w: b.w, d: b.d, h: roofH, gz: body.h, color: PALETTE.policeBlue });
+  const top = project(b.w / 2, b.d / 2, b.h, 1);
+  parts.push({
+    type: 'custom',
+    bounds: [
+      { x: top.x - 30, y: top.y - 70 },
+      { x: top.x + 30, y: top.y + 4 },
+    ],
+    draw: (g, ox, oy, sc) => {
+      // A sand timer: two triangles in a frame.
+      const c = project(b.w / 2, b.d / 2, b.h, sc);
+      const x = c.x + ox;
+      const y = c.y + oy - 36 * sc;
+      g.lineStyle(3 * sc, PALETTE.outline, 1);
+      g.fillStyle(PALETTE.trunk, 1);
+      g.fillRect(x - 18 * sc, y - 30 * sc, 36 * sc, 6 * sc);
+      g.fillRect(x - 18 * sc, y + 24 * sc, 36 * sc, 6 * sc);
+      g.strokeRect(x - 18 * sc, y - 30 * sc, 36 * sc, 6 * sc);
+      g.strokeRect(x - 18 * sc, y + 24 * sc, 36 * sc, 6 * sc);
+      const glass = [
+        { x: x - 13 * sc, y: y - 24 * sc },
+        { x: x + 13 * sc, y: y - 24 * sc },
+        { x: x, y: y },
+        { x: x + 13 * sc, y: y + 24 * sc },
+        { x: x - 13 * sc, y: y + 24 * sc },
+        { x: x, y: y },
+      ];
+      g.fillStyle(0xe8f6ff, 1);
+      g.fillPoints(glass, true);
+      g.fillStyle(PALETTE.coinGold, 1);
+      g.fillTriangle(x - 8 * sc, y + 22 * sc, x + 8 * sc, y + 22 * sc, x, y + 10 * sc);
+      g.fillTriangle(x - 6 * sc, y - 14 * sc, x + 6 * sc, y - 14 * sc, x, y - 4 * sc);
+      g.strokePoints(glass, true);
+      g.lineStyle(3 * sc, PALETTE.outline, 1);
+      g.lineBetween(x, y + 30 * sc, x, y + 40 * sc);
+    },
+  });
+  return parts;
+}
+
+/** The Shop: a house with a striped awning and a big coin sign (picture only). */
+function shopParts(b: BuildingDef): Part[] {
+  const top = project(b.w / 2, b.d / 2, b.h, 1);
+  const body: BlockGeom = { w: b.w, d: b.d, h: b.h - 0.3 };
+  return [
+    ...houseParts(b),
+    {
+      type: 'custom',
+      bounds: [
+        { x: top.x - 40, y: top.y - 70 },
+        { x: top.x + 40, y: top.y + 4 },
+      ],
+      draw: (g, ox, oy, sc) => {
+        // Awning stripes over the door side.
+        for (let i = 0; i < b.w * 4; i++) {
+          const u0 = i / 4;
+          const a = facePoint(body, 'left', u0, 1.0, sc);
+          const bb = facePoint(body, 'left', u0 + 0.25, 1.0, sc);
+          const c2 = facePoint(body, 'left', u0 + 0.25, 0.85, sc);
+          const d2 = facePoint(body, 'left', u0, 0.85, sc);
+          g.fillStyle(i % 2 ? 0xffffff : PALETTE.fireRed, 1);
+          g.fillPoints(
+            [a, bb, { x: c2.x, y: c2.y + 8 * sc }, { x: d2.x, y: d2.y + 8 * sc }].map((p) => ({
+              x: p.x + ox,
+              y: p.y + oy,
+            })),
+            true,
+          );
+        }
+        const c = project(b.w / 2, b.d / 2, b.h, sc);
+        g.lineStyle(4 * sc, PALETTE.outline, 1);
+        g.lineBetween(c.x + ox, c.y + oy, c.x + ox, c.y + oy - 22 * sc);
+        drawCoin(g, c.x + ox, c.y + oy - 40 * sc, 22 * sc, sc);
+      },
+    },
+  ];
+}
+
 export function buildingParts(b: BuildingDef): Part[] {
   switch (b.kind) {
     case 'house':
@@ -291,6 +418,10 @@ export function buildingParts(b: BuildingDef): Part[] {
       return policeParts(b);
     case 'donutshop':
       return donutShopParts(b);
+    case 'timeout':
+      return timeoutParts(b);
+    case 'shop':
+      return shopParts(b);
   }
 }
 
