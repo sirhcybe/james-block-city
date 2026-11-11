@@ -50,7 +50,7 @@ The third job: the Builder.
   - each press flies a block to the spot, and the building grows a little;
   - spots take 6–10 blocks;
   - you can never fail.
-- **Reach:** 6 tiles from the truck, 3 tiles on foot.
+- **Reach:** 6.5 tiles from the truck, 3 tiles on foot.
 - **Easier step:** the giant mixer drum (the Pro upgrade) puts 2 blocks in per press.
 
 ### C. Builder missions
@@ -107,40 +107,52 @@ The third job: the Builder.
 - Changing roads when the bridge is built: the bridge is for walking (cars stay on roads).
 
 ## Acceptance criteria
-- [ ] AC1 The Harbor is on the map, reachable by road from the Plaza and the Heights, with five
+- [x] AC1 The Harbor is on the map, reachable by road from the Plaza and the Heights, with five
       build spots and an island. Evidence: unit tests + screenshot.
-- [ ] AC2 Once the player has a badge, the Builder uniform is open in the Job Center. As a Builder,
+      _Evidence:_ unit tests "Harbor map" (road links both ways, five spots); screenshots.
+- [x] AC2 Once the player has a badge, the Builder uniform is open in the Job Center. As a Builder,
       the foreman offers missions, and the mixer truck is the job's vehicle. Evidence: e2e.
-- [ ] AC3 The block blaster adds blocks to a build spot in reach.
+      _Evidence:_ e2e (every Builder test switches job at the Job Center; the foreman offers Hard Hat Day; the mixer is ridden).
+- [x] AC3 The block blaster adds blocks to a build spot in reach.
   - The building grows until it is built, and is then saved and stays after a reload.
   - The blaster shows on Action only when a spot is in reach.
   - Evidence: unit tests (build model) + e2e.
-- [ ] AC4 All 6 Builder missions can be completed with no reading. Evidence: one e2e flow per
+      _Evidence:_ unit tests "Block blaster"; e2e Hard Hat Day (no blaster far away, blaster near, built, still built after reload).
+- [x] AC4 All 6 Builder missions can be completed with no reading. Evidence: one e2e flow per
       mission.
-- [ ] AC5 The Builder badge (ceremony, saved) comes after the 3 Rookie missions, and Pro needs the
+      _Evidence:_ `tests/e2e/builder.spec.ts`: Hard Hat Day, Dock It, Mixer Mayhem, Lighthouse Lights, Boat Shop, Bridge to the Island.
+- [x] AC5 The Builder badge (ceremony, saved) comes after the 3 Rookie missions, and Pro needs the
       badge plus the giant drum. Evidence: unit tests + e2e.
-- [ ] AC6 After the bridge is built, the player can walk to the island. Evidence: unit test on the
+      _Evidence:_ unit test (Pro needs badge + giant drum; badge after 3 Rookies); e2e Mixer Mayhem (badges = cop, builder).
+- [x] AC6 After the bridge is built, the player can walk to the island. Evidence: unit test on the
       walk grid + e2e.
-- [ ] AC7 Block Stack, Copy the Build and Cement Pour:
+      _Evidence:_ unit test (island unreachable before the bridge, reachable after); e2e Bridge to the Island.
+- [x] AC7 Block Stack, Copy the Build and Cement Pour:
   - each runs as its own scene;
   - each pays 5/15/30 and can't be failed;
   - each gets harder on replay.
   - Evidence: unit tests + e2e.
-- [ ] AC8 With all three badges, the HUD uniform button opens the Job Center anywhere; without
+      _Evidence:_ unit tests (three models); e2e pads pay 30 / 15 / 5.
+- [x] AC8 With all three badges, the HUD uniform button opens the Job Center anywhere; without
       them, there is no button. Evidence: e2e.
-- [ ] AC9 Two new errands appear after Builder missions, and coins still come only from minigames,
+      _Evidence:_ e2e Quick change (no button with two badges; with three it opens the uniforms and switches job).
+- [x] AC9 Two new errands appear after Builder missions, and coins still come only from minigames,
       errands and missions. Evidence: unit test.
-- [ ] AC10 Idle hints point at every Builder goal. Evidence: unit test.
-- [ ] AC11 Spec 003 and 004 saves and tests still work. Evidence: test runs.
-- [ ] AC12 At least 55 fps on Pixel 7 + 4× throttle while building in the Harbor. Evidence:
+      _Evidence:_ unit test "2 new Builder errands"; e2e Boat Shop (deliver-pizza offered); coin-source test.
+- [x] AC10 Idle hints point at every Builder goal. Evidence: unit test.
+      _Evidence:_ unit test "every goal points at something on the map" (Builder); `BuildHandler.hint()`.
+- [x] AC11 Spec 003 and 004 saves and tests still work. Evidence: test runs.
+      _Evidence:_ full unit (163) + e2e suites pass (see the final run in the 005 commit notes).
+- [x] AC12 At least 55 fps on Pixel 7 + 4× throttle while building in the Harbor. Evidence:
       `SCENARIO=build` perf record.
+      _Evidence:_ `SCENARIO=build` 91 fps avg on Pixel 7 + 4× (production build).
 
 ## Decisions made while building (agent, 2026-11-11; Chris to review)
 1. **Mixer Mayhem** is "deliver cement to three places around town" (checkpoints), then Cement
    Pour. The GDD only gives the name.
 2. **The bridge is for walking.** Cars stay on roads, so the lane graph never changes at runtime.
-3. **The lighthouse** is built from the shore before the bridge exists (the blaster reaches 6
-   tiles from the truck).
+3. **The lighthouse** is built from the shore before the bridge exists (the blaster reaches 6.5
+   tiles from the truck, ADR-007).
 4. **The giant drum's effect:** 2 blocks per press. It is the Pro gate, like the bike and the
    ladder.
 5. **Horn, not siren:** the mixer truck's siren button plays a horn. Traffic still stops for it,

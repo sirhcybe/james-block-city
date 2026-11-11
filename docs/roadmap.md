@@ -7,7 +7,7 @@
 | 3 | Vertical slice: police chase + Traffic Helper + one errand → **playtest** | `specs/002-vertical-slice` | Built; awaiting real-phone check + playtest |
 | 4 | Cop job complete (driving-feel fix, 6 missions, Who Took It?, Shop + police bike, Time-Out Tower) | `specs/003-cop-job` | Built; awaiting real-phone check + playtest |
 | 5 | Job Center + Firefighter (6 missions, 2 minigames, interiors) | `specs/004-firefighter` | Built; awaiting playtest |
-| 6 | Builder (6 missions, 3 minigames, build spots) | 005 (to write) | — |
+| 6 | Builder (6 missions, 3 minigames, build spots) | `specs/005-builder` | Built; awaiting playtest |
 | 7 | Home & Shop (apartment decorating, hats, paint, ~20 errands) | 006 (to write) | — |
 | 8 | Finale + polish + PWA + grown-up corner + timed playthrough | 007 (to write) | — |
 

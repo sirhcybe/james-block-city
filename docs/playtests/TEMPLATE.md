@@ -47,6 +47,19 @@ Spec 004: **is switching jobs at City Hall clear, and is being a firefighter fun
 | Bought the extra-long ladder | | | | |
 | Played Window Splash / Ladder Rescue | | | | |
 
+Spec 005: **is building things fun, and does he find his way around the bigger city?**
+
+| Thing | Did it? | How long until? | Fun? (😀 / 😐 / 🙁) | Notes |
+| --- | --- | --- | --- | --- |
+| Switched to the yellow hard hat | | | | |
+| Found the foreman at the Harbor | | | | |
+| Blasted blocks until the wall / dock appeared | | | | |
+| Drove cement to the three places (Mixer Mayhem) | | | | |
+| Bought the giant mixer drum | | | | |
+| Built the bridge and walked to the island | | | | |
+| Played Block Stack / Copy the Build / Cement Pour | | | | |
+| Used the uniform button to switch jobs (all badges) | | | | |
+
 ## Watch for
 - **Stuck moments:** where, for how long, did the bouncing arrow / voice hint help?
 - **Needed reading or a grown-up to explain?** (should be never)

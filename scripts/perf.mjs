@@ -2,7 +2,8 @@
 // SCENARIO=walk (spec 001: walking around the plaza), SCENARIO=chase (spec 002, default: in the
 // police car chasing Pickles, donuts dropping, pedestrians hopping, siren on), or SCENARIO=double
 // (spec 003 AC20: Double Trouble, two getaway cars, socks dropping, 3 town cars, siren on), or
-// SCENARIO=fire (spec 004 AC14: fire truck among the Skyscraper Heights towers, 4 fires, hose on).
+// SCENARIO=fire (spec 004 AC14: fire truck among the Skyscraper Heights towers, 4 fires, hose on),
+// or SCENARIO=build (spec 005 AC12: the mixer building the boat shop in the Harbor, horn on).
 // Uses the installed Chrome with the real GPU and vsync off, so fps = uncapped throughput.
 // Usage: npm run dev, then `node scripts/perf.mjs` (URL=..., RATE=..., SCENARIO=... to override).
 import { chromium, devices } from 'playwright';
@@ -69,6 +70,19 @@ if (SCENARIO === 'chase' || SCENARIO === 'double') {
     j.ride('fire-truck');
     j.driveTo('fireworks-at');
   });
+} else if (SCENARIO === 'build') {
+  await p.evaluate(() => {
+    const j = window.__jbc;
+    j.grant({
+      done: ['hard-hat-day', 'dock-it', 'mixer-mayhem'],
+      badges: ['cop', 'builder'],
+      owned: ['giant-drum'],
+    });
+    j.game.scene.getScene('City').state.switchJob('builder');
+    j.startMission('boat-shop');
+    j.ride('mixer-truck');
+    j.driveTo('boat-shop-at');
+  });
 } else {
   await p.evaluate(() => window.__jbc.teleport(24.5, 9.5));
 }
@@ -97,6 +111,7 @@ const result = await p.evaluate(async (scenario) => {
     j.setMove(x, y);
     if (scenario !== 'walk') window.__jbc.game.scene.getScene('City').input2.pressSiren();
     if (scenario === 'fire') j.hose();
+    if (scenario === 'build') j.blast();
     await new Promise((r) => setTimeout(r, 1000));
   }
   run = false;

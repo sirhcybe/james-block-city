@@ -80,7 +80,7 @@ type Goal =
   | { type: 'find'; item: string; spots: string[] }  // follow barks; it's in the last spot
   | { type: 'minigame'; id: string }
   | { type: 'errand'; id: string }
-  | { type: 'build'; spot: string }
+  | { type: 'build'; spot: string }                 // blast blocks at a build spot (ADR-007)
   | { type: 'spray'; fires: string[] }
   | { type: 'rescue'; pet: string; at: string; perch: string } // ladder up to a perch
   | { type: 'inside'; at: string; room: string };   // walk in through a door to a room scene
