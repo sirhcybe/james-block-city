@@ -5,6 +5,7 @@ import { addBakedImage, getBaked } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
 import { RS, WT } from '../art/renderScale';
+import { iconKey } from '../art/menu';
 import { PLAY_SIZE, UI } from '../art/ui';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import type { MapDef } from '../content/schema';
@@ -101,6 +102,46 @@ export class TitleScene extends Phaser.Scene {
       });
     };
     play.on('pointerup', start);
+
+    // Grown-up corner (spec 007): hold the small gear for 2 seconds. A tap does nothing.
+    const gear = this.add
+      .image(GAME_W - 60, 60, iconKey('gear'))
+      .setScale(0.5 / RS)
+      .setAlpha(0.7)
+      .setDepth(10000)
+      .setInteractive({ useHandCursor: true });
+    gear.setName('gear');
+    const ring = this.add.graphics().setDepth(10001);
+    let hold: Phaser.Time.TimerEvent | null = null;
+    const k = { v: 0 };
+    const cancel = () => {
+      hold?.remove();
+      hold = null;
+      this.tweens.killTweensOf(k);
+      ring.clear();
+    };
+    gear.on('pointerdown', () => {
+      cancel();
+      k.v = 0;
+      this.tweens.add({
+        targets: k,
+        v: 1,
+        duration: 2000,
+        onUpdate: () => {
+          ring.clear().lineStyle(6, 0xffffff, 1);
+          ring.beginPath();
+          ring.arc(GAME_W - 60, 60, 38, -Math.PI / 2, -Math.PI / 2 + k.v * Math.PI * 2);
+          ring.strokePath();
+        },
+      });
+      hold = this.time.delayedCall(2000, () => {
+        cancel();
+        this.scene.pause();
+        this.scene.launch('GrownUp');
+      });
+    });
+    gear.on('pointerup', cancel);
+    gear.on('pointerout', cancel);
     this.input.keyboard?.once('keydown-ENTER', start);
     this.input.keyboard?.once('keydown-SPACE', start);
   }

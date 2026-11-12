@@ -10,6 +10,8 @@ class VoiceBox {
   private lastSaid = new Map<string, number>();
   /** Line ids spoken, for tests/debugging. */
   readonly log: string[] = [];
+  /** Grown-up corner voice level (0 / 0.5 / 1, spec 007). */
+  level = 1;
 
   setLines(lines: VoiceLines): void {
     this.lines = lines;
@@ -54,6 +56,8 @@ class VoiceBox {
       u.lang = 'en-US';
       u.rate = 0.95;
       u.pitch = 1.2;
+      u.volume = this.level;
+      if (this.level <= 0) return;
       s.speak(u);
     } catch {
       // Speech unavailable: the arrows and pictures still guide the player.

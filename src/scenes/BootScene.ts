@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
+import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
+import { loadSettings } from '../systems/settings';
 import { bakeBuilding } from '../art/buildings';
 import { bakeBigCharacter, bakeCharacter, LOOKS } from '../art/characters';
 import { bakeGround } from '../art/ground';
@@ -36,6 +38,10 @@ export class BootScene extends Phaser.Scene {
     const state = new GameState(content, storage());
     this.registry.set(STATE_KEY, state);
     voice.setLines(content.voice);
+    // Grown-up corner levels (spec 007).
+    const set = loadSettings(storage());
+    sfx.level = set.sound;
+    voice.level = set.voice;
     window.addEventListener('pagehide', () => state.save.flush());
 
     bakeGround(this, map);

@@ -206,3 +206,40 @@ describe('Golden Block Heist finale (spec 007 AC1)', () => {
       }
   });
 });
+
+describe('Grown-up settings (spec 007 AC6)', () => {
+  it('load defaults, keep valid levels, ignore junk; saved apart from the game save', async () => {
+    const { loadSettings, saveSettings, SETTINGS_KEY, DEFAULT_SETTINGS, unlockEverything } =
+      await import('../../src/systems/settings');
+    const st = storage();
+    expect(loadSettings(st)).toEqual(DEFAULT_SETTINGS);
+    saveSettings(st, { sound: 0, voice: 0.5 });
+    expect(loadSettings(st)).toEqual({ sound: 0, voice: 0.5 });
+    st.setItem(SETTINGS_KEY, '{"sound": 7, "voice": "x"}');
+    expect(loadSettings(st)).toEqual({ sound: 1, voice: 1 });
+    st.setItem(SETTINGS_KEY, 'not json');
+    expect(loadSettings(st)).toEqual(DEFAULT_SETTINGS);
+    expect(SETTINGS_KEY).not.toBe(SAVE_KEY);
+    const u = unlockEverything(['a', 'b']);
+    expect(u.badges).toEqual(['cop', 'fire', 'builder']);
+    expect(u.owned).toEqual(expect.arrayContaining(['police-bike', 'long-ladder', 'giant-drum']));
+    expect(u.done).toEqual(['a', 'b']);
+  });
+
+  it('the manifest is valid for installing: name, landscape, 192/512/maskable icons', async () => {
+    const fs = await import('node:fs');
+    const m = JSON.parse(fs.readFileSync('public/manifest.webmanifest', 'utf8')) as {
+      name: string;
+      orientation: string;
+      start_url: string;
+      display: string;
+      icons: { src: string; sizes: string; purpose?: string }[];
+    };
+    expect(m.name).toBeTruthy();
+    expect(m.orientation).toBe('landscape');
+    expect(['standalone', 'fullscreen']).toContain(m.display);
+    expect(m.icons.map((i) => i.sizes)).toEqual(expect.arrayContaining(['192x192', '512x512']));
+    expect(m.icons.some((i) => i.purpose === 'maskable')).toBe(true);
+    for (const i of m.icons) expect(fs.existsSync(`public/${i.src}`), i.src).toBe(true);
+  });
+});
