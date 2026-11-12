@@ -88,24 +88,32 @@ Somewhere to spend coins on things you can see:
 - The finale, PWA and grown-up corner (spec 007).
 
 ## Acceptance criteria
-- [ ] AC1 The apartment can be entered from its door pad and left with the back arrow (or Esc).
+- [x] AC1 The apartment can be entered from its door pad and left with the back arrow (or Esc).
       Evidence: e2e.
-- [ ] AC2 Furniture you own can be placed, moved and put away by dragging. It snaps to the grid
+      _Evidence:_ e2e Apartment (walk onto the door pad, leave with Esc); the back arrow uses the shared menu close.
+- [x] AC2 Furniture you own can be placed, moved and put away by dragging. It snaps to the grid
       with one item per square, and the layout survives a reload. Evidence: unit tests (layout
       model) + e2e (drag + reload).
-- [ ] AC3 The Shop has 4 picture tabs, and every item costs at most 90. Buying can't make coins
+      _Evidence:_ unit tests "Apartment layout"; e2e drags the lamp with the mouse, places the bed, reloads, same layout.
+- [x] AC3 The Shop has 4 picture tabs, and every item costs at most 90. Buying can't make coins
       negative, and owned hats and paint can be worn or applied by tapping. Evidence: unit tests +
       e2e.
-- [ ] AC4 A worn hat shows in every job's outfit, and it is saved. Evidence: unit test (look
+      _Evidence:_ unit test "four tabs; every item costs at most 90"; `Economy.spend` test; e2e buys from three tabs and wears/applies.
+- [x] AC4 A worn hat shows in every job's outfit, and it is saved. Evidence: unit test (look
       names) + e2e (reload).
-- [ ] AC5 The own car can be bought after the first badge. It is parked by the apartment, every
+      _Evidence:_ unit test (`lookFor`); e2e Hats (on as a cop, still on as a firefighter, saved after reload).
+- [x] AC5 The own car can be bought after the first badge. It is parked by the apartment, every
       job can drive it, and paint recolours it (saved). Evidence: e2e.
-- [ ] AC6 There are at least 19 errands, at least 3 on offer from the start, and the rest unlock
+      _Evidence:_ unit test (car needs a badge, paint needs the car, paint saved); e2e Own car (not on the shelf without a badge; bought, painted pink, driven as a firefighter).
+- [x] AC6 There are at least 19 errands, at least 3 on offer from the start, and the rest unlock
       after missions. Every find spot and every giver and receiver is on the map and reachable.
       Evidence: unit tests.
-- [ ] AC7 Version 1 saves (specs 002–005) load into SaveV2 with nothing lost. Evidence: unit test.
+      _Evidence:_ unit tests "Errands around town" (19 errands, 3 at start, every place on the map and reachable, voice lines exist); e2e.
+- [x] AC7 Version 1 saves (specs 002–005) load into SaveV2 with nothing lost. Evidence: unit test.
+      _Evidence:_ unit test "SaveV2" (a v1 save from specs 002–005 loads with nothing lost).
 - [ ] AC8 No words are needed anywhere new, the existing tests pass, and performance holds (walk
       scenario ≥ 55 fps on Pixel 7 + 4×). Evidence: test runs + perf record.
+      _Evidence:_ 181 unit tests; e2e home + cop pass on desktop; walk 66 fps on Pixel 7 + 4×. **Still to do:** one full e2e run (desktop + Pixel 7) on the final code.
 
 ## Decisions made while building (agent, 2026-11-12; Chris to review)
 1. **The apartment** is the east house of the Plaza (`house-east`), not a new building.
