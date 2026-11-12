@@ -92,6 +92,7 @@ export interface Progress {
 
 /** Whether one `requires` entry holds. */
 export function requirementMet(req: string, p: Progress): boolean {
+  if (req === 'badge:any') return p.badges.length > 0;
   if (req.startsWith('badge:')) return p.badges.includes(req.slice(6));
   if (req.startsWith('owned:')) return p.owned.includes(req.slice(6));
   return (p.missionsDone[req] ?? 0) > 0;

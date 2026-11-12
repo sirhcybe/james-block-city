@@ -7,6 +7,8 @@ export const ShopItem = z.object({
   icon: z.string(),
   price: z.number().int().positive(),
   job: z.enum(['cop', 'fire', 'builder']).optional(),
+  /** Which Shop tab it's on (spec 006). */
+  tab: z.enum(['job', 'hats', 'car', 'home']).default('job'),
   /** `badge:<job>` / `owned:<item>` / mission ids that must hold before it shows in the Shop. */
   requires: z.array(z.string()).default([]),
 });

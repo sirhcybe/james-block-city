@@ -705,6 +705,27 @@ function craneParts(b: BuildingDef): Part[] {
   ];
 }
 
+/** Your apartment (spec 006): a house with a big heart over the door. */
+function apartmentParts(b: BuildingDef): Part[] {
+  const top = project(b.w / 2, b.d / 2, b.h, 1);
+  return [
+    ...houseParts(b),
+    {
+      type: 'custom',
+      bounds: [
+        { x: top.x - 34, y: top.y - 64 },
+        { x: top.x + 34, y: top.y + 4 },
+      ],
+      draw: (g, ox, oy, sc) => {
+        const c = project(b.w / 2, b.d / 2, b.h, sc);
+        g.lineStyle(4 * sc, PALETTE.outline, 1);
+        g.lineBetween(c.x + ox, c.y + oy, c.x + ox, c.y + oy - 16 * sc);
+        drawIcon(g, 'heart', c.x + ox, c.y + oy - 36 * sc, 22 * sc, sc);
+      },
+    },
+  ];
+}
+
 export function buildingParts(b: BuildingDef): Part[] {
   switch (b.kind) {
     case 'house':
@@ -743,6 +764,8 @@ export function buildingParts(b: BuildingDef): Part[] {
       return officeParts(b);
     case 'crane':
       return craneParts(b);
+    case 'apartment':
+      return apartmentParts(b);
   }
 }
 

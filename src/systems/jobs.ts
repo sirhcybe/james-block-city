@@ -71,6 +71,23 @@ export function uniformState(
   return 'open';
 }
 
+/** Shop hats (spec 006) → the hat drawn on the character. */
+export const HATS: Record<string, 'chef' | 'pirate' | 'duck'> = {
+  'hat-chef': 'chef',
+  'hat-pirate': 'pirate',
+  'hat-duck': 'duck',
+};
+
+/**
+ * The look to draw: the job's outfit, with a worn Shop hat on top (a composite look name such as
+ * `playerFire+pirate`, baked on demand).
+ */
+export function lookFor(job: JobId, owned: readonly string[], hat: string | null): string {
+  const base = outfitFor(job, owned);
+  const h = hat ? HATS[hat] : undefined;
+  return h ? `${base}+${h}` : base;
+}
+
 /** The outfit to draw: the job's uniform, but the Cop's plain clothes until First Day's cap. */
 export function outfitFor(job: JobId, owned: readonly string[]): string {
   if (job === 'cop') return owned.includes('cap-cop') ? 'player' : 'playerPlain';

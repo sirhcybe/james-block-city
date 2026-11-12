@@ -4,7 +4,7 @@ import { voice } from '../audio/voice';
 import { maskFor, solidAt } from '../art/alphaMask';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
-import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
+import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook } from '../art/characters';
 import { groundChunkKey } from '../art/ground';
 import type { IconName } from '../art/icons';
 import { bubbleKey, MPROP, padKey } from '../art/missionProps';
@@ -23,6 +23,8 @@ import {
   SCOOTER_EMPTY,
   FIRE_TRUCK,
   MIXER_TRUCK,
+  OWN_CARS,
+  ownCarName,
   TRAFFIC_CARS,
 } from '../art/vehicles';
 import {
@@ -61,7 +63,7 @@ import { IdleHints } from '../systems/hints';
 import type { MissionEvent, RobberSpec } from '../systems/missions';
 import { BUILD, pickSite } from '../systems/build';
 import { FIRE, pickFire, tooHigh } from '../systems/fire';
-import { JOBS, outfitFor } from '../systems/jobs';
+import { JOBS, lookFor } from '../systems/jobs';
 import { netTarget, NetShot } from '../systems/net';
 import { resolveOcclusion, type Occluder } from '../systems/occlusion';
 import {
@@ -112,9 +114,9 @@ export const MINIGAMES: Record<string, { scene: string; icon: IconName }> = {
 
 /** The vehicles each job may hop into. */
 const JOB_VEHICLES: Record<string, VehicleId[]> = {
-  cop: ['police-car', 'police-bike'],
-  fire: ['fire-truck'],
-  builder: ['mixer-truck'],
+  cop: ['police-car', 'police-bike', 'own-car'],
+  fire: ['fire-truck', 'own-car'],
+  builder: ['mixer-truck', 'own-car'],
 };
 
 /** Townspeople who give missions or errands: marker id → look. */
@@ -129,6 +131,11 @@ const TOWNSPEOPLE: Record<string, string> = {
   'kid-heights': 'kid',
   foreman: 'foreman',
   'boat-owner': 'walkerBlue',
+  florist: 'florist',
+  painter: 'painter',
+  teacher: 'teacher',
+  chef: 'baker',
+  grandpa: 'grandpa',
   keeper: 'mayor',
 };
 
@@ -173,6 +180,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   bike: Vehicle | null = null;
   fireTruck: Vehicle | null = null;
   mixer: Vehicle | null = null;
+  ownCar: Vehicle | null = null;
   /** Builder build spots by id (spec 005). */
   readonly sites = new Map<string, BuildSite>();
   private blastAim: string | null = null;
@@ -203,7 +211,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private bobFrame: 0 | 1 = 0;
   private autoEnter: VehicleId | null = null;
   /** Where you stand to play / open things, and whether you're on one now. */
-  private spots: { id: string; kind: 'minigame' | 'board' | 'shop' | 'jobs'; pos: Vec2 }[] = [];
+  private spots: {
+    id: string;
+    kind: 'minigame' | 'board' | 'shop' | 'jobs' | 'home';
+    pos: Vec2;
+  }[] = [];
   /** Minigame pads (faded and still when they belong to another job). */
   private pads = new Map<
     string,
@@ -275,6 +287,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (id === 'police-bike') return this.bike;
     if (id === 'fire-truck') return this.fireTruck;
     if (id === 'mixer-truck') return this.mixer;
+    if (id === 'own-car') return this.ownCar;
     return null;
   }
 
@@ -584,6 +597,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.bike = null;
     this.fireTruck = null;
     this.mixer = null;
+    this.ownCar = null;
     this.sites.clear();
     this.fires.clear();
     this.spraying = null;
@@ -697,6 +711,13 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     });
     this.car.img.setName('police-car');
     if (this.state.owns('police-bike')) this.spawnBike(false);
+    if (this.state.owns('own-car')) this.spawnOwnCar(false);
+    if (this.hasMarker('home-door')) {
+      const at = this.marker('home-door');
+      this.spots.push({ id: 'home-door', kind: 'home', pos: at });
+      const s = gridToScreen(at.x, at.y);
+      addBakedImage(this, getBaked(padKey('home')), s.x, s.y).setDepth(-999_990);
+    }
     if (this.hasMarker('mixer-truck')) {
       const node = this.nodeNear(this.carGraph, this.marker('mixer-truck'));
       this.mixer = new Vehicle(this, this.carGraph, MIXER_TRUCK, node, { x: 0, y: 1 });
@@ -764,7 +785,32 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   }
 
   private playerLook(): string {
-    return outfitFor(this.state.job, this.state.progress.owned);
+    const look = lookFor(this.state.job, this.state.progress.owned, this.state.progress.hat);
+    ensureLook(this, look);
+    return look;
+  }
+
+  /** Your own car appears by the apartment once bought (spec 006). */
+  spawnOwnCar(puff: boolean): void {
+    if (this.ownCar || !this.hasMarker('own-car')) return;
+    const node = this.nodeNear(this.carGraph, this.marker('own-car'));
+    const look =
+      OWN_CARS.find((l) => l.name === ownCarName(this.state.progress.paint)) ?? OWN_CARS[0]!;
+    this.ownCar = new Vehicle(this, this.carGraph, look, node, { x: 0, y: 1 });
+    this.ownCar.img.setName('own-car');
+    if (puff) {
+      this.puff(this.ownCar.pos);
+      sfx.play('sparkle');
+    }
+  }
+
+  /** After the Shop or the apartment: new hat, new paint, new things. */
+  private refreshLooks(): void {
+    this.playerImg.setTexture(characterFrameKey(this.playerLook(), this.player.facing, 0));
+    if (this.ownCar) {
+      const look = OWN_CARS.find((l) => l.name === ownCarName(this.state.progress.paint));
+      if (look) this.ownCar.setLook(look);
+    }
   }
 
   /** Put on another uniform (Job Center closed with a job): spin, sparkle, new boss. */
@@ -1071,7 +1117,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
         }
       } else if (d < 4 && !this.errandAsked.has(e.id)) {
         this.errandAsked.add(e.id);
-        voice.say(ERRAND_LINES[e.id] ?? 'hint-errand');
+        voice.say(e.voice ?? ERRAND_LINES[e.id] ?? 'hint-errand');
       }
     }
     // Errand bubbles (the chief's own bubble is the director's).
@@ -1103,6 +1149,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
         }
       } else if (on.kind === 'board') this.openMenu('MissionBoard');
       else if (on.kind === 'jobs') this.openMenu('JobCenter');
+      else if (on.kind === 'home') this.openMenu('Apartment');
       else this.openMenu('Shop');
     } else if (!on) {
       // Step well off before it can trigger again.
@@ -1127,7 +1174,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.scene.launch(mg.scene, { id, plays: this.state.plays(id) });
   }
 
-  openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter'): void {
+  openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter' | 'Apartment'): void {
     if (!this.scene.isActive()) return;
     this.pauseForOverlay();
     this.scene.launch(key);
@@ -1138,8 +1185,15 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.notifyMission({ type: 'minigameDone', id: r.id });
   }
 
-  private onMenuClosed(r: { replay?: string; bought?: string; job?: string }): void {
+  private onMenuClosed(r: {
+    replay?: string;
+    bought?: string;
+    job?: string;
+    changed?: string;
+  }): void {
     if (r.job) this.time.delayedCall(150, () => this.applyJob());
+    if (r.changed) this.refreshLooks();
+    if (r.bought === 'own-car') this.time.delayedCall(300, () => this.spawnOwnCar(true));
     if (r.bought === 'police-bike') this.time.delayedCall(300, () => this.spawnBike(true));
     if (r.replay) {
       const id = r.replay;
@@ -1261,7 +1315,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private siren(): void {
     this.sirenPresses++;
     const r = this.riding();
-    if (r?.id === 'mixer-truck') {
+    if (r?.id === 'mixer-truck' || r?.id === 'own-car') {
       sfx.play('horn');
       sfx.play('honk', 0.9);
     } else if (r) {
@@ -1310,6 +1364,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       this.bike.update(dt, { stick: null });
     if (this.mixer && (this.mode === 'foot' || this.ridingId !== 'mixer-truck'))
       this.mixer.update(dt, { stick: null });
+    if (this.ownCar && (this.mode === 'foot' || this.ridingId !== 'own-car'))
+      this.ownCar.update(dt, { stick: null });
     if (this.fireTruck && (this.mode === 'foot' || this.ridingId !== 'fire-truck'))
       this.fireTruck.update(dt, { stick: null });
     this.updateNets(dt);
@@ -1364,6 +1420,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (this.bike) out.push(this.bike);
     if (this.fireTruck) out.push(this.fireTruck);
     if (this.mixer) out.push(this.mixer);
+    if (this.ownCar) out.push(this.ownCar);
     for (const r of this.robbers) out.push(r.car);
     for (const t of this.traffic) out.push(t.vehicle);
     return out;

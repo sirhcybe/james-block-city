@@ -3,18 +3,122 @@
     "id": "police-bike",
     "icon": "bike",
     "price": 90,
-    "job": "cop"
+    "job": "cop",
+    "tab": "job"
   },
   {
     "id": "long-ladder",
     "icon": "ladder",
     "price": 90,
-    "job": "fire"
+    "job": "fire",
+    "tab": "job"
   },
   {
     "id": "giant-drum",
     "icon": "mixer",
     "price": 90,
-    "job": "builder"
+    "job": "builder",
+    "tab": "job"
+  },
+  {
+    "id": "hat-chef",
+    "icon": "chefHat",
+    "price": 30,
+    "tab": "hats"
+  },
+  {
+    "id": "hat-pirate",
+    "icon": "pirateHat",
+    "price": 45,
+    "tab": "hats"
+  },
+  {
+    "id": "hat-duck",
+    "icon": "duckHat",
+    "price": 60,
+    "tab": "hats"
+  },
+  {
+    "id": "own-car",
+    "icon": "car",
+    "price": 60,
+    "tab": "car",
+    "requires": ["badge:any"]
+  },
+  {
+    "id": "paint-red",
+    "icon": "paint",
+    "price": 15,
+    "tab": "car",
+    "requires": ["owned:own-car"]
+  },
+  {
+    "id": "paint-teal",
+    "icon": "paint",
+    "price": 15,
+    "tab": "car",
+    "requires": ["owned:own-car"]
+  },
+  {
+    "id": "paint-purple",
+    "icon": "paint",
+    "price": 15,
+    "tab": "car",
+    "requires": ["owned:own-car"]
+  },
+  {
+    "id": "paint-pink",
+    "icon": "paint",
+    "price": 15,
+    "tab": "car",
+    "requires": ["owned:own-car"]
+  },
+  {
+    "id": "home-lamp",
+    "icon": "lamp",
+    "price": 15,
+    "tab": "home"
+  },
+  {
+    "id": "home-cushion",
+    "icon": "cushion",
+    "price": 15,
+    "tab": "home"
+  },
+  {
+    "id": "home-table",
+    "icon": "table",
+    "price": 20,
+    "tab": "home"
+  },
+  {
+    "id": "home-bed",
+    "icon": "bed",
+    "price": 30,
+    "tab": "home"
+  },
+  {
+    "id": "home-bookshelf",
+    "icon": "bookshelf",
+    "price": 30,
+    "tab": "home"
+  },
+  {
+    "id": "home-tv",
+    "icon": "tv",
+    "price": 45,
+    "tab": "home"
+  },
+  {
+    "id": "home-computer",
+    "icon": "computer",
+    "price": 60,
+    "tab": "home"
+  },
+  {
+    "id": "home-fishtank",
+    "icon": "fishTank",
+    "price": 75,
+    "tab": "home"
   }
 ]

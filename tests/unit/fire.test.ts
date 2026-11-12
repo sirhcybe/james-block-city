@@ -48,10 +48,10 @@ describe('Job Center rules (AC1)', () => {
     const g = new GameState(content, st);
     expect(g.switchJob('fire')).toBe(false);
     g.save.update((s) => s.badges.push('cop'));
-    expect(g.shopShelf().map((i) => i.id)).toEqual(['police-bike']);
+    expect(g.shopTab('job').map((i) => i.id)).toEqual(['police-bike']);
     expect(g.switchJob('fire')).toBe(true);
     expect(g.job).toBe('fire');
-    expect(g.shopShelf().map((i) => i.id)).toEqual(['long-ladder']);
+    expect(g.shopTab('job').map((i) => i.id)).toEqual(['long-ladder']);
     expect(g.nextMission()?.id).toBe('siren-school');
     expect(new GameState(content, st).job).toBe('fire');
   });

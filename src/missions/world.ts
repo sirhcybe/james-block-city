@@ -10,7 +10,7 @@ import type { GameState } from '../systems/GameState';
 import type { RobberSpec } from '../systems/missions';
 
 /** Which of the player's vehicles. */
-export type VehicleId = 'police-car' | 'police-bike' | 'fire-truck' | 'mixer-truck';
+export type VehicleId = 'police-car' | 'police-bike' | 'fire-truck' | 'mixer-truck' | 'own-car';
 
 /**
  * What mission goal handlers may use from the city. CityScene implements it; handlers never touch

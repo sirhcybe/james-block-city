@@ -18,9 +18,21 @@ export const SaveV1 = z.object({
 });
 export type SaveV1 = z.infer<typeof SaveV1>;
 
-export function defaultSave(): SaveV1 {
+/** Spec 006: the hat you wear (null = your uniform's own) and your own car's paint (null = plain). */
+export const SaveV2 = SaveV1.extend({
+  version: z.literal(2),
+  hat: z.string().nullable(),
+  paint: z.string().nullable(),
+});
+export type SaveV2 = z.infer<typeof SaveV2>;
+/** The current save shape. */
+export type Save = SaveV2;
+
+export function defaultSave(): Save {
   return {
-    version: 1,
+    version: 2,
+    hat: null,
+    paint: null,
     coins: 0,
     job: null,
     badges: [],
@@ -36,12 +48,16 @@ export function defaultSave(): SaveV1 {
  * Turn whatever is in storage into a valid current save. Unknown/corrupt data starts fresh rather
  * than crashing (a 6-year-old can't fix a broken save). Future versions add steps here: v1 -> v2 ...
  */
-export function migrate(raw: unknown): SaveV1 {
+export function migrate(raw: unknown): Save {
   if (!raw || typeof raw !== 'object') return defaultSave();
   const version = (raw as { version?: unknown }).version;
   if (version === 1) {
-    // Fill any fields an older v1 build didn't write yet, then validate.
-    const r = SaveV1.safeParse({ ...defaultSave(), ...(raw as object) });
+    // Fill any fields an older v1 build didn't write yet, validate as v1, then step up to v2.
+    const r = SaveV1.safeParse({ ...defaultSave(), ...(raw as object), version: 1 });
+    return r.success ? { ...r.data, version: 2, hat: null, paint: null } : defaultSave();
+  }
+  if (version === 2) {
+    const r = SaveV2.safeParse({ ...defaultSave(), ...(raw as object) });
     return r.success ? r.data : defaultSave();
   }
   return defaultSave();
@@ -51,7 +67,7 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
 /** One save slot in localStorage with debounced writes. */
 export class SaveStore {
-  data: SaveV1;
+  data: Save;
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -61,7 +77,7 @@ export class SaveStore {
     this.data = this.load();
   }
 
-  load(): SaveV1 {
+  load(): Save {
     if (!this.storage) return defaultSave();
     try {
       const text = this.storage.getItem(SAVE_KEY);
@@ -72,7 +88,7 @@ export class SaveStore {
   }
 
   /** Change the save and schedule a write. */
-  update(fn: (s: SaveV1) => void): void {
+  update(fn: (s: Save) => void): void {
     fn(this.data);
     if (this.timer) clearTimeout(this.timer);
     this.timer = setTimeout(() => this.flush(), this.debounceMs);

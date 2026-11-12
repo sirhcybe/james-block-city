@@ -14,6 +14,8 @@ export const Errand = z.object({
   spot: z.string().optional(),
   reward: z.number().int().positive(),
   job: z.enum(['cop', 'fire', 'builder']).optional(),
+  /** Voice line the giver says when you come near (spec 006). */
+  voice: z.string().optional(),
   /** Offered once this mission has been finished (new errands appear after missions). */
   after: z.string().optional(),
 });

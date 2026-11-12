@@ -5,6 +5,7 @@ import { installDebugHook } from './debug';
 import { BootScene } from './scenes/BootScene';
 import { CityScene } from './scenes/CityScene';
 import { GalleryScene } from './scenes/GalleryScene';
+import { ApartmentScene } from './scenes/ApartmentScene';
 import { BlockStackScene } from './scenes/BlockStackScene';
 import { CementPourScene } from './scenes/CementPourScene';
 import { CopyBuildScene } from './scenes/CopyBuildScene';
@@ -35,6 +36,7 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   BlockStackScene,
   CopyBuildScene,
   CementPourScene,
+  ApartmentScene,
 ];
 if (import.meta.env.DEV) scenes.push(GalleryScene);
 

@@ -526,6 +526,26 @@ export const MIXER_TRUCK: VehicleLook = {
   drum: PALETTE.coneOrange,
 };
 
+/** Your own car (spec 006): small and round. Paint ids → body colour. */
+export const PAINTS: Record<string, number> = {
+  'paint-red': PALETTE.fireRed,
+  'paint-teal': PALETTE.harborTeal,
+  'paint-purple': PALETTE.getawayPurple,
+  'paint-pink': PALETTE.donutPink,
+};
+export const ownCarName = (paint: string | null) => (paint ? `own-car-${paint}` : 'own-car');
+export const OWN_CARS: VehicleLook[] = [null, ...Object.keys(PAINTS)].map((paint) => ({
+  name: ownCarName(paint),
+  body: paint ? PAINTS[paint]! : PALETTE.buildingWhite,
+  cabin: paint ? lighten(PAINTS[paint]!, 0.25) : PALETTE.windowBlue,
+  length: 1.1,
+  width: 0.7,
+  bodyH: 0.34,
+  lightBar: false,
+  star: false,
+  cabinLen: 0.6,
+}));
+
 /** Every vehicle look baked at boot. */
 export const ALL_VEHICLES: VehicleLook[] = [
   POLICE_CAR,
@@ -540,5 +560,6 @@ export const ALL_VEHICLES: VehicleLook[] = [
   SCOOTER_EMPTY,
   FIRE_TRUCK,
   MIXER_TRUCK,
+  ...OWN_CARS,
   ...TRAFFIC_CARS,
 ];

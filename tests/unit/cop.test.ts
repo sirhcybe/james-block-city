@@ -210,7 +210,7 @@ describe('Economy.spend and the Shop (AC9)', () => {
   it('buying the police bike costs 90, saves it, and can only happen once', () => {
     const st = storage();
     const g = new GameState(content, st);
-    expect(g.shopShelf().map((i) => i.id)).toEqual(['police-bike']);
+    expect(g.shopTab('job').map((i) => i.id)).toEqual(['police-bike']);
     expect(g.content.shop[0]!.price).toBe(90);
     g.finishMinigame('traffic-helper', 99); // 30
     expect(g.buy('police-bike')).toBe(false);
@@ -226,8 +226,8 @@ describe('Economy.spend and the Shop (AC9)', () => {
 
   it('shelf hides items whose requirements are not met', () => {
     const items = [
-      { id: 'a', icon: 'bike', price: 1, requires: [] },
-      { id: 'b', icon: 'ladder', price: 1, requires: ['badge:fire'] },
+      { id: 'a', icon: 'bike', price: 1, tab: 'job' as const, requires: [] },
+      { id: 'b', icon: 'ladder', price: 1, tab: 'job' as const, requires: ['badge:fire'] },
     ];
     expect(shelf(items, progress()).map((i) => i.id)).toEqual(['a']);
     expect(shelf(items, progress({ badges: ['fire'] })).map((i) => i.id)).toEqual(['a', 'b']);
@@ -473,7 +473,7 @@ describe('Saves from spec 002 still load (AC17)', () => {
       minigamePlays: { 'traffic-helper': 1 },
       apartment: [],
     };
-    expect(migrate(old)).toEqual(old);
+    expect(migrate(old)).toEqual({ ...old, version: 2, hat: null, paint: null });
     const st = storage();
     st.setItem(SAVE_KEY, JSON.stringify(old));
     const g = new GameState(content, st);

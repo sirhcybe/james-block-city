@@ -104,6 +104,14 @@
     "pour-2": {
       "gx": 8,
       "gy": 14
+    },
+    "chef": {
+      "gx": 9.5,
+      "gy": 9.5
+    },
+    "feather-spot": {
+      "gx": 4.5,
+      "gy": 0.5
     }
   },
   "perches": [
