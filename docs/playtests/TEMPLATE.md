@@ -60,6 +60,16 @@ Spec 005: **is building things fun, and does he find his way around the bigger c
 | Played Block Stack / Copy the Build / Cement Pour | | | | |
 | Used the uniform button to switch jobs (all badges) | | | | |
 
+Spec 006: **does he want to spend coins, and does decorating hold his attention?**
+
+| Thing | Did it? | How long until? | Fun? (😀 / 😐 / 🙁) | Notes |
+| --- | --- | --- | --- | --- |
+| Found the apartment (heart over the door) | | | | |
+| Dragged furniture into the room | | | | |
+| Bought and wore a hat | | | | |
+| Bought his own car and painted it | | | | |
+| Helped people with picture bubbles (how many?) | | | | |
+
 ## Watch for
 - **Stuck moments:** where, for how long, did the bouncing arrow / voice hint help?
 - **Needed reading or a grown-up to explain?** (should be never)

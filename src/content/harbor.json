@@ -124,6 +124,18 @@
     "traffic-6": {
       "gx": 9,
       "gy": 20
+    },
+    "grandpa": {
+      "gx": 10.5,
+      "gy": 27.5
+    },
+    "fish-spot": {
+      "gx": 10.5,
+      "gy": 12.5
+    },
+    "shell-spot": {
+      "gx": 14.5,
+      "gy": 27.5
     }
   },
   "buildings": [

@@ -45,6 +45,7 @@ export class InteriorScene extends Phaser.Scene {
     this.room = data.room ?? 'kitchen';
     this.flames = [];
     this.done = false;
+    this.left = false;
   }
 
   create(): void {

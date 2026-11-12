@@ -4,6 +4,7 @@ import { gridToScreen } from './iso/projection';
 import { sfx } from './audio/sfx';
 import { voice } from './audio/voice';
 import type { CityScene } from './scenes/CityScene';
+import type { ApartmentScene } from './scenes/ApartmentScene';
 import type { InteriorScene } from './scenes/InteriorScene';
 import type { JobCenterScene } from './scenes/JobCenterScene';
 import type { MissionBoardScene } from './scenes/MissionBoardScene';
@@ -11,6 +12,7 @@ import type { ShopScene } from './scenes/ShopScene';
 import type { TrafficHelperScene } from './scenes/TrafficHelperScene';
 import type { WhoTookItScene } from './scenes/WhoTookItScene';
 import type { VehicleId } from './missions/world';
+import { closeMenu as closeMenuScene } from './scenes/minigameKit';
 import { SAVE_KEY } from './systems/save';
 
 /** `window.__jbc`: test/debug hook. Only installed in dev builds or when VITE_DEBUG_HOOK=1. */
@@ -61,7 +63,13 @@ export interface DebugHook {
   culprit(): number;
   tapSuspect(i: number): void;
   /** Open menus and use them. */
-  openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter'): void;
+  openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter' | 'Apartment'): void;
+  /** Shop: tap a card (buy, or wear/apply when owned). */
+  shopTap(id: string): void;
+  /** Apartment: put an item on a square / back in the tray; wear a hat. */
+  placeItem(item: string, gx: number, gy: number): boolean;
+  removeItem(item: string): void;
+  toggleHat(hat: string): void;
   /** Job Center: tap a uniform. */
   pickJob(job: 'cop' | 'fire' | 'builder'): boolean;
   /** Press the hose (as Action with a fire in reach). Returns the aimed fire or null. */
@@ -291,13 +299,31 @@ export function installDebugHook(game: Phaser.Game): void {
       s.debugLeave();
       return true;
     },
+    shopTap: (id) => {
+      const s = game.scene.getScene('Shop') as ShopScene | null;
+      if (s && s.scene.isActive()) s.debugTap(id);
+    },
+    placeItem: (item, gx, gy) => {
+      const s = game.scene.getScene('Apartment') as ApartmentScene | null;
+      return s && s.scene.isActive() ? s.placeItem(item, gx, gy) : false;
+    },
+    removeItem: (item) => {
+      const s = game.scene.getScene('Apartment') as ApartmentScene | null;
+      if (s && s.scene.isActive()) s.removeItem(item);
+    },
+    toggleHat: (hat) => {
+      const s = game.scene.getScene('Apartment') as ApartmentScene | null;
+      if (s && s.scene.isActive()) s.toggleHat(hat);
+    },
     closeMenu: () => {
-      for (const key of ['MissionBoard', 'Shop', 'JobCenter']) {
+      for (const key of ['MissionBoard', 'Shop', 'JobCenter', 'Apartment']) {
         const s = game.scene.getScene(key);
         if (s && s.scene.isActive()) {
-          s.scene.stop();
-          game.scene.resume('City');
-          game.scene.wake('Hud');
+          // Close the way the back arrow does, so the city hears what was bought or changed.
+          const own = s as unknown as { close?: () => void; leave?: () => void };
+          if (key === 'Shop' && own.close) own.close();
+          else if (key === 'Apartment' && own.leave) own.leave();
+          else closeMenuScene(s);
         }
       }
     },

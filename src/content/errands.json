@@ -83,5 +83,123 @@
     "reward": 10,
     "job": "builder",
     "after": "boat-shop"
+  },
+  {
+    "id": "find-teddy",
+    "kind": "find",
+    "giver": "puppy-owner",
+    "icon": "teddy",
+    "item": "teddy",
+    "spot": "teddy-spot",
+    "reward": 10,
+    "voice": "errand-teddy"
+  },
+  {
+    "id": "deliver-flowers",
+    "kind": "deliver",
+    "giver": "florist",
+    "icon": "flower",
+    "item": "flower",
+    "destination": "sock-owner",
+    "reward": 10,
+    "voice": "errand-flowers"
+  },
+  {
+    "id": "deliver-book",
+    "kind": "deliver",
+    "giver": "teacher",
+    "icon": "book",
+    "item": "book",
+    "destination": "keeper",
+    "reward": 10,
+    "voice": "errand-book"
+  },
+  {
+    "id": "deliver-letter",
+    "kind": "deliver",
+    "giver": "mayor",
+    "icon": "letter",
+    "item": "letter",
+    "destination": "foreman",
+    "reward": 10,
+    "voice": "errand-letter",
+    "after": "first-day"
+  },
+  {
+    "id": "deliver-present",
+    "kind": "deliver",
+    "giver": "painter",
+    "icon": "present",
+    "item": "present",
+    "destination": "chief",
+    "reward": 10,
+    "voice": "errand-present",
+    "after": "donut-dash"
+  },
+  {
+    "id": "find-fish",
+    "kind": "find",
+    "giver": "boat-owner",
+    "icon": "fish",
+    "item": "fish",
+    "spot": "fish-spot",
+    "reward": 10,
+    "voice": "errand-fish",
+    "after": "dock-it"
+  },
+  {
+    "id": "deliver-icecream",
+    "kind": "deliver",
+    "giver": "chef",
+    "icon": "iceCream",
+    "item": "iceCream",
+    "destination": "kid-heights",
+    "reward": 10,
+    "voice": "errand-icecream",
+    "after": "siren-school"
+  },
+  {
+    "id": "find-kitten",
+    "kind": "find",
+    "giver": "kitty-owner",
+    "icon": "kitten",
+    "item": "kitten",
+    "spot": "kitten-spot",
+    "reward": 10,
+    "voice": "errand-kitten",
+    "after": "kitty-floor-10"
+  },
+  {
+    "id": "find-feather",
+    "kind": "find",
+    "giver": "grandpa",
+    "icon": "feather",
+    "item": "feather",
+    "spot": "feather-spot",
+    "reward": 10,
+    "voice": "errand-feather",
+    "after": "tallest-tower"
+  },
+  {
+    "id": "find-apple",
+    "kind": "find",
+    "giver": "chef",
+    "icon": "apple",
+    "item": "apple",
+    "spot": "apple-spot",
+    "reward": 10,
+    "voice": "errand-apple",
+    "after": "hard-hat-day"
+  },
+  {
+    "id": "find-shell",
+    "kind": "find",
+    "giver": "painter",
+    "icon": "shell",
+    "item": "shell",
+    "spot": "shell-spot",
+    "reward": 10,
+    "voice": "errand-shell",
+    "after": "bridge-to-the-island"
   }
 ]

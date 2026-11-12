@@ -75,7 +75,7 @@
     },
     {
       "id": "house-east",
-      "kind": "house",
+      "kind": "apartment",
       "gx": 10,
       "gy": 7,
       "w": 2,
@@ -290,6 +290,26 @@
     "pour-1": {
       "gx": 8,
       "gy": 14
+    },
+    "florist": {
+      "gx": 12.5,
+      "gy": 4.5
+    },
+    "painter": {
+      "gx": 3.5,
+      "gy": 11.5
+    },
+    "home-door": {
+      "gx": 10.5,
+      "gy": 9.5
+    },
+    "own-car": {
+      "gx": 14,
+      "gy": 8
+    },
+    "kitten-spot": {
+      "gx": 12.5,
+      "gy": 6.5
     }
   },
   "props": [

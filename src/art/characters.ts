@@ -20,7 +20,7 @@ export interface CharacterLook {
   stripes?: boolean;
   /** Black eye mask (robbers). */
   mask?: boolean;
-  hat?: 'cop' | 'chef' | 'fire' | 'hardhat';
+  hat?: 'cop' | 'chef' | 'fire' | 'hardhat' | 'pirate' | 'duck';
 }
 
 export const PLAYER_LOOK: CharacterLook = {
@@ -61,6 +61,10 @@ export const LOOKS: Record<string, CharacterLook> = {
     skin: 0x8d5a3b,
     hat: 'fire',
   },
+  florist: { shirt: PALETTE.grass, pants: PALETTE.donutPink, hair: 0xd9822b, skin: 0xf2c9a0 },
+  painter: { shirt: 0xffffff, pants: PALETTE.harborTeal, hair: 0x111111, skin: 0x8d5a3b },
+  teacher: { shirt: PALETTE.getawayPurple, pants: 0x3a3d52, hair: 0x6b4226, skin: 0xe0ac7e },
+  grandpa: { shirt: PALETTE.policeBlue, pants: 0x6e6e8a, hair: 0xe8e8e8, skin: PALETTE.skin },
   foreman: {
     shirt: PALETTE.builderYellow,
     pants: 0x5a4632,
@@ -239,6 +243,40 @@ function drawCharacter(
     }
     g.fillRoundedRect(hx - 10 * s, hy - hr - 6 * s, 20 * s, 8 * s, 2 * s);
     g.strokeRoundedRect(hx - 10 * s, hy - hr - 6 * s, 20 * s, 8 * s, 2 * s);
+  } else if (look.hat === 'pirate') {
+    // A black three-corner hat with a white dot.
+    g.fillStyle(0x2b2d42, 1);
+    g.lineStyle(2 * s, ol, 1);
+    const pts = [
+      { x: hx - 17 * s, y: hy - hr + 6 * s },
+      { x: hx - 8 * s, y: hy - hr - 10 * s },
+      { x: hx, y: hy - hr - 4 * s },
+      { x: hx + 8 * s, y: hy - hr - 10 * s },
+      { x: hx + 17 * s, y: hy - hr + 6 * s },
+    ];
+    g.fillPoints(pts, true);
+    g.strokePoints(pts, true);
+    if (front) {
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(hx + side * 2 * s, hy - hr - 1 * s, 3 * s);
+    }
+  } else if (look.hat === 'duck') {
+    // A rubber-duck hat: a little yellow duck sitting on the head.
+    g.fillStyle(0xffd23f, 1);
+    g.lineStyle(2 * s, ol, 1);
+    g.fillEllipse(hx, hy - hr - 1 * s, 24 * s, 13 * s);
+    g.strokeEllipse(hx, hy - hr - 1 * s, 24 * s, 13 * s);
+    g.fillCircle(hx + side * 6 * s, hy - hr - 9 * s, 6 * s);
+    g.strokeCircle(hx + side * 6 * s, hy - hr - 9 * s, 6 * s);
+    g.fillStyle(PALETTE.coneOrange, 1);
+    g.fillTriangle(
+      hx + side * 11 * s,
+      hy - hr - 10 * s,
+      hx + side * 16 * s,
+      hy - hr - 8 * s,
+      hx + side * 11 * s,
+      hy - hr - 6 * s,
+    );
   } else if (look.hat === 'fire' || look.hat === 'hardhat') {
     // Rounded helmet: red with a gold shield (fire) or yellow with a ridge (builder).
     const fire = look.hat === 'fire';
@@ -272,6 +310,18 @@ function drawCharacter(
 }
 
 /** Bake all frames (4 facings × 2 bob frames) for a character look. */
+/**
+ * Make sure a look's frames exist. Composite looks (`<base>+<hat>`, spec 006) are baked the first
+ * time they're needed: the base look with a different hat.
+ */
+export function ensureLook(scene: Phaser.Scene, name: string): void {
+  if (scene.textures.exists(characterFrameKey(name, 'SW', 0))) return;
+  const [base, hat] = name.split('+');
+  const look = LOOKS[base ?? ''];
+  if (!look) return;
+  bakeCharacter(scene, name, hat ? { ...look, hat: hat as CharacterLook['hat'] } : look);
+}
+
 /** A big front-facing portrait frame (minigame line-ups): `big-<name>`, drawn at 3× logical size. */
 export const BIG_CHAR_SCALE = 3;
 export const bigCharacterKey = (name: string) => `big-${name}`;

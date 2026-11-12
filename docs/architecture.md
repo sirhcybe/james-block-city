@@ -103,11 +103,16 @@ interface Errand {
   spot?: string;                 // find: where the lost thing lies
   reward: number;                // coins
   job?: 'cop' | 'fire' | 'builder';
-  after?: string;                // offered once this mission is done
+  after?: string;                // offered once this mission is done (none + not 'return' = from the start)
+  voice?: string;                // what the giver says (spec 006)
 }
 
 // content/shop.json
-interface ShopItem { id: string; icon: string; price: number; job?: string; requires: string[] }
+interface ShopItem {
+  id: string; icon: string; price: number; job?: string;
+  tab: 'job' | 'hats' | 'car' | 'home';   // spec 006
+  requires: string[];                      // also 'badge:any'
+}
 
 // content/minigames.json
 interface MinigameDef {
@@ -127,6 +132,7 @@ interface SaveV1 {
 }
 ```
 Key `jbc.save`. Write after every mission, minigame, errand, purchase. Migrate by version.
+SaveV2 (spec 006, ADR-009) adds `hat: string | null` and `paint: string | null`; v1 saves step up.
 
 ### Voice (`src/audio/voice.ts`)
 `Voice.say(lineId)` looks up text in `content/voice.json` and speaks via `speechSynthesis`.

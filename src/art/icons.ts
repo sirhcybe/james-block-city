@@ -53,7 +53,32 @@ export type IconName =
   | 'uniforms'
   | 'balloon'
   | 'pizza'
-  | 'wrench';
+  | 'wrench'
+  | 'teddy'
+  | 'flower'
+  | 'iceCream'
+  | 'letter'
+  | 'fish'
+  | 'book'
+  | 'present'
+  | 'apple'
+  | 'shell'
+  | 'bed'
+  | 'table'
+  | 'lamp'
+  | 'cushion'
+  | 'bookshelf'
+  | 'tv'
+  | 'computer'
+  | 'fishTank'
+  | 'chefHat'
+  | 'pirateHat'
+  | 'duckHat'
+  | 'car'
+  | 'paint'
+  | 'heart'
+  | 'home'
+  | 'gear';
 
 type G = Phaser.GameObjects.Graphics;
 const OL = PALETTE.outline;
@@ -691,6 +716,319 @@ export function drawIcon(g: G, name: IconName, x: number, y: number, r: number, 
         [0, 0.25],
       ] as const)
         g.fillCircle(x + dx * r, y + dy * r, r * 0.13);
+      return;
+    }
+    case 'teddy': {
+      outline(g, s);
+      const fur = 0xb8794a;
+      g.fillStyle(fur, 1);
+      for (const dx of [-0.42, 0.42]) {
+        g.fillCircle(x + dx * r, y - r * 0.62, r * 0.22);
+        g.strokeCircle(x + dx * r, y - r * 0.62, r * 0.22);
+      }
+      g.fillEllipse(x, y + r * 0.35, r * 1.1, r * 1.1);
+      g.strokeEllipse(x, y + r * 0.35, r * 1.1, r * 1.1);
+      g.fillCircle(x, y - r * 0.3, r * 0.48);
+      g.strokeCircle(x, y - r * 0.3, r * 0.48);
+      g.fillStyle(0xf3d2a8, 1);
+      g.fillEllipse(x, y - r * 0.18, r * 0.42, r * 0.3);
+      g.fillStyle(OL, 1);
+      g.fillCircle(x - r * 0.17, y - r * 0.38, r * 0.07);
+      g.fillCircle(x + r * 0.17, y - r * 0.38, r * 0.07);
+      g.fillCircle(x, y - r * 0.2, r * 0.08);
+      return;
+    }
+    case 'flower': {
+      g.lineStyle(4 * s, 0x2f8a3a, 1);
+      g.lineBetween(x, y + r, x, y - r * 0.1);
+      const petals = [PALETTE.donutPink, PALETTE.fireRed, PALETTE.coinGold];
+      for (let i = 0; i < 3; i++) {
+        const cx = x + (i - 1) * r * 0.55;
+        const cy = y - r * 0.35 + (i === 1 ? -r * 0.2 : 0);
+        g.fillStyle(petals[i]!, 1);
+        for (let k = 0; k < 5; k++) {
+          const a = (k / 5) * Math.PI * 2;
+          g.fillCircle(cx + Math.cos(a) * r * 0.18, cy + Math.sin(a) * r * 0.18, r * 0.16);
+        }
+        g.fillStyle(0xffffff, 1);
+        g.fillCircle(cx, cy, r * 0.1);
+      }
+      return;
+    }
+    case 'iceCream': {
+      outline(g, s);
+      g.fillStyle(PALETTE.dough, 1);
+      g.fillTriangle(x - r * 0.45, y - r * 0.1, x + r * 0.45, y - r * 0.1, x, y + r);
+      g.strokeTriangle(x - r * 0.45, y - r * 0.1, x + r * 0.45, y - r * 0.1, x, y + r);
+      g.fillStyle(PALETTE.donutPink, 1);
+      g.fillCircle(x, y - r * 0.4, r * 0.48);
+      g.strokeCircle(x, y - r * 0.4, r * 0.48);
+      g.fillStyle(PALETTE.fireRed, 1);
+      g.fillCircle(x + r * 0.1, y - r * 0.92, r * 0.12);
+      return;
+    }
+    case 'letter': {
+      outline(g, s);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(x - r * 0.85, y - r * 0.55, r * 1.7, r * 1.1);
+      g.strokeRect(x - r * 0.85, y - r * 0.55, r * 1.7, r * 1.1);
+      g.lineBetween(x - r * 0.85, y - r * 0.55, x, y + r * 0.1);
+      g.lineBetween(x + r * 0.85, y - r * 0.55, x, y + r * 0.1);
+      g.fillStyle(PALETTE.fireRed, 1);
+      g.fillCircle(x, y + r * 0.1, r * 0.14);
+      return;
+    }
+    case 'fish': {
+      outline(g, s);
+      g.fillStyle(PALETTE.coneOrange, 1);
+      g.fillEllipse(x - r * 0.1, y, r * 1.4, r * 0.8);
+      g.strokeEllipse(x - r * 0.1, y, r * 1.4, r * 0.8);
+      g.fillTriangle(x + r * 0.5, y, x + r * 0.95, y - r * 0.4, x + r * 0.95, y + r * 0.4);
+      g.strokeTriangle(x + r * 0.5, y, x + r * 0.95, y - r * 0.4, x + r * 0.95, y + r * 0.4);
+      g.fillStyle(OL, 1);
+      g.fillCircle(x - r * 0.45, y - r * 0.08, r * 0.08);
+      return;
+    }
+    case 'book': {
+      outline(g, s);
+      g.fillStyle(PALETTE.policeBlue, 1);
+      g.fillRoundedRect(x - r * 0.65, y - r * 0.8, r * 1.3, r * 1.6, r * 0.1);
+      g.strokeRoundedRect(x - r * 0.65, y - r * 0.8, r * 1.3, r * 1.6, r * 0.1);
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(x + r * 0.45, y - r * 0.7, r * 0.12, r * 1.4);
+      drawStar(g, x - r * 0.05, y - r * 0.1, r * 0.3, PALETTE.coinGold, 1.5 * s);
+      return;
+    }
+    case 'present': {
+      outline(g, s);
+      g.fillStyle(PALETTE.harborTeal, 1);
+      g.fillRect(x - r * 0.75, y - r * 0.35, r * 1.5, r * 1.1);
+      g.strokeRect(x - r * 0.75, y - r * 0.35, r * 1.5, r * 1.1);
+      g.fillStyle(PALETTE.fireRed, 1);
+      g.fillRect(x - r * 0.12, y - r * 0.35, r * 0.24, r * 1.1);
+      g.fillEllipse(x - r * 0.3, y - r * 0.5, r * 0.5, r * 0.3);
+      g.fillEllipse(x + r * 0.3, y - r * 0.5, r * 0.5, r * 0.3);
+      return;
+    }
+    case 'apple': {
+      outline(g, s);
+      g.fillStyle(PALETTE.fireRed, 1);
+      g.fillCircle(x - r * 0.25, y + r * 0.1, r * 0.55);
+      g.fillCircle(x + r * 0.25, y + r * 0.1, r * 0.55);
+      g.lineStyle(4 * s, 0x6b4226, 1);
+      g.lineBetween(x, y - r * 0.4, x + r * 0.1, y - r * 0.8);
+      g.fillStyle(PALETTE.grass, 1);
+      g.fillEllipse(x + r * 0.35, y - r * 0.65, r * 0.45, r * 0.22);
+      return;
+    }
+    case 'shell': {
+      outline(g, s);
+      g.fillStyle(0xffd9c2, 1);
+      g.beginPath();
+      g.arc(x, y + r * 0.5, r * 0.9, Math.PI, 0, false);
+      g.closePath();
+      g.fillPath();
+      g.strokePath();
+      for (const a of [-0.6, -0.2, 0.2, 0.6])
+        g.lineBetween(x, y + r * 0.5, x + a * r, y - r * 0.25);
+      return;
+    }
+    case 'bed': {
+      outline(g, s);
+      g.fillStyle(PALETTE.trunk, 1);
+      g.fillRect(x - r * 0.9, y - r * 0.6, r * 0.2, r * 1.3);
+      g.strokeRect(x - r * 0.9, y - r * 0.6, r * 0.2, r * 1.3);
+      g.fillStyle(PALETTE.policeBlue, 1);
+      g.fillRect(x - r * 0.7, y - r * 0.05, r * 1.6, r * 0.5);
+      g.strokeRect(x - r * 0.7, y - r * 0.05, r * 1.6, r * 0.5);
+      g.fillStyle(0xffffff, 1);
+      g.fillRoundedRect(x - r * 0.65, y - r * 0.35, r * 0.5, r * 0.3, r * 0.1);
+      g.strokeRoundedRect(x - r * 0.65, y - r * 0.35, r * 0.5, r * 0.3, r * 0.1);
+      g.fillStyle(PALETTE.trunk, 1);
+      g.fillRect(x - r * 0.7, y + r * 0.45, r * 0.15, r * 0.3);
+      g.fillRect(x + r * 0.75, y + r * 0.45, r * 0.15, r * 0.3);
+      return;
+    }
+    case 'table': {
+      outline(g, s);
+      g.fillStyle(PALETTE.dough, 1);
+      g.fillRect(x - r * 0.9, y - r * 0.25, r * 1.8, r * 0.25);
+      g.strokeRect(x - r * 0.9, y - r * 0.25, r * 1.8, r * 0.25);
+      for (const dx of [-0.75, 0.6]) {
+        g.fillRect(x + dx * r, y, r * 0.15, r * 0.8);
+        g.strokeRect(x + dx * r, y, r * 0.15, r * 0.8);
+      }
+      return;
+    }
+    case 'lamp': {
+      outline(g, s);
+      g.fillStyle(PALETTE.coinGold, 1);
+      g.fillTriangle(x - r * 0.55, y - r * 0.1, x + r * 0.55, y - r * 0.1, x, y - r * 0.9);
+      g.strokeTriangle(x - r * 0.55, y - r * 0.1, x + r * 0.55, y - r * 0.1, x, y - r * 0.9);
+      g.lineStyle(5 * s, OL, 1);
+      g.lineBetween(x, y - r * 0.1, x, y + r * 0.75);
+      g.fillStyle(OL, 1);
+      g.fillEllipse(x, y + r * 0.8, r * 0.8, r * 0.25);
+      return;
+    }
+    case 'cushion': {
+      outline(g, s);
+      for (const [dx, c] of [
+        [-0.35, PALETTE.donutPink],
+        [0.35, PALETTE.harborTeal],
+      ] as const) {
+        g.fillStyle(c, 1);
+        g.fillRoundedRect(x + dx * r - r * 0.4, y - r * 0.3, r * 0.8, r * 0.7, r * 0.25);
+        g.strokeRoundedRect(x + dx * r - r * 0.4, y - r * 0.3, r * 0.8, r * 0.7, r * 0.25);
+      }
+      return;
+    }
+    case 'bookshelf': {
+      outline(g, s);
+      g.fillStyle(PALETTE.trunk, 1);
+      g.fillRect(x - r * 0.7, y - r * 0.9, r * 1.4, r * 1.8);
+      g.strokeRect(x - r * 0.7, y - r * 0.9, r * 1.4, r * 1.8);
+      const cols = [PALETTE.fireRed, PALETTE.policeBlue, PALETTE.coinGold, PALETTE.grass];
+      for (let row = 0; row < 3; row++)
+        for (let i = 0; i < 4; i++) {
+          g.fillStyle(cols[(i + row) % 4]!, 1);
+          g.fillRect(x - r * 0.6 + i * r * 0.3, y - r * 0.8 + row * r * 0.58, r * 0.22, r * 0.45);
+        }
+      return;
+    }
+    case 'tv': {
+      outline(g, s);
+      g.fillStyle(0x3a3d4a, 1);
+      g.fillRoundedRect(x - r * 0.9, y - r * 0.65, r * 1.8, r * 1.15, r * 0.12);
+      g.strokeRoundedRect(x - r * 0.9, y - r * 0.65, r * 1.8, r * 1.15, r * 0.12);
+      g.fillStyle(PALETTE.windowBlue, 1);
+      g.fillRect(x - r * 0.75, y - r * 0.52, r * 1.5, r * 0.88);
+      drawStar(g, x, y - r * 0.08, r * 0.25, PALETTE.coinGold, 1.5 * s);
+      g.fillStyle(OL, 1);
+      g.fillRect(x - r * 0.3, y + r * 0.55, r * 0.6, r * 0.15);
+      return;
+    }
+    case 'computer': {
+      outline(g, s);
+      g.fillStyle(0xd9dce3, 1);
+      g.fillRoundedRect(x - r * 0.75, y - r * 0.75, r * 1.5, r * 1.05, r * 0.1);
+      g.strokeRoundedRect(x - r * 0.75, y - r * 0.75, r * 1.5, r * 1.05, r * 0.1);
+      g.fillStyle(PALETTE.harborTeal, 1);
+      g.fillRect(x - r * 0.6, y - r * 0.62, r * 1.2, r * 0.75);
+      g.fillStyle(0xd9dce3, 1);
+      g.fillRect(x - r * 0.9, y + r * 0.45, r * 1.8, r * 0.3);
+      g.strokeRect(x - r * 0.9, y + r * 0.45, r * 1.8, r * 0.3);
+      return;
+    }
+    case 'fishTank': {
+      outline(g, s);
+      g.fillStyle(0x9fd8f5, 1);
+      g.fillRect(x - r * 0.9, y - r * 0.55, r * 1.8, r * 1.2);
+      g.strokeRect(x - r * 0.9, y - r * 0.55, r * 1.8, r * 1.2);
+      g.fillStyle(PALETTE.coneOrange, 1);
+      g.fillEllipse(x - r * 0.25, y, r * 0.5, r * 0.28);
+      g.fillTriangle(x + r * 0.0, y, x + r * 0.2, y - r * 0.15, x + r * 0.2, y + r * 0.15);
+      g.fillStyle(PALETTE.grass, 1);
+      g.fillRect(x + r * 0.45, y + r * 0.1, r * 0.1, r * 0.5);
+      g.fillStyle(0xffffff, 0.9);
+      g.fillCircle(x - r * 0.55, y - r * 0.3, r * 0.08);
+      return;
+    }
+    case 'chefHat': {
+      outline(g, s);
+      g.fillStyle(0xffffff, 1);
+      for (const [dx, dy, rr] of [
+        [-0.35, -0.3, 0.38],
+        [0.35, -0.3, 0.38],
+        [0, -0.55, 0.42],
+      ] as const) {
+        g.fillCircle(x + dx * r, y + dy * r, rr * r);
+        g.strokeCircle(x + dx * r, y + dy * r, rr * r);
+      }
+      g.fillRect(x - r * 0.55, y - r * 0.15, r * 1.1, r * 0.6);
+      g.strokeRect(x - r * 0.55, y - r * 0.15, r * 1.1, r * 0.6);
+      return;
+    }
+    case 'pirateHat': {
+      outline(g, s);
+      g.fillStyle(0x2b2d42, 1);
+      g.beginPath();
+      g.moveTo(x - r, y + r * 0.2);
+      g.lineTo(x - r * 0.4, y - r * 0.5);
+      g.lineTo(x, y - r * 0.2);
+      g.lineTo(x + r * 0.4, y - r * 0.5);
+      g.lineTo(x + r, y + r * 0.2);
+      g.closePath();
+      g.fillPath();
+      g.strokePath();
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(x, y - r * 0.02, r * 0.16);
+      g.fillStyle(PALETTE.coinGold, 1);
+      g.fillRect(x - r * 0.9, y + r * 0.12, r * 1.8, r * 0.1);
+      return;
+    }
+    case 'duckHat':
+      duckShape(g, x, y + r * 0.1, r * 0.8, s, 0xffd23f);
+      return;
+    case 'car': {
+      wheel(g, x - r * 0.5, y + r * 0.45, r * 0.25, s);
+      wheel(g, x + r * 0.5, y + r * 0.45, r * 0.25, s);
+      outline(g, s);
+      g.fillStyle(PALETTE.donutPink, 1);
+      g.fillRoundedRect(x - r * 0.9, y - r * 0.1, r * 1.8, r * 0.55, r * 0.2);
+      g.strokeRoundedRect(x - r * 0.9, y - r * 0.1, r * 1.8, r * 0.55, r * 0.2);
+      g.fillRoundedRect(x - r * 0.5, y - r * 0.55, r * 1.0, r * 0.5, r * 0.2);
+      g.strokeRoundedRect(x - r * 0.5, y - r * 0.55, r * 1.0, r * 0.5, r * 0.2);
+      g.fillStyle(PALETTE.windowBlue, 1);
+      g.fillRect(x - r * 0.38, y - r * 0.45, r * 0.32, r * 0.3);
+      g.fillRect(x + r * 0.06, y - r * 0.45, r * 0.32, r * 0.3);
+      return;
+    }
+    case 'paint': {
+      outline(g, s);
+      g.fillStyle(0xb8bcc8, 1);
+      g.fillRect(x - r * 0.6, y - r * 0.3, r * 1.2, r * 1.0);
+      g.strokeRect(x - r * 0.6, y - r * 0.3, r * 1.2, r * 1.0);
+      const cs = [PALETTE.fireRed, PALETTE.harborTeal, PALETTE.getawayPurple, PALETTE.donutPink];
+      cs.forEach((c, i) => {
+        g.fillStyle(c, 1);
+        g.fillCircle(x - r * 0.45 + i * r * 0.3, y - r * 0.4, r * 0.18);
+      });
+      g.lineBetween(x - r * 0.6, y - r * 0.3, x - r * 0.3, y - r * 0.9);
+      g.lineBetween(x + r * 0.6, y - r * 0.3, x + r * 0.3, y - r * 0.9);
+      return;
+    }
+    case 'heart': {
+      outline(g, s);
+      g.fillStyle(PALETTE.fireRed, 1);
+      g.fillCircle(x - r * 0.33, y - r * 0.2, r * 0.42);
+      g.fillCircle(x + r * 0.33, y - r * 0.2, r * 0.42);
+      g.fillTriangle(x - r * 0.72, y - r * 0.05, x + r * 0.72, y - r * 0.05, x, y + r * 0.8);
+      return;
+    }
+    case 'home': {
+      outline(g, s);
+      g.fillStyle(PALETTE.coinGold, 1);
+      g.fillRect(x - r * 0.6, y - r * 0.1, r * 1.2, r * 0.9);
+      g.strokeRect(x - r * 0.6, y - r * 0.1, r * 1.2, r * 0.9);
+      g.fillStyle(PALETTE.fireRed, 1);
+      g.fillTriangle(x - r * 0.85, y - r * 0.05, x + r * 0.85, y - r * 0.05, x, y - r * 0.85);
+      g.strokeTriangle(x - r * 0.85, y - r * 0.05, x + r * 0.85, y - r * 0.05, x, y - r * 0.85);
+      g.fillStyle(PALETTE.trunk, 1);
+      g.fillRect(x - r * 0.15, y + r * 0.35, r * 0.3, r * 0.45);
+      return;
+    }
+    case 'gear': {
+      outline(g, s);
+      g.fillStyle(0xa0a6b4, 1);
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        g.fillCircle(x + Math.cos(a) * r * 0.7, y + Math.sin(a) * r * 0.7, r * 0.2);
+      }
+      g.fillCircle(x, y, r * 0.65);
+      g.strokeCircle(x, y, r * 0.65);
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(x, y, r * 0.25);
       return;
     }
     case 'wrench': {

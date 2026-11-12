@@ -241,6 +241,12 @@ export class HudScene extends Phaser.Scene {
 
   /** Coins fly to the counter one by one; the counter ticks up with a rising ding. */
   private flyCoins(delta: number, total: number): void {
+    if (delta <= 0) {
+      // Spent in the Shop: just show the new total (coins only fly in when earned).
+      this.shownCoins = total;
+      this.coinText.setText(`${total}`);
+      return;
+    }
     const n = Math.min(delta, 12);
     for (let i = 0; i < n; i++) {
       const c = this.add

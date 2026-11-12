@@ -156,6 +156,18 @@
     "pour-3": {
       "gx": 8,
       "gy": 20
+    },
+    "teacher": {
+      "gx": 9.5,
+      "gy": 15.5
+    },
+    "teddy-spot": {
+      "gx": 6.5,
+      "gy": 23.5
+    },
+    "apple-spot": {
+      "gx": 3.5,
+      "gy": 9.5
     }
   },
   "buildings": [

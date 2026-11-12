@@ -257,7 +257,25 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
   ]);
 
   // Things to pick up (loot and lost things), bobbing on the ground.
-  for (const item of ['sock', 'rubberDuck', 'balloon', 'cake', 'wrench', 'pizza'] as IconName[]) {
+  for (const item of [
+    'sock',
+    'rubberDuck',
+    'balloon',
+    'cake',
+    'wrench',
+    'pizza',
+    'teddy',
+    'flower',
+    'iceCream',
+    'letter',
+    'fish',
+    'book',
+    'present',
+    'apple',
+    'shell',
+    'kitten',
+    'feather',
+  ] as IconName[]) {
     bakeParts(scene, `pickup-${item}`, [
       custom([-18, -40, 18, 8], (g, ox, oy, s) => {
         g.fillStyle(0x000000, 0.18);
@@ -300,7 +318,21 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
     'ladder',
   ];
   for (const b of bubbles) bakeBubble(scene, b);
+  for (const b of [
+    'teddy',
+    'flower',
+    'iceCream',
+    'letter',
+    'fish',
+    'book',
+    'present',
+    'apple',
+    'shell',
+    'feather',
+  ] as IconName[])
+    bakeBubble(scene, b);
   const pads: IconName[] = [
+    'home',
     'toaster',
     'trafficLight',
     'magnifier',

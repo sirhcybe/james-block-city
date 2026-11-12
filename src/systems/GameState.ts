@@ -43,6 +43,10 @@ export class GameState {
     this.economy.onChange((c) => this.save.update((s) => (s.coins = c.coins)));
     this.errands = new ErrandBook(content.errands);
     if (this.save.data.job === null) this.save.update((s) => (s.job = 'cop'));
+    // Errands that are always around (no `after`, not robber loot) are on offer from the start.
+    for (const e of this.errands.all)
+      if (!e.after && e.kind !== 'return' && !this.save.data.errandsDone.includes(e.id))
+        this.errands.offer(e.id);
     // Errands unlocked by missions finished in an earlier session are on offer again.
     for (const e of this.errands.unlockedBy(
       this.save.data.missionsDone,
@@ -158,6 +162,11 @@ export class GameState {
     );
   }
 
+  /** Items on one Shop tab right now. */
+  shopTab(tab: 'job' | 'hats' | 'car' | 'home'): ShopItem[] {
+    return this.shopShelf().filter((i) => i.tab === tab);
+  }
+
   /** Put on another uniform (Job Center). False if it isn't allowed yet. */
   switchJob(job: JobId): boolean {
     if (uniformState(job, this.job, this.save.data.badges, this.content.missions) !== 'open')
@@ -177,6 +186,28 @@ export class GameState {
     this.save.update((s) => s.owned.push(itemId));
     this.save.flush();
     return true;
+  }
+
+  /** Wear a hat you own (null = your uniform's own hat). */
+  wear(hat: string | null): boolean {
+    if (hat !== null && !this.owns(hat)) return false;
+    this.save.update((s) => (s.hat = hat));
+    this.save.flush();
+    return true;
+  }
+
+  /** Paint your own car with a paint you own (null = plain). */
+  applyPaint(paint: string | null): boolean {
+    if (paint !== null && !this.owns(paint)) return false;
+    this.save.update((s) => (s.paint = paint));
+    this.save.flush();
+    return true;
+  }
+
+  /** Save the apartment layout. */
+  saveApartment(layout: { item: string; gx: number; gy: number }[]): void {
+    this.save.update((s) => (s.apartment = layout));
+    this.save.flush();
   }
 
   /** Give the player something for free (the cap at First Day). */

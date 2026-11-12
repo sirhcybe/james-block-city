@@ -25,6 +25,7 @@ export const BuildingKind = z.enum([
   'bridge',
   'office',
   'crane',
+  'apartment',
 ]);
 export type BuildingKind = z.infer<typeof BuildingKind>;
 
