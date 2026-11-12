@@ -95,6 +95,8 @@ export class WindowSplashModel {
 // Ladder Rescue: a cat waits at a window on floor 1..8. Hold to raise the ladder; let go when the
 // top is at the cat's floor. Close enough: the cat slides down (+1). Too low or too high: the
 // ladder lowers and you try again. After 3 misses on one cat, "close enough" gets wider.
+// A quick tap works too (playtest 2026-11-11: a tap barely moved the ladder and counted as a
+// miss, so "the ladder didn't go up"): tap to start it rising, tap again to stop it.
 // ---------------------------------------------------------------------------------------------
 
 export const LR = {
@@ -108,6 +110,8 @@ export const LR = {
   missesForEasier: 3,
   /** Seconds for the ladder to drop back / the cat to slide down. */
   resetSec: 0.8,
+  /** A press let go sooner than this is a tap: the ladder keeps rising until the next tap. */
+  tapSec: 0.3,
 };
 
 export type LREvent =
@@ -126,6 +130,12 @@ export class LadderRescueModel {
   missesOnCat = 0;
   readonly speed: number;
   private holding = false;
+  /** Held this long (s) in the current press. */
+  private heldFor = 0;
+  /** Rising on its own after a tap, until the next tap. */
+  private latched = false;
+  /** Pressed while the ladder was still coming down: start rising as soon as it's ready. */
+  private queued = false;
   private busy = 0;
   private started = false;
 
@@ -149,15 +159,43 @@ export class LadderRescueModel {
     return { type: 'cat', floor: this.cat };
   }
 
-  /** Start holding (raise the ladder). */
-  press(): void {
-    if (!this.finished && this.busy <= 0) this.holding = true;
+  /** The ladder is going up right now (held, or rising after a tap). */
+  get rising(): boolean {
+    return this.busy <= 0 && (this.holding || this.latched);
   }
 
-  /** Let go: check the ladder against the cat. */
+  /** Press: start raising the ladder, or (rising after a tap) stop it here and check. */
+  press(): LREvent | null {
+    if (this.finished) return null;
+    if (this.busy > 0) {
+      this.queued = true;
+      return null;
+    }
+    if (this.latched) {
+      this.latched = false;
+      return this.check();
+    }
+    if (this.holding) return null; // key repeat
+    this.holding = true;
+    this.heldFor = 0;
+    return null;
+  }
+
+  /** Let go: after a hold, check the ladder against the cat; after a tap, keep it rising. */
   release(): LREvent | null {
+    this.queued = false;
     if (!this.holding) return null;
     this.holding = false;
+    if (this.heldFor < LR.tapSec) {
+      this.latched = true;
+      return null;
+    }
+    return this.check();
+  }
+
+  private check(): LREvent {
+    this.holding = false;
+    this.latched = false;
     const diff = this.height - this.cat;
     this.busy = LR.resetSec;
     if (Math.abs(diff) <= this.tolerance) {
@@ -188,10 +226,21 @@ export class LadderRescueModel {
         }
         // A new cat after a rescue; the same cat again after a miss.
         if (this.missesOnCat === 0) out.push(this.newCat());
+        if (this.queued) {
+          this.queued = false;
+          this.holding = true;
+          this.heldFor = 0;
+        }
       }
       return out;
     }
-    if (this.holding) this.height = Math.min(LR.floors + 0.6, this.height + this.speed * dt);
+    if (this.holding) this.heldFor += dt;
+    if (this.holding || this.latched) {
+      const top = LR.floors + 0.6;
+      this.height = Math.min(top, this.height + this.speed * dt);
+      // Rising on its own and reached the top: stop and check, so it never hangs up there.
+      if (this.latched && this.height >= top) out.push(this.check());
+    }
     if (this.elapsed >= this.durationSec + 10) {
       this.finished = true;
       out.push({ type: 'finished' });

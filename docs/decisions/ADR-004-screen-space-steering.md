@@ -1,6 +1,6 @@
 # ADR-004: Steer by screen direction, with curves through corners
 
-**Status:** accepted · 2026-11-10 · updates part of ADR-003 (how the stick picks a road)
+**Status:** accepted · 2026-11-10 · updates part of ADR-003 (how the stick picks a road) · tie-breaks, U-turn look-ahead and late turns updated by ADR-008
 
 ## Context
 In the 2026-11-09 playtest the car controls "didn't feel right". A probe found the cause.

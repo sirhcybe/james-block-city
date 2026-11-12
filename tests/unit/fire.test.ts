@@ -210,6 +210,41 @@ describe('Ladder Rescue (AC10)', () => {
     expect(m.score).toBe(1);
   });
 
+  it('a quick tap starts the ladder rising; the next tap stops it there (playtest 2026-11-11)', () => {
+    const m = new LadderRescueModel(100, 0, 0.1, () => 0.5); // cat on floor 5
+    m.update(0.01);
+    m.press();
+    m.update(0.05);
+    expect(m.release()).toBeNull(); // a tap, not a miss
+    let t = 0;
+    while (m.height < 5 && t < 10) {
+      m.update(0.01);
+      t += 0.01;
+    }
+    expect(m.rising).toBe(true);
+    expect(m.press()).toEqual({ type: 'saved', floor: 5 });
+  });
+
+  it('a press while the ladder is still coming down is kept, not dropped', () => {
+    const m = new LadderRescueModel(100, 0, 0.1, () => 0.5);
+    m.update(0.01);
+    raiseTo(m, 1); // miss: the ladder drops back for a moment
+    m.press();
+    for (let i = 0; i < 150; i++) m.update(0.01); // 0.8 s coming down, then rising
+    expect(m.height).toBeGreaterThan(1);
+  });
+
+  it('left rising after a tap, it stops at the top by itself', () => {
+    const m = new LadderRescueModel(100, 0, 0.1, () => 0.5);
+    m.update(0.01);
+    m.press();
+    m.release();
+    const events = [];
+    for (let i = 0; i < 600; i++) events.push(...m.update(0.01));
+    expect(events.some((e) => e.type === 'miss')).toBe(true);
+    expect(m.rising).toBe(false);
+  });
+
   it('after 3 misses "close enough" gets wider; replays raise faster', () => {
     const m = new LadderRescueModel(100, 0, 0.1, () => 0.5);
     m.update(0.01);

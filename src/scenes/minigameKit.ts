@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
 import { HUD } from '../art/hud';
+import { MENU } from '../art/menu';
 import { RS } from '../art/renderScale';
 import { GAME_H, GAME_W } from '../config';
 import type { GameState } from '../systems/GameState';
@@ -29,12 +30,25 @@ export abstract class MinigameScene extends Phaser.Scene {
   protected done = false;
   private closed = false;
 
+  private quitBtn: Phaser.GameObjects.Image | null = null;
+
   init(data: { id?: string; plays?: number }): void {
     this.id = data.id ?? this.defaultId();
     this.plays = data.plays ?? 0;
     this.state = this.registry.get(STATE_KEY) as GameState;
     this.done = false;
     this.closed = false;
+    // Every minigame gets the back arrow once its own create() has drawn the board.
+    this.events.once(Phaser.Scenes.Events.CREATE, () => {
+      this.quitBtn = addQuitButton(this, () => this.quit());
+    });
+  }
+
+  /** Leave without finishing: no coins, no fuss, straight back to the city. */
+  quit(): void {
+    if (this.done || this.closed) return;
+    this.closed = true;
+    leaveMinigame(this);
   }
 
   protected abstract defaultId(): string;
@@ -50,6 +64,7 @@ export abstract class MinigameScene extends Phaser.Scene {
   finish(): void {
     if (this.done) return;
     this.done = true;
+    this.quitBtn?.destroy();
     const coins = this.state.finishMinigame(this.id, this.score);
     voice.say('minigame-done', { interrupt: true });
     sfx.play('tada');
@@ -121,6 +136,41 @@ export abstract class MinigameScene extends Phaser.Scene {
     this.score = score;
     this.finish();
   }
+}
+
+/**
+ * The "go back" arrow (bottom-left, like the menus) that leaves a minigame part-way through
+ * (playtest 2026-11-11: once started there was no way out). Esc does the same. Presses on it
+ * never reach the game underneath (tap-anywhere games like Block Stack).
+ */
+export function addQuitButton(scene: Phaser.Scene, quit: () => void): Phaser.GameObjects.Image {
+  const stop = (_p: unknown, _x: unknown, _y: unknown, ev: Phaser.Types.Input.EventData) =>
+    ev.stopPropagation();
+  const btn = scene.add
+    .image(QUIT_POS.x, QUIT_POS.y, MENU.back)
+    .setScale(QUIT_SCALE / RS)
+    .setDepth(35)
+    .setInteractive({ useHandCursor: true });
+  btn.on('pointerdown', stop);
+  btn.on('pointerup', (p: unknown, x: unknown, y: unknown, ev: Phaser.Types.Input.EventData) => {
+    stop(p, x, y, ev);
+    sfx.play('pop');
+    quit();
+  });
+  scene.input.keyboard?.once('keydown-ESC', quit);
+  return btn;
+}
+
+/** Where the quit arrow sits and how big (≥ 64 CSS px on a landscape phone). */
+export const QUIT_POS = { x: 74, y: GAME_H - 74 };
+const QUIT_SCALE = 0.75;
+
+/** Back to the city without a result (a quit minigame, nothing to pay). */
+export function leaveMinigame(scene: Phaser.Scene): void {
+  scene.scene.stop();
+  scene.scene.resume('City');
+  scene.scene.wake('Hud');
+  scene.game.events.emit(EV.menuClosed, {});
 }
 
 /** Close a picture menu (board, shop, job center) and tell the city what happened. */

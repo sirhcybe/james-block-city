@@ -9,6 +9,7 @@ import { GAME_H, GAME_W } from '../config';
 import type { GameState } from '../systems/GameState';
 import { TrafficHelperModel, type THEvent } from '../systems/minigames';
 import { EV, STATE_KEY, type MinigameResult } from './keys';
+import { addQuitButton, leaveMinigame } from './minigameKit';
 
 const CROSS_X = 640;
 const WAIT_Y = 505;
@@ -47,6 +48,7 @@ export class TrafficHelperScene extends Phaser.Scene {
     this.carImgs = new Map();
     this.walkerImgs = new Map();
     this.done = false;
+    this.closed = false;
   }
 
   create(): void {
@@ -97,8 +99,16 @@ export class TrafficHelperScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-SPACE', () => this.toggle());
     this.input.keyboard?.on('keydown-ENTER', () => this.toggle());
 
+    this.quitBtn = addQuitButton(this, () => {
+      if (this.done || this.closed) return;
+      this.closed = true;
+      leaveMinigame(this);
+    });
+
     voice.say('minigame-intro', { interrupt: true });
   }
+
+  private quitBtn: Phaser.GameObjects.Image | null = null;
 
   private toggle(): void {
     if (this.done) return;
@@ -215,6 +225,7 @@ export class TrafficHelperScene extends Phaser.Scene {
   finish(): void {
     if (this.done) return;
     this.done = true;
+    this.quitBtn?.destroy();
     const coins = this.state.finishMinigame(this.id, this.model.score);
     voice.say('minigame-done', { interrupt: true });
     sfx.play('tada');

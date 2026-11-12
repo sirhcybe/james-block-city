@@ -24,7 +24,7 @@ export const UTURN_COOLDOWN = 0.3;
  */
 export const BACK_FROM_STOP_DEG = 85;
 /** Angles closer than this count as a tie. */
-const TIE_DEG = 3;
+export const TIE_DEG = 3;
 
 /** Screen-space vector of a grid direction (2:1 iso: one grid step = (dx − dy, (dx + dy) / 2)). */
 export function toScreen(d: Vec2): Vec2 {
@@ -65,6 +65,12 @@ export function pickBranch(
   heading: Vec2,
   options: Vec2[],
   stopped = false,
+  /**
+   * The stick changed since the vehicle started along `heading`, so on a tie between straight on
+   * and a turn it is asking to turn. Every arrow key sits exactly between two roads on screen, so
+   * when ties always went straight on a single arrow key could never turn (playtest 2026-11-11).
+   */
+  preferTurn = false,
 ): number {
   if (options.length === 0) return -1;
   const forward = options.map((o, i) => ({ o, i })).filter(({ o }) => !opposite(o, heading));
@@ -84,11 +90,8 @@ export function pickBranch(
     const limit = opposite(o, heading) ? BACK_FROM_STOP_DEG : MAX_BRANCH_DEG;
     if (diff > limit) continue;
     const turn = angleDeg(toScreen(heading), toScreen(o));
-    if (
-      !best ||
-      diff < best.diff - TIE_DEG ||
-      (Math.abs(diff - best.diff) <= TIE_DEG && turn < best.turn)
-    )
+    const tieWins = best !== null && (preferTurn ? turn > best.turn : turn < best.turn);
+    if (!best || diff < best.diff - TIE_DEG || (Math.abs(diff - best.diff) <= TIE_DEG && tieWins))
       best = { i, diff, turn };
   }
   return best ? best.i : -1;

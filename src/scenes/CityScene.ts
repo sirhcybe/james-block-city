@@ -204,6 +204,13 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private autoEnter: VehicleId | null = null;
   /** Where you stand to play / open things, and whether you're on one now. */
   private spots: { id: string; kind: 'minigame' | 'board' | 'shop' | 'jobs'; pos: Vec2 }[] = [];
+  /** Minigame pads (faded and still when they belong to another job). */
+  private pads = new Map<
+    string,
+    { img: Phaser.GameObjects.Image; pulse: Phaser.Tweens.Tween; baseScaleY: number }
+  >();
+  /** Pads of other jobs already explained this time round (so the voice doesn't nag). */
+  private padRefused = new Set<string>();
   private onSpot: string | null = null;
   private hints = new IdleHints();
   private obstacles = new Map<string, readonly Vec2[]>();
@@ -566,6 +573,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.traffic.length = 0;
     this.people.clear();
     this.spots = [];
+    this.pads = new Map();
+    this.padRefused = new Set();
     this.nets = [];
     this.obstacles.clear();
     this.findSpawned.clear();
@@ -644,14 +653,16 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       this.spots.push({ id, kind: 'minigame', pos: at });
       const s = gridToScreen(at.x, at.y);
       const padImg = addBakedImage(this, getBaked(padKey(mg.icon)), s.x, s.y).setDepth(-999_990);
-      this.tweens.add({
+      const pulse = this.tweens.add({
         targets: padImg,
         scaleY: padImg.scaleY * 1.08,
         duration: 700,
         yoyo: true,
         repeat: -1,
       });
+      this.pads.set(id, { img: padImg, pulse, baseScaleY: padImg.scaleY });
     }
+    this.refreshPads();
     for (const j of Object.values(JOBS))
       if (this.hasMarker(j.board))
         this.spots.push({ id: j.board, kind: 'board', pos: this.marker(j.board) });
@@ -772,6 +783,27 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.sparkleAt(this.player.pos);
     sfx.play('sparkle');
     voice.say(`job-${this.state.job}`, { interrupt: true });
+    this.refreshPads();
+  }
+
+  /** Whether a minigame belongs to the uniform you're wearing (playtest 2026-11-11). */
+  private minigameForJob(id: string): boolean {
+    const def = this.state.content.minigames.find((m) => m.id === id);
+    return !def || def.job === this.state.job;
+  }
+
+  /** Pads for your job pulse; the others are faded and still. */
+  private refreshPads(): void {
+    this.padRefused.clear();
+    for (const [id, p] of this.pads) {
+      const mine = this.minigameForJob(id);
+      p.img.setAlpha(mine ? 1 : 0.35);
+      if (mine) p.pulse.resume();
+      else {
+        p.pulse.pause();
+        p.img.setScale(p.img.scaleX, p.baseScaleY);
+      }
+    }
   }
 
   /** The police bike appears next to the car (just bought: with a puff). */
@@ -842,6 +874,15 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.input.on('pointerupoutside', up);
     const onBlur = () => this.input2.reset();
     window.addEventListener('blur', onBlur);
+    // A paused scene never hears the keyup for a key held while a minigame/menu opened, so that
+    // key would stay "down" afterwards and walk the player on their own (playtest 2026-11-11).
+    // Let go of everything on the way out and on the way back.
+    for (const ev of [Phaser.Scenes.Events.PAUSE, Phaser.Scenes.Events.RESUME]) {
+      this.events.on(ev, () => {
+        this.input2.reset();
+        uiDown.clear();
+      });
+    }
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () =>
       window.removeEventListener('blur', onBlur),
     );
@@ -1053,8 +1094,14 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     }
     if (on && this.onSpot !== on.id) {
       this.onSpot = on.id;
-      if (on.kind === 'minigame') this.startMinigame(on.id);
-      else if (on.kind === 'board') this.openMenu('MissionBoard');
+      if (on.kind === 'minigame') {
+        if (this.minigameForJob(on.id)) this.startMinigame(on.id);
+        else if (!this.padRefused.has(on.id)) {
+          // Another job's game: say so once, don't start it.
+          this.padRefused.add(on.id);
+          voice.say('pad-other-job', { interrupt: true });
+        }
+      } else if (on.kind === 'board') this.openMenu('MissionBoard');
       else if (on.kind === 'jobs') this.openMenu('JobCenter');
       else this.openMenu('Shop');
     } else if (!on) {
@@ -1241,6 +1288,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   update(time: number, deltaMs: number): void {
     const dt = Math.min(deltaMs, 50) / 1000;
     const focusWorld = gridToScreen(this.focus().x, this.focus().y);
+    const pointers = this.input.manager.pointers;
+    this.input2.dropReleased((id) => pointers.some((p) => p.id === id && p.isDown));
     const a = this.input2.update(time, focusWorld);
     const moving = Math.hypot(a.move.x, a.move.y) > 0;
     const hadInput = moving || !!a.goTo || a.action || a.siren;

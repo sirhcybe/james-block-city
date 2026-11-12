@@ -8,7 +8,7 @@ import {
 } from '../config';
 import type { Vec2 } from '../iso/projection';
 import { dirBetween, type LaneGraph, type LaneNode } from '../iso/roads';
-import { MAX_BRANCH_DEG, pickBranch, stickDiff, wantsUTurn } from '../iso/steer';
+import { angleDeg, MAX_BRANCH_DEG, pickBranch, stickDiff, TIE_DEG, wantsUTurn } from '../iso/steer';
 import type { Facing } from './Player';
 
 export function facingForDir(d: Vec2): Facing {
@@ -52,8 +52,16 @@ export const DRIVE_TUNING = {
 
 /** Where a waiting vehicle stops before a junction (centre-line progress along the edge). */
 const STOP_LINE_T = 0.5;
-/** A stick pointing behind still takes a junction this close ahead (tiles) instead of spinning. */
-const JUNCTION_LOOKAHEAD = 1.2;
+/**
+ * A stick asking for a road at a junction this many nodes ahead keeps the car going straight to it,
+ * instead of spinning round (stick behind) or stopping (stick sideways). Kids press the arrow for
+ * the turn they can see coming, not at the last moment (playtest 2026-11-11).
+ */
+const WISH_LOOKAHEAD_NODES = 3;
+/** The stick counts as "changed" (a new wish) when it moves more than this from the one that set the heading. */
+const STICK_CHANGE_DEG = 20;
+/** Smallest curve radius for a turn asked for late (tiles). */
+const LATE_TURN_MIN_R = 0.12;
 
 const lane = (d: Vec2): Vec2 => ({ x: -d.y * 0.5, y: d.x * 0.5 });
 const same = (a: Vec2, b: Vec2) => a.x === b.x && a.y === b.y;
@@ -104,6 +112,10 @@ export class LaneDriver {
   private blendLeft = 0;
   /** Grid-space heading angle of the drawn vehicle (radians). */
   headingAngle: number;
+  /** The stick that put the vehicle on its current heading (null: none, e.g. placed or AI). */
+  private headingStick: Vec2 | null = null;
+  /** Caps the end-corner curve radius when a turn was asked for late (reset each segment). */
+  private rEndCap = Infinity;
 
   constructor(
     readonly graph: LaneGraph,
@@ -165,7 +177,13 @@ export class LaneDriver {
     const nextLen = dot(sub(add(this.next, lane(e)), this.end), e);
     return Math.max(
       0,
-      Math.min(DRIVE_TUNING.turnRadius, this.length - this.rStart, nextLen, this.length),
+      Math.min(
+        DRIVE_TUNING.turnRadius,
+        this.length - this.rStart,
+        nextLen,
+        this.length,
+        this.rEndCap,
+      ),
     );
   }
 
@@ -256,10 +274,15 @@ export class LaneDriver {
     }
     const { dirs, nodes } = this.optionsAt(at);
     const stopped = this.speed === 0 && this.d >= this.stopAt - 1e-6;
-    const idx =
+    let idx =
       input.chooser && !stick
         ? input.chooser(dirs, this.dir, at)
-        : pickBranch(stick, this.dir, dirs, stopped);
+        : pickBranch(stick, this.dir, dirs, stopped, this.preferTurn(stick));
+    if (stick && idx < 0) {
+      // Nothing here goes the stick's way, but a junction just ahead does: keep going to it.
+      const straight = dirs.findIndex((d) => same(d, this.dir));
+      if (straight >= 0 && this.wishAhead(stick, nodes[straight]!, this.dir) >= 0) idx = straight;
+    }
     if (idx < 0) {
       this.next = null;
       return;
@@ -272,6 +295,36 @@ export class LaneDriver {
       return;
     }
     this.next = n;
+  }
+
+  /** The stick differs from the one that set the heading: on a tie it means "turn". */
+  private preferTurn(stick: Vec2 | null): boolean {
+    if (!stick) return false;
+    return !this.headingStick || angleDeg(stick, this.headingStick) > STICK_CHANGE_DEG;
+  }
+
+  /**
+   * Nodes to the first junction, straight ahead from `n` (arriving with `heading`), with a road the
+   * stick asks for (closer to it than straight on). 0 = `n` itself; −1 = none within the lookahead.
+   */
+  private wishAhead(stick: Vec2, n: LaneNode, heading: Vec2): number {
+    const preferTurn = this.preferTurn(stick);
+    let at: LaneNode | undefined = n;
+    for (let k = 0; at && k < WISH_LOOKAHEAD_NODES; k++) {
+      const { dirs } = this.optionsAt(at);
+      const straightDiff = stickDiff(stick, heading);
+      for (const d of dirs) {
+        if (same(d, heading) || (d.x === -heading.x && d.y === -heading.y)) continue;
+        const diff = stickDiff(stick, d);
+        if (diff > MAX_BRANCH_DEG) continue;
+        if (diff < straightDiff - TIE_DEG || (preferTurn && diff <= straightDiff + TIE_DEG))
+          return k;
+      }
+      at = dirs.some((d) => same(d, heading))
+        ? this.graph.get(at.x + heading.x, at.y + heading.y)
+        : undefined;
+    }
+    return -1;
   }
 
   /** Re-pick the next edge if there's still room before the corner. Keeps position continuous. */
@@ -294,7 +347,14 @@ export class LaneDriver {
     const tooLate =
       this.d > 1e-6 &&
       (stops ? this.d > this.stopAt + 1e-6 : this.d > this.length - this.rEnd + 1e-6);
-    if (tooLate) {
+    if (tooLate && !stops && this.t < 0.98) {
+      // A turn asked for late, before reaching the junction: take it on a tighter curve rather
+      // than sailing past (playtest 2026-11-11: "very hard to turn corners").
+      const L = this.length;
+      if (this.d > L - LATE_TURN_MIN_R) this.d = Math.max(0, L - LATE_TURN_MIN_R);
+      this.rEndCap = Math.max(1e-3, L - this.d);
+      this.speed = Math.min(this.speed, DRIVE_TUNING.cornerSpeed);
+    } else if (tooLate) {
       this.next = before.next;
       this.arriving = before.arriving;
       this.uturnAtStop = before.uturn;
@@ -318,6 +378,8 @@ export class LaneDriver {
     this.d = Math.max(0, 1 - tc - dot(sub(this.start, this.from), this.dir));
     this.speed = 0;
     this.sinceTurn = 0;
+    this.headingStick = stick;
+    this.rEndCap = Infinity;
     this.next = null;
     this.decide(stick, {});
     this.d = Math.min(this.d, this.next === null ? this.stopAt : this.length);
@@ -352,6 +414,8 @@ export class LaneDriver {
     this.blend = { x: 0, y: 0 };
     this.blendLeft = 0;
     this.headingAngle = Math.atan2(this.dir.y, this.dir.x);
+    this.headingStick = null;
+    this.rEndCap = Infinity;
     this.decide(null, {});
   }
 
@@ -427,21 +491,14 @@ export class LaneDriver {
       return;
     }
 
-    // Stick clearly behind: spin round, unless the junction just ahead goes the right way.
-    if (stick && wantsUTurn(stick, this.dir, this.sinceTurn)) {
-      let goodAhead = false;
-      if (this.length - this.d < JUNCTION_LOOKAHEAD) {
-        this.redecide(stick, input);
-        goodAhead =
-          this.next !== null &&
-          !this.uturnAtStop &&
-          !same(this.endDir, this.dir) &&
-          stickDiff(stick, this.endDir) <= MAX_BRANCH_DEG;
-      }
-      if (!goodAhead) {
-        this.startSpin(stick);
-        return;
-      }
+    // Stick clearly behind: spin round, unless a junction just ahead goes the stick's way.
+    if (
+      stick &&
+      wantsUTurn(stick, this.dir, this.sinceTurn) &&
+      this.wishAhead(stick, this.to, this.dir) < 0
+    ) {
+      this.startSpin(stick);
+      return;
     }
 
     // Steering can change the choice at the coming junction until the corner starts.
@@ -468,6 +525,8 @@ export class LaneDriver {
         Math.sqrt(DRIVE_TUNING.cornerSpeed ** 2 + 2 * DRIVE_TUNING.brake * toCurve),
       );
     }
+    // Pulling away from a stop: this stick sets the heading.
+    if (manual && this.speed === 0 && target > 0) this.headingStick = stick;
     const rate = target > this.speed ? DRIVE_TUNING.accel * this.accelScale : DRIVE_TUNING.brake;
     this.speed +=
       Math.sign(target - this.speed) * Math.min(Math.abs(target - this.speed), rate * dt);
@@ -492,8 +551,12 @@ export class LaneDriver {
       this.from = this.to;
       this.to = this.next;
       this.rStart = rEnd;
+      this.rEndCap = Infinity;
       if (this.path[0] === this.to.id) this.path.shift();
-      if (turned) this.sinceTurn = 0;
+      if (turned) {
+        this.sinceTurn = 0;
+        this.headingStick = stick;
+      }
       this.next = null;
       this.decide(stick, input);
     }

@@ -70,6 +70,31 @@ describe('InputMapper keyboard', () => {
     expect(v.y).toBeCloseTo(Math.SQRT1_2);
   });
 
+  it('reset lets go of held keys and pending presses (keyup lost while a minigame was open)', () => {
+    const m = new InputMapper();
+    m.keyDown('ArrowRight');
+    m.keyDown('Space');
+    m.reset();
+    const a = m.update(0, origin);
+    expect(a.move).toEqual({ x: 0, y: 0 });
+    expect(a.action).toBe(false);
+  });
+
+  it('dropReleased lets go of a pointer whose up never arrived (released over the HUD)', () => {
+    const m = new InputMapper();
+    m.pointerDown({
+      id: 1,
+      screen: { x: 900, y: 600 },
+      world: { x: 300, y: 0 },
+      isTouch: false,
+      time: 0,
+    });
+    expect(m.isSteering(500)).toBe(true);
+    m.dropReleased(() => false);
+    expect(m.isSteering(500)).toBe(false);
+    expect(m.update(500, origin).move).toEqual({ x: 0, y: 0 });
+  });
+
   it('opposite keys cancel', () => {
     const m = new InputMapper();
     m.keyDown('ArrowLeft');
