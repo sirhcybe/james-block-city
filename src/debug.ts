@@ -64,6 +64,8 @@ export interface DebugHook {
   tapSuspect(i: number): void;
   /** Open menus and use them. */
   openMenu(key: 'MissionBoard' | 'Shop' | 'JobCenter' | 'Apartment'): void;
+  /** Start the finale parade now. */
+  parade(): void;
   /** Shop: tap a card (buy, or wear/apply when owned). */
   shopTap(id: string): void;
   /** Apartment: put an item on a square / back in the tray; wear a hat. */
@@ -299,6 +301,7 @@ export function installDebugHook(game: Phaser.Game): void {
       s.debugLeave();
       return true;
     },
+    parade: () => city()?.parade(),
     shopTap: (id) => {
       const s = game.scene.getScene('Shop') as ShopScene | null;
       if (s && s.scene.isActive()) s.debugTap(id);

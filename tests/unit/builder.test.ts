@@ -14,7 +14,7 @@ import { earnedBadges, isUnlocked, type Progress } from '../../src/systems/missi
 
 const content = loadContent();
 const world = loadWorld();
-const builder = content.missions.filter((m) => m.job === 'builder');
+const builder = content.missions.filter((m) => m.job === 'builder' && m.tier !== 'finale');
 const progress = (p: Partial<Progress> = {}): Progress => ({
   badges: [],
   owned: [],
@@ -44,7 +44,7 @@ describe('Harbor map (AC1, AC6)', () => {
   });
 
   it('has five build spots, and the island can only be walked to once the bridge is built', () => {
-    const sites = world.buildings.filter((b) => b.site).map((b) => b.id);
+    const sites = world.buildings.filter((b) => b.site && b.id !== 'golden-tower').map((b) => b.id);
     expect(sites.sort()).toEqual(['boat-shop', 'bridge', 'dock', 'lighthouse', 'practice-wall']);
     const island = world.markers.island!;
     const s = world.spawn;

@@ -605,5 +605,126 @@
         "seconds": 60
       }
     ]
+  },
+  {
+    "id": "finale-tower-fire",
+    "job": "fire",
+    "tier": "finale",
+    "icon": "twoRobbers",
+    "voiceIntro": "intro-finale-1",
+    "voiceDone": "done-finale-1",
+    "requires": [
+      "first-day",
+      "donut-dash",
+      "duck-crossing",
+      "rooftop-run",
+      "lost-puppy",
+      "double-trouble",
+      "siren-school",
+      "kitty-floor-10",
+      "toaster-trouble",
+      "barbecue-blaze",
+      "fireworks-fiasco",
+      "tallest-tower",
+      "hard-hat-day",
+      "dock-it",
+      "mixer-mayhem",
+      "lighthouse-lights",
+      "boat-shop",
+      "bridge-to-the-island"
+    ],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "fire-truck"
+      },
+      {
+        "type": "spray",
+        "fires": ["finale-fire-1", "finale-fire-2", "finale-fire-3"]
+      }
+    ],
+    "reward": {
+      "coins": 40
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 120
+      }
+    ]
+  },
+  {
+    "id": "finale-helicopter",
+    "job": "cop",
+    "tier": "finale",
+    "icon": "twoRobbers",
+    "voiceIntro": "intro-finale-2",
+    "voiceDone": "done-finale-2",
+    "requires": ["finale-tower-fire"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "police-car"
+      },
+      {
+        "type": "catch",
+        "robbers": [
+          {
+            "id": "pickles",
+            "vehicle": "heli",
+            "start": "heli-start"
+          }
+        ],
+        "bumps": 3
+      },
+      {
+        "type": "goTo",
+        "target": "mayor"
+      }
+    ],
+    "reward": {
+      "coins": 40
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 120
+      }
+    ]
+  },
+  {
+    "id": "finale-rebuild",
+    "job": "builder",
+    "tier": "finale",
+    "icon": "twoRobbers",
+    "voiceIntro": "intro-finale-3",
+    "voiceDone": "done-finale-3",
+    "requires": ["finale-helicopter"],
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "mixer-truck"
+      },
+      {
+        "type": "build",
+        "spot": "golden-tower"
+      },
+      {
+        "type": "goTo",
+        "target": "mayor"
+      }
+    ],
+    "reward": {
+      "coins": 50
+    },
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 90
+      }
+    ]
   }
 ]

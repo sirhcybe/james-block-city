@@ -152,5 +152,17 @@
   "paint-on": "Nice new color!",
   "shop-tab": "Look at these!",
   "car-yours": "Your very own car! It is parked by your apartment!",
-  "hint-car-own": "Your own car is right here. Tap it to hop in!"
+  "hint-car-own": "Your own car is right here. Tap it to hop in!",
+  "finale-ready": "Help! The mayor needs you right away!",
+  "intro-finale-1": "Oh no! The Bandit Brothers took the Golden Block! They made smoky fires on the tallest tower so nobody can see them. Firefighter, put them out!",
+  "done-finale-1": "The smoke is gone! Look, they are getting away in a helicopter!",
+  "intro-finale-2": "Quick, officer! Chase the helicopter in your police car, and catch it with your net!",
+  "chase-heli": "There goes the helicopter! Wee-oo!",
+  "done-finale-2": "You got the Golden Block back! Now let us build it a new tower!",
+  "intro-finale-3": "Builder, build a brand new Golden Block tower in the plaza!",
+  "done-finale-3": "You saved the city! Hooray! Let us have a parade!",
+  "parade": "It is a parade! Thank you, hero of Block City!",
+  "morning": "Good morning, Block City! There is always more to do!",
+  "station": "Spin, spin! New job!",
+  "job-key": "Pick a uniform!"
 }

@@ -9,7 +9,7 @@
 | 5 | Job Center + Firefighter (6 missions, 2 minigames, interiors) | `specs/004-firefighter` | Built; awaiting playtest |
 | 6 | Builder (6 missions, 3 minigames, build spots) | `specs/005-builder` | Built; awaiting playtest |
 | 7 | Home & Shop (apartment decorating, hats, paint, ~20 errands) | `specs/006-home-shop` | Built; awaiting playtest |
-| 8 | Finale + polish + PWA + grown-up corner + timed playthrough | 007 (to write) | — |
+| 8 | Finale + polish + PWA + grown-up corner + timed playthrough | `specs/007-finale-polish` | Built; awaiting playtest + timed playthrough |
 
 Rule: don't write spec N+1 until spec N is done and (for 002 onward) James has playtested it.
 Playtest findings go into `docs/playtests/YYYY-MM-DD.md` and feed the next spec.

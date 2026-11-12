@@ -38,6 +38,8 @@ export interface RobberLooks {
   bumpsNeeded?: number;
   /** Top speed as a fraction of the player's car (scooters are a bit slower). */
   speedScale?: number;
+  /** Flies this high above the road (px), with a shadow underneath (the finale helicopter). */
+  altitude?: number;
 }
 
 /**
@@ -78,6 +80,7 @@ export class RobberChase {
 
   /** Remove from the world (end of a mission). */
   destroy(): void {
+    this.shadow?.destroy();
     this.wobble?.stop();
     this.netImg?.destroy();
     this.car.img.destroy();
@@ -159,7 +162,21 @@ export class RobberChase {
   }
 
   /** `police` is where the player is (on foot or driving); `policeCar` only when driving. */
+  private shadow: Phaser.GameObjects.Ellipse | null = null;
+
+  /** Helicopter: keep it up in the air with a shadow on the road. */
+  private fly(): void {
+    const alt = this.looks.altitude;
+    if (!alt) return;
+    if (this.phase === 'fleeing' || this.phase === 'parked') this.car.hop = alt;
+    if (!this.shadow) this.shadow = this.scene.add.ellipse(0, 0, 54, 20, 0x000000, 0.22);
+    const s = gridToScreen(this.pos.x, this.pos.y);
+    this.shadow.setPosition(s.x, s.y).setDepth(depthOf(this.pos.x, this.pos.y) - 1);
+    this.shadow.setScale(1 - Math.min(0.5, this.car.hop / 200));
+  }
+
   update(dt: number, police: Vec2, policeCar: Vehicle | null): void {
+    this.fly();
     if (this.phase !== 'fleeing') {
       this.car.sync(dt);
       return;
@@ -222,6 +239,9 @@ export class RobberChase {
   /** The comedy beat: spin, "Aw, nuts!", hop out, waddle into the van, van drives off. */
   private catchSequence(): void {
     this.phase = 'catching';
+    // The helicopter lands softly first.
+    if (this.looks.altitude)
+      this.scene.tweens.add({ targets: this.car, hop: 0, duration: 650, ease: 'Sine.easeOut' });
     this.wobble?.stop();
     this.wobble = null;
     this.car.driver.speed = 0;

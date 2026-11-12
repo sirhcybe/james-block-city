@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { RS } from './art/renderScale';
 import { GAME_H, GAME_W, PALETTE } from './config';
 import { installDebugHook } from './debug';
+import { registerServiceWorker } from './pwa';
 import { BootScene } from './scenes/BootScene';
 import { CityScene } from './scenes/CityScene';
 import { GalleryScene } from './scenes/GalleryScene';
@@ -9,6 +10,7 @@ import { ApartmentScene } from './scenes/ApartmentScene';
 import { BlockStackScene } from './scenes/BlockStackScene';
 import { CementPourScene } from './scenes/CementPourScene';
 import { CopyBuildScene } from './scenes/CopyBuildScene';
+import { GrownUpScene } from './scenes/GrownUpScene';
 import { HudScene } from './scenes/HudScene';
 import { InteriorScene } from './scenes/InteriorScene';
 import { JobCenterScene } from './scenes/JobCenterScene';
@@ -37,6 +39,7 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   CopyBuildScene,
   CementPourScene,
   ApartmentScene,
+  GrownUpScene,
 ];
 if (import.meta.env.DEV) scenes.push(GalleryScene);
 
@@ -65,3 +68,5 @@ const game = new Phaser.Game({
 if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_HOOK === '1') installDebugHook(game);
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('drive'))
   void import('./driveTuning').then((m) => m.installDriveTuning());
+
+registerServiceWorker();

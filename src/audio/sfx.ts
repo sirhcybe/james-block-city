@@ -186,6 +186,8 @@ class SoundBoard {
   private lastCoinAt = -Infinity;
   private coinStreak = 0;
   muted = false;
+  /** Grown-up corner sound level (0 / 0.5 / 1, spec 007). */
+  level = 1;
   /** Counts for tests/debugging. */
   readonly played: Record<string, number> = {};
 
@@ -226,12 +228,12 @@ class SoundBoard {
     this.count(name);
     const ctx = this.ctx;
     const buf = this.buffers.get(name);
-    if (!ctx || !buf || this.muted) return;
+    if (!ctx || !buf || this.muted || this.level <= 0) return;
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.playbackRate.value = rate;
     const gain = ctx.createGain();
-    gain.gain.value = volume;
+    gain.gain.value = volume * this.level;
     src.connect(gain).connect(ctx.destination);
     src.start();
   }
@@ -251,7 +253,7 @@ class SoundBoard {
   sirenBlast(): void {
     this.count('siren');
     const ctx = this.ctx;
-    if (!ctx || this.muted) return;
+    if (!ctx || this.muted || this.level <= 0) return;
     this.stopSiren();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -266,8 +268,9 @@ class SoundBoard {
       osc.frequency.linearRampToValueAtTime(i % 2 === 0 ? hi * 0.97 : lo * 1.03, t + 0.38);
     }
     gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.exponentialRampToValueAtTime(0.07, t0 + 0.03);
-    gain.gain.setValueAtTime(0.07, t0 + SIREN_SEC - 0.15);
+    const peak = 0.07 * this.level;
+    gain.gain.exponentialRampToValueAtTime(peak, t0 + 0.03);
+    gain.gain.setValueAtTime(peak, t0 + SIREN_SEC - 0.15);
     gain.gain.exponentialRampToValueAtTime(0.0001, t0 + SIREN_SEC);
     osc.connect(gain).connect(ctx.destination);
     osc.start(t0);

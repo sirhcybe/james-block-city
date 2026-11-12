@@ -6,7 +6,7 @@ export type JobId = z.infer<typeof JobId>;
 /** One robber in a catch goal: who, in what, and where he starts (a map marker). */
 export const RobberSpec = z.object({
   id: z.string(),
-  vehicle: z.enum(['car', 'scooter']).default('car'),
+  vehicle: z.enum(['car', 'scooter', 'heli']).default('car'),
   start: z.string(),
   /** Loot he drops while fleeing (becomes a Return errand), if any. */
   drops: z.string().optional(),
@@ -105,8 +105,22 @@ export function isUnlocked(m: Mission, p: Progress): boolean {
 /** The mission the job's boss offers next: the first unlocked one not done yet (content order). */
 export function nextMission(list: readonly Mission[], job: JobId, p: Progress): Mission | null {
   return (
-    list.find((m) => m.job === job && !((p.missionsDone[m.id] ?? 0) > 0) && isUnlocked(m, p)) ??
-    null
+    list.find(
+      (m) =>
+        m.job === job &&
+        m.tier !== 'finale' &&
+        !((p.missionsDone[m.id] ?? 0) > 0) &&
+        isUnlocked(m, p),
+    ) ?? null
+  );
+}
+
+/** The finale part the mayor offers next (spec 007): the first unlocked one not done yet. */
+export function finaleOffer(list: readonly Mission[], p: Progress): Mission | null {
+  return (
+    list.find(
+      (m) => m.tier === 'finale' && !((p.missionsDone[m.id] ?? 0) > 0) && isUnlocked(m, p),
+    ) ?? null
   );
 }
 

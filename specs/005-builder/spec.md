@@ -141,8 +141,9 @@ The third job: the Builder.
       _Evidence:_ unit test "2 new Builder errands"; e2e Boat Shop (deliver-pizza offered); coin-source test.
 - [x] AC10 Idle hints point at every Builder goal. Evidence: unit test.
       _Evidence:_ unit test "every goal points at something on the map" (Builder); `BuildHandler.hint()`.
-- [ ] AC11 Spec 003 and 004 saves and tests still work. Evidence: test runs.
-      _Evidence so far:_ all 163 unit tests pass; the full e2e suite passed on the 004 code (35 passed, desktop + Pixel 7) and the Builder e2e passes on desktop. **Still to do:** one full e2e run on the final 005 code (the last run was stopped by the machine running low on memory).
+- [x] AC11 Spec 003 and 004 saves and tests still work. Evidence: test runs.
+      _Evidence so far:_ all 163 unit tests pass; the full e2e suite passed on the 004 code (35 passed, desktop + Pixel 7) and the Builder e2e passes on desktop.
+      Full e2e suite on the final 007 code (2026-11-12): 88 passed in the parallel run; the 11 that failed (10 timeouts on a heavily loaded machine, and one stale line expecting the Builder uniform to be locked, fixed) all passed on a one-worker rerun. 7 skipped by design (touch-only, desktop-only).
 - [x] AC12 At least 55 fps on Pixel 7 + 4× throttle while building in the Harbor. Evidence:
       `SCENARIO=build` perf record.
       _Evidence:_ `SCENARIO=build` 91 fps avg on Pixel 7 + 4× (production build).
