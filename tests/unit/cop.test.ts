@@ -34,7 +34,7 @@ const progress = (p: Partial<Progress> = {}): Progress => ({
   missionsDone: {},
   ...p,
 });
-const cop = content.missions.filter((m) => m.job === 'cop');
+const cop = content.missions.filter((m) => m.job === 'cop' && m.tier !== 'finale');
 
 describe('Cop missions content (spec 003)', () => {
   it('has the 6 Cop missions in order: 3 Rookie then 3 Pro', () => {

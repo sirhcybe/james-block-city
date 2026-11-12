@@ -167,6 +167,12 @@ export class GameState {
     return this.shopShelf().filter((i) => i.tab === tab);
   }
 
+  /** Put on a uniform with no checks (finale parts, glowing stations, spec 007). */
+  forceJob(job: JobId): void {
+    this.save.update((s) => (s.job = job));
+    this.save.flush();
+  }
+
   /** Put on another uniform (Job Center). False if it isn't allowed yet. */
   switchJob(job: JobId): boolean {
     if (uniformState(job, this.job, this.save.data.badges, this.content.missions) !== 'open')

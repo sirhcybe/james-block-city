@@ -167,3 +167,42 @@ describe('SaveV2 (AC7)', () => {
     expect(defaultSave().version).toBe(2);
   });
 });
+
+describe('Golden Block Heist finale (spec 007 AC1)', () => {
+  it('locked until all 18 job missions are done; then the parts come one after another', async () => {
+    const { finaleOffer, nextMission } = await import('../../src/systems/missions');
+    const jobMissions = content.missions.filter((m) => m.tier !== 'finale');
+    expect(jobMissions).toHaveLength(18);
+    const done: Record<string, number> = {};
+    const p = { badges: ['cop', 'fire', 'builder'], owned: [], missionsDone: done };
+    for (const m of jobMissions.slice(0, 17)) done[m.id] = 1;
+    expect(finaleOffer(content.missions, p)).toBeNull();
+    done[jobMissions[17]!.id] = 1;
+    expect(finaleOffer(content.missions, p)?.id).toBe('finale-tower-fire');
+    done['finale-tower-fire'] = 1;
+    expect(finaleOffer(content.missions, p)?.id).toBe('finale-helicopter');
+    done['finale-helicopter'] = 1;
+    expect(finaleOffer(content.missions, p)?.id).toBe('finale-rebuild');
+    done['finale-rebuild'] = 2;
+    expect(finaleOffer(content.missions, p)).toBeNull();
+    // Job bosses never offer finale parts.
+    expect(nextMission(content.missions, 'fire', p)).toBeNull();
+  });
+
+  it('every finale goal points at the map: fires on perches, the heli start, the golden tower spot', () => {
+    const fin = content.missions.filter((m) => m.tier === 'finale');
+    expect(fin.map((m) => m.job)).toEqual(['fire', 'cop', 'builder']);
+    const perches = new Set(world.perches.map((x) => x.id));
+    for (const m of fin)
+      for (const g of m.goals) {
+        if (g.type === 'spray') for (const f of g.fires) expect(perches.has(f), f).toBe(true);
+        if (g.type === 'catch')
+          for (const r of g.robbers) expect(world.markers[r.start], r.start).toBeDefined();
+        if (g.type === 'build') {
+          expect(world.buildings.find((b) => b.id === g.spot)?.site).toBe(true);
+          expect(world.markers[`${g.spot}-at`]).toBeDefined();
+        }
+        if (g.type === 'goTo') expect(world.markers[g.target], g.target).toBeDefined();
+      }
+  });
+});

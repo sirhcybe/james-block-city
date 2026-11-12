@@ -18,6 +18,10 @@ export const EV = {
   menuClosed: 'menu:closed',
   /** An interior room (the kitchen) was finished and closed. */
   interiorDone: 'interior:done',
+  /** The finale is won: night-time parade (spec 007). */
+  parade: 'finale:parade',
+  /** Night tint on/off (the HUD draws it). */
+  night: 'finale:night',
 } as const;
 
 /** What the HUD needs to draw this frame (written by CityScene). */

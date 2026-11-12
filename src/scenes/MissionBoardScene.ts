@@ -27,7 +27,9 @@ export class MissionBoardScene extends Phaser.Scene {
     this.cards = [];
     this.add.rectangle(0, 0, GAME_W, GAME_H, 0x1f4fa8, 0.92).setOrigin(0, 0);
 
-    const missions = this.state.content.missions.filter((m) => m.job === this.state.job);
+    const missions = this.state.content.missions.filter(
+      (m) => m.job === this.state.job && m.tier !== 'finale',
+    );
     const perRow = 3;
     missions.forEach((m, i) => {
       const col = i % perRow;

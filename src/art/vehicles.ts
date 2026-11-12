@@ -39,6 +39,8 @@ export interface VehicleLook {
   ladder?: boolean;
   /** A big striped mixing drum on the back (cement mixer). */
   drum?: number;
+  /** A helicopter: tail boom and a rotor that turns between wheel frames (spec 007). */
+  rotor?: boolean;
 }
 
 export type RiderName = 'pickles' | 'smudge' | 'cop';
@@ -364,6 +366,44 @@ function drawVehicle(
     }
   }
 
+  if (v.rotor) {
+    // Tail boom behind, with a little fin.
+    const tail: OrientedBox = {
+      cx: -f.x * L * 0.75,
+      cy: -f.y * L * 0.75,
+      halfL: L * 0.32,
+      halfW: 0.07,
+      z0: z0 + v.bodyH * 0.5,
+      z1: z0 + v.bodyH * 0.75,
+      angle,
+    };
+    drawOrientedBlock(g, tail, { color: v.body, bevel: 1 }, ox, oy, s);
+    const fin: OrientedBox = {
+      cx: -f.x * L * 1.0,
+      cy: -f.y * L * 1.0,
+      halfL: 0.08,
+      halfW: 0.05,
+      z0: z0 + v.bodyH * 0.6,
+      z1: z0 + v.bodyH * 1.2,
+      angle,
+    };
+    drawOrientedBlock(g, fin, { color: PALETTE.coinGold, bevel: 1 }, ox, oy, s);
+    // Rotor: two blades crossing, turned 45° between the two frames so it spins.
+    const rz = roofOf(v) + 0.32;
+    for (const k of [0, 1]) {
+      const blade: OrientedBox = {
+        cx: 0,
+        cy: 0,
+        halfL: 0.95,
+        halfW: 0.05,
+        z0: rz,
+        z1: rz + 0.04,
+        angle: angle + (wheel === 0 ? 0 : Math.PI / 4) + (k * Math.PI) / 2,
+      };
+      drawOrientedBlock(g, blade, { color: 0x3a3d4a, bevel: 0 }, ox, oy, s);
+    }
+  }
+
   if (v.rider)
     drawRider(g, ox, oy, s, roofOf(v) - (v.width < 0.4 ? 0.02 : 0), showsFront, RIDERS[v.rider]);
 }
@@ -546,6 +586,25 @@ export const OWN_CARS: VehicleLook[] = [null, ...Object.keys(PAINTS)].map((paint
   cabinLen: 0.6,
 }));
 
+/** The Bandit Brothers' getaway helicopter (spec 007 finale). */
+export const HELICOPTER: VehicleLook = {
+  name: 'helicopter',
+  body: PALETTE.getawayPurple,
+  cabin: null,
+  length: 0.9,
+  width: 0.7,
+  bodyH: 0.5,
+  lightBar: false,
+  star: false,
+  rider: 'pickles',
+  rotor: true,
+};
+export const HELICOPTER_EMPTY: VehicleLook = {
+  ...HELICOPTER,
+  name: 'helicopter-empty',
+  rider: undefined,
+};
+
 /** Every vehicle look baked at boot. */
 export const ALL_VEHICLES: VehicleLook[] = [
   POLICE_CAR,
@@ -561,5 +620,7 @@ export const ALL_VEHICLES: VehicleLook[] = [
   FIRE_TRUCK,
   MIXER_TRUCK,
   ...OWN_CARS,
+  HELICOPTER,
+  HELICOPTER_EMPTY,
   ...TRAFFIC_CARS,
 ];

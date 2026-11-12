@@ -272,6 +272,17 @@
       "d": 1,
       "h": 2,
       "color": "leaf"
+    },
+    {
+      "id": "golden-tower",
+      "kind": "goldentower",
+      "gx": 10,
+      "gy": 10,
+      "w": 2,
+      "d": 2,
+      "h": 6,
+      "color": "coinGold",
+      "site": true
     }
   ],
   "markers": {
@@ -310,6 +321,26 @@
     "kitten-spot": {
       "gx": 12.5,
       "gy": 6.5
+    },
+    "golden-tower-at": {
+      "gx": 14,
+      "gy": 11
+    },
+    "heli-start": {
+      "gx": 2,
+      "gy": 14
+    },
+    "station-cop": {
+      "gx": 4.5,
+      "gy": 3.5
+    },
+    "station-fire": {
+      "gx": 5.5,
+      "gy": 3.5
+    },
+    "station-builder": {
+      "gx": 6.5,
+      "gy": 3.5
     }
   },
   "props": [

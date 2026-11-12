@@ -705,6 +705,52 @@ function craneParts(b: BuildingDef): Part[] {
   ];
 }
 
+/** The Golden Block tower (spec 007 finale): stacked gold and white blocks, the Golden Block on top. */
+function goldenTowerParts(b: BuildingDef): Part[] {
+  const parts: Part[] = [];
+  const levels = Math.floor(b.h - 1);
+  for (let i = 0; i < levels; i++) {
+    const inset = 0.08 * i;
+    parts.push({
+      type: 'block',
+      gx: inset,
+      gy: inset,
+      gz: i,
+      w: b.w - inset * 2,
+      d: b.d - inset * 2,
+      h: 1,
+      color: i % 2 ? PALETTE.coinGold : PALETTE.buildingWhite,
+      bevel: 3,
+    });
+  }
+  const top = 0.08 * levels;
+  parts.push({
+    type: 'block',
+    gx: b.w / 2 - 0.4,
+    gy: b.d / 2 - 0.4,
+    gz: levels,
+    w: 0.8,
+    d: 0.8,
+    h: 0.8,
+    color: lighten(PALETTE.coinGold, 0.1),
+    bevel: 4,
+  });
+  void top;
+  const c = project(b.w / 2, b.d / 2, levels + 0.8, 1);
+  parts.push({
+    type: 'custom',
+    bounds: [
+      { x: c.x - 40, y: c.y - 50 },
+      { x: c.x + 40, y: c.y + 10 },
+    ],
+    draw: (g, ox, oy, sc) => {
+      const p = project(b.w / 2, b.d / 2, levels + 0.8, sc);
+      drawStar(g, p.x + ox, p.y + oy - 22 * sc, 16 * sc, 0xfff3b0, 2 * sc);
+    },
+  });
+  return parts;
+}
+
 /** Your apartment (spec 006): a house with a big heart over the door. */
 function apartmentParts(b: BuildingDef): Part[] {
   const top = project(b.w / 2, b.d / 2, b.h, 1);
@@ -766,6 +812,8 @@ export function buildingParts(b: BuildingDef): Part[] {
       return craneParts(b);
     case 'apartment':
       return apartmentParts(b);
+    case 'goldentower':
+      return goldenTowerParts(b);
   }
 }
 

@@ -7,6 +7,7 @@ import { buildingTextureKey } from '../art/buildings';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook } from '../art/characters';
 import { groundChunkKey } from '../art/ground';
 import type { IconName } from '../art/icons';
+import { iconKey } from '../art/menu';
 import { bubbleKey, MPROP, padKey } from '../art/missionProps';
 import { PROP } from '../art/props';
 import { RS, WT } from '../art/renderScale';
@@ -25,6 +26,8 @@ import {
   MIXER_TRUCK,
   OWN_CARS,
   ownCarName,
+  HELICOPTER,
+  HELICOPTER_EMPTY,
   TRAFFIC_CARS,
 } from '../art/vehicles';
 import {
@@ -153,6 +156,15 @@ const ERRAND_LINES: Record<string, string> = {
 
 /** Robber looks by who and what he drives. */
 function robberLooks(spec: RobberSpec, bumps: number): RobberLooks {
+  if (spec.vehicle === 'heli')
+    return {
+      name: spec.id,
+      look: HELICOPTER,
+      empty: HELICOPTER_EMPTY,
+      bumpsNeeded: bumps,
+      speedScale: 0.8,
+      altitude: 46,
+    };
   if (spec.vehicle === 'scooter')
     return {
       name: spec.id,
@@ -181,6 +193,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   fireTruck: Vehicle | null = null;
   mixer: Vehicle | null = null;
   ownCar: Vehicle | null = null;
+  private stationImgs: Phaser.GameObjects.Image[] = [];
   /** Builder build spots by id (spec 005). */
   readonly sites = new Map<string, BuildSite>();
   private blastAim: string | null = null;
@@ -213,7 +226,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   /** Where you stand to play / open things, and whether you're on one now. */
   private spots: {
     id: string;
-    kind: 'minigame' | 'board' | 'shop' | 'jobs' | 'home';
+    kind: 'minigame' | 'board' | 'shop' | 'jobs' | 'home' | 'station';
     pos: Vec2;
   }[] = [];
   /** Minigame pads (faded and still when they belong to another job). */
@@ -458,6 +471,110 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     return { destroy: () => g.destroy() };
   }
 
+  /** Put on a job's uniform right now (finale parts, glowing stations; spec 007). */
+  forceJob(job: 'cop' | 'fire' | 'builder'): void {
+    if (this.state.job === job) return;
+    this.state.forceJob(job);
+    this.applyJob();
+  }
+
+  /** The glowing job stations appear once the finale is open (spec 007). */
+  private stationsOpen(): boolean {
+    return this.state.unlocked('finale-tower-fire') || this.state.owns('finale-done');
+  }
+
+  private updateStations(): void {
+    const open = this.stationsOpen();
+    for (const img of this.stationImgs) img.setVisible(open);
+  }
+
+  private paradeOn = false;
+  private paradeT = 0;
+  private convoy: { v: Vehicle; corner: number }[] = [];
+  private fireworks: Phaser.Time.TimerEvent | null = null;
+
+  /** The end of the story (spec 007): night falls, a parade goes round the Plaza, fireworks. */
+  parade(): void {
+    if (this.paradeOn) return;
+    this.paradeOn = true;
+    this.paradeT = 30;
+    this.state.give('finale-done');
+    this.state.save.flush();
+    if (this.mode === 'car') this.exitCar();
+    this.player.cancelPath();
+    this.player.pos = { x: 24.5, y: 12.5 };
+    this.game.events.emit(EV.night, true);
+    voice.say('parade', { interrupt: true });
+    sfx.play('tada');
+    // The convoy: every job vehicle (and your car), nose to tail along the top of the Plaza ring.
+    const vs = [this.car, this.fireTruck, this.mixer, this.ownCar, this.bike].filter(
+      (v): v is Vehicle => !!v && v.driver.graph === this.carGraph,
+    );
+    this.convoy = vs.map((v, i) => {
+      const node =
+        this.carGraph.get(26 - i * 2, 2) ?? this.nodeNear(this.carGraph, { x: 26 - i * 2, y: 2 });
+      v.placeAt(node, { x: 1, y: 0 });
+      v.flash(30);
+      return { v, corner: 0 };
+    });
+    this.fireworks = this.time.addEvent({
+      delay: 650,
+      loop: true,
+      callback: () => {
+        const c = gridToScreen(24 + (Math.random() - 0.5) * 12, 8 + (Math.random() - 0.5) * 12);
+        const fw = this.add
+          .image(c.x, c.y - 120 - Math.random() * 80, iconKey('firework'))
+          .setScale(0)
+          .setDepth(1_000_000);
+        this.tweens.add({
+          targets: fw,
+          scale: (0.5 + Math.random() * 0.4) / RS,
+          duration: 300,
+          ease: 'Back.easeOut',
+        });
+        this.tweens.add({
+          targets: fw,
+          alpha: 0,
+          delay: 600,
+          duration: 500,
+          onComplete: () => fw.destroy(),
+        });
+        sfx.play('pop', 0.6 + Math.random() * 0.6, 0.5);
+        for (const p of this.people.values()) if (Math.random() < 0.15) p.cheer();
+      },
+    });
+  }
+
+  /** Corners of the Plaza ring road, in driving order. */
+  private static readonly RING = [
+    { x: 30, y: 2 },
+    { x: 30, y: 14 },
+    { x: 18, y: 14 },
+    { x: 18, y: 2 },
+  ];
+
+  private updateParade(dt: number): void {
+    if (!this.paradeOn) return;
+    this.paradeT -= dt;
+    for (const c of this.convoy) {
+      const d = c.v.driver;
+      if (d.path.length === 0 && Math.abs(d.speed) < 0.2) {
+        d.goToward(CityScene.RING[c.corner % 4]!);
+        c.corner++;
+      }
+    }
+    if (this.paradeT <= 0) {
+      this.paradeOn = false;
+      this.fireworks?.remove();
+      this.fireworks = null;
+      for (const c of this.convoy) c.v.driver.cancelPath();
+      this.convoy = [];
+      this.game.events.emit(EV.night, false);
+      voice.say('morning', { interrupt: true });
+    }
+  }
+
+  /** Builder (spec 005): the ids of everything built. */
   private builtIds(): Set<string> {
     return new Set(
       this.state.progress.owned.filter((o) => o.startsWith('built:')).map((o) => o.slice(6)),
@@ -712,6 +829,30 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.car.img.setName('police-car');
     if (this.state.owns('police-bike')) this.spawnBike(false);
     if (this.state.owns('own-car')) this.spawnOwnCar(false);
+    this.stationImgs = [];
+    for (const [job, color] of [
+      ['cop', PALETTE.policeBlue],
+      ['fire', PALETTE.fireRed],
+      ['builder', PALETTE.builderYellow],
+    ] as const) {
+      const id = `station-${job}`;
+      if (!this.hasMarker(id)) continue;
+      const at = this.marker(id);
+      this.spots.push({ id, kind: 'station', pos: at });
+      const s = gridToScreen(at.x, at.y);
+      const img = addBakedImage(this, getBaked(padKey('uniforms')), s.x, s.y)
+        .setDepth(-999_989)
+        .setTint(color);
+      this.tweens.add({
+        targets: img,
+        alpha: { from: 1, to: 0.55 },
+        duration: 600,
+        yoyo: true,
+        repeat: -1,
+      });
+      this.stationImgs.push(img);
+    }
+    this.updateStations();
     if (this.hasMarker('home-door')) {
       const at = this.marker('home-door');
       this.spots.push({ id: 'home-door', kind: 'home', pos: at });
@@ -771,10 +912,12 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.game.events.on(EV.minigameComplete, this.onMinigameComplete, this);
     this.game.events.on(EV.menuClosed, this.onMenuClosed, this);
     this.game.events.on(EV.interiorDone, this.onInteriorDone, this);
+    this.game.events.on(EV.parade, this.parade, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off(EV.minigameComplete, this.onMinigameComplete, this);
       this.game.events.off(EV.menuClosed, this.onMenuClosed, this);
       this.game.events.off(EV.interiorDone, this.onInteriorDone, this);
+      this.game.events.off(EV.parade, this.parade, this);
       this.scene.stop('Hud');
     });
     this.scene.launch('Hud');
@@ -900,6 +1043,12 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       kb.addCapture(['UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']);
       kb.on('keydown', (e: KeyboardEvent) => this.input2.keyDown(e.code));
       kb.on('keyup', (e: KeyboardEvent) => this.input2.keyUp(e.code));
+      kb.on('keydown-J', () => {
+        if (this.state.progress.badges.length >= 3 && this.mode === 'foot') {
+          voice.say('job-key');
+          this.openMenu('JobCenter');
+        }
+      });
     }
     const uiDown = new Set<number>();
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
@@ -1123,6 +1272,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     // Errand bubbles (the chief's own bubble is the director's).
     for (const [id, p] of this.people) {
       if (id === this.director.bossId() && (this.director.offer() || !showing.has(id))) continue;
+      if (id === 'mayor' && this.director.finale()) continue;
       const icon = showing.get(id);
       if (icon) {
         p.setBubble(getBaked(bubbleKey(icon)));
@@ -1150,7 +1300,15 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       } else if (on.kind === 'board') this.openMenu('MissionBoard');
       else if (on.kind === 'jobs') this.openMenu('JobCenter');
       else if (on.kind === 'home') this.openMenu('Apartment');
-      else this.openMenu('Shop');
+      else if (on.kind === 'station') {
+        if (this.stationsOpen()) {
+          const job = on.id.slice('station-'.length) as 'cop' | 'fire' | 'builder';
+          if (job !== this.state.job) {
+            this.forceJob(job);
+            voice.say('station', { interrupt: true });
+          }
+        }
+      } else this.openMenu('Shop');
     } else if (!on) {
       // Step well off before it can trigger again.
       const cur = this.spots.find((s) => s.id === this.onSpot);
@@ -1402,6 +1560,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     }
 
     this.director.update(dt);
+    this.updateStations();
+    this.updateParade(dt);
     this.updateErrands();
     this.updateSpots();
 

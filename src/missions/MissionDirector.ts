@@ -6,7 +6,13 @@ import type { IconName } from '../art/icons';
 import { bubbleKey } from '../art/missionProps';
 import { depthOf, gridToScreen, type Vec2 } from '../iso/projection';
 import type { MissionResult } from '../systems/GameState';
-import type { Goal, Mission, MissionEvent, MissionRun } from '../systems/missions';
+import {
+  finaleOffer,
+  type Goal,
+  type Mission,
+  type MissionEvent,
+  type MissionRun,
+} from '../systems/missions';
 import { EV } from '../scenes/keys';
 import { JOBS } from '../systems/jobs';
 import { makeHandler, type GoalHandler, type Hint } from './handlers';
@@ -64,6 +70,8 @@ export class MissionDirector {
   begin(id: string): void {
     this.abort();
     const def = this.w.state.missionDef(id);
+    // Finale parts (and replays from another job) put on the right uniform first.
+    if (def.job !== this.w.state.job) this.w.forceJob(def.job);
     this.run = this.w.state.startMission(id, this.w.now());
     // The boss hands over the uniform's hat on the job's first mission.
     const first = this.w.state.content.missions.find((m) => m.job === def.job);
@@ -132,6 +140,10 @@ export class MissionDirector {
       voice.say(run.mission.voiceDone, { interrupt: true });
       scene.game.events.emit(EV.missionComplete, res);
     });
+    if (run.mission.id === 'finale-rebuild') {
+      // The end of the story: a night-time parade, then play forever.
+      scene.time.delayedCall(4500, () => scene.game.events.emit(EV.parade));
+    }
     if (res.badge) {
       const badge = res.badge;
       scene.time.delayedCall(4200, () => {
@@ -215,7 +227,37 @@ export class MissionDirector {
   }
 
   /** The boss's bubble shows the next mission's picture; walking up to them starts it. */
+  /** The finale part the mayor offers right now (spec 007), if any. */
+  finale(): Mission | null {
+    if (this.run || this.cooldown > 0) return null;
+    return finaleOffer(this.w.state.content.missions, this.w.state.progress);
+  }
+
+  /** Whether the director draws this townsperson's bubble (the job boss; the mayor in the finale). */
+  ownsBubble(id: string): boolean {
+    return id === this.bossId() || (id === 'mayor' && !!this.finale());
+  }
+
+  private nearMayor = false;
+
+  /** The mayor offers the finale parts once every job mission is done. */
+  private updateMayor(): void {
+    const mayor = this.w.townsperson('mayor');
+    const f = this.finale();
+    if (!mayor || !f) {
+      this.nearMayor = false;
+      return;
+    }
+    mayor.setBubble(getBaked(bubbleKey(f.icon as IconName)));
+    mayor.setOffering(true);
+    const near =
+      Math.hypot(this.w.focus().x - mayor.pos.x, this.w.focus().y - mayor.pos.y) < CHIEF_TALK_DIST;
+    if (near && !this.nearMayor) this.begin(f.id);
+    this.nearMayor = near;
+  }
+
   private updateBoss(): void {
+    this.updateMayor();
     const boss = this.w.townsperson(this.bossId());
     if (!boss) return;
     const next = this.offer();
@@ -242,7 +284,9 @@ export class MissionDirector {
   /** Every remaining mission of the job only needs a Shop item the player doesn't own yet. */
   private lockedOnlyByShop(): boolean {
     const s = this.w.state;
-    const left = s.content.missions.filter((m) => m.job === s.job && !(s.stars(m.id) > 0));
+    const left = s.content.missions.filter(
+      (m) => m.job === s.job && m.tier !== 'finale' && !(s.stars(m.id) > 0),
+    );
     return (
       left.length > 0 &&
       left.every((m) =>
@@ -259,6 +303,8 @@ export class MissionDirector {
     if (this.handler) return this.handler.hint();
     const boss = this.w.townsperson(this.bossId());
     if (boss && this.offer()) return { at: boss.pos, line: 'hint-chief' };
+    const mayor = this.w.townsperson('mayor');
+    if (mayor && this.finale()) return { at: mayor.pos, line: 'finale-ready' };
     return null;
   }
 }

@@ -141,6 +141,42 @@ export class HudScene extends Phaser.Scene {
     const offCoins = state.economy.onChange((c) => this.flyCoins(c.delta, c.coins));
     const onMission = (r: { stars: number }) => this.celebrate(r.stars);
     const onBadge = (job: string) => this.ceremony(job);
+    // Finale parade (spec 007): night tint with twinkling lit windows, under the buttons.
+    const night = this.add
+      .rectangle(0, 0, GAME_W, GAME_H, 0x0b1640, 0)
+      .setOrigin(0, 0)
+      .setDepth(-10);
+    const lights: Phaser.GameObjects.Arc[] = [];
+    for (let i = 0; i < 40; i++) {
+      const l = this.add
+        .circle(
+          Math.random() * GAME_W,
+          Math.random() * GAME_H * 0.8,
+          3 + Math.random() * 3,
+          0xffe680,
+          0,
+        )
+        .setDepth(-9);
+      lights.push(l);
+    }
+    const onNight = (on: boolean) => {
+      this.tweens.add({ targets: night, fillAlpha: on ? 0.5 : 0, duration: 1500 });
+      for (const l of lights) {
+        this.tweens.killTweensOf(l);
+        if (on)
+          this.tweens.add({
+            targets: l,
+            fillAlpha: { from: 0.2, to: 0.95 },
+            duration: 400 + Math.random() * 800,
+            yoyo: true,
+            repeat: -1,
+            delay: Math.random() * 1500,
+          });
+        else this.tweens.add({ targets: l, fillAlpha: 0, duration: 800 });
+      }
+    };
+    this.game.events.on(EV.night, onNight);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(EV.night, onNight));
     this.game.events.on(EV.missionComplete, onMission);
     this.game.events.on(EV.badge, onBadge);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
