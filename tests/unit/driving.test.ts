@@ -3,7 +3,11 @@ import { tileAt } from '../../src/content/schema';
 import { loadWorld } from '../../src/content/world';
 import { LaneDriver } from '../../src/entities/LaneDriver';
 import { buildLaneGraph, dirBetween } from '../../src/iso/roads';
-import { toScreen } from '../../src/iso/steer';
+import type { LaneNode } from '../../src/iso/roads';
+import { stickDiff, toScreen } from '../../src/iso/steer';
+
+type Vec = { x: number; y: number };
+const same = (a: Vec, b: Vec) => a.x === b.x && a.y === b.y;
 
 const world = loadWorld();
 const graph = buildLaneGraph((x, y) => tileAt(world, x, y) === 'road', world.width, world.height);
@@ -173,4 +177,50 @@ describe('Downtown ↔ Plaza (playtest 2026-11-10: "hard to travel between the t
       }
     }, 30_000);
   }
+});
+
+describe('turning with one arrow key (playtest 2026-11-11: "very hard to turn corners")', () => {
+  /**
+   * Drive at a junction holding the road's own direction, then switch to a key nearer a side road
+   * than straight on (or tied with it) when `dist` tiles from the junction. Turned = took that road.
+   */
+  const trial = (J: LaneNode, h: Vec, B: LaneNode, key: Vec, dist: number) => {
+    const car = new LaneDriver(graph, graph.get(J.x - 4 * h.x, J.y - 4 * h.y)!, h);
+    let switched = false;
+    for (let i = 0; i < 60 * 6; i++) {
+      const left = (J.x - car.centre.x) * h.x + (J.y - car.centre.y) * h.y;
+      if (!switched && same(car.dir, h) && left <= dist) switched = true;
+      car.update(DT, { stick: switched ? key : along(h.x, h.y) });
+      if (car.from.id === J.id && car.to.id === B.id) return true;
+    }
+    return false;
+  };
+  const cases: { J: LaneNode; h: Vec; B: LaneNode; key: Vec; name: string }[] = [];
+  for (const J of graph.intersections()) {
+    for (const pid of J.links) {
+      const h = dirBetween(graph.node(pid), J);
+      if (![1, 2, 3, 4].every((k) => graph.get(J.x - k * h.x, J.y - k * h.y))) continue;
+      for (const bid of J.links) {
+        const B = graph.node(bid);
+        const b = dirBetween(J, B);
+        if (same(b, h) || same(b, { x: -h.x, y: -h.y })) continue;
+        for (const [name, key] of Object.entries(KEYS)) {
+          // Keys a child would press for that road: within 64° of it and no nearer straight on.
+          if (stickDiff(key, b) <= 64 && stickDiff(key, b) <= stickDiff(key, h) + 1)
+            cases.push({ J, h, B, key, name });
+        }
+      }
+    }
+  }
+
+  it('pressed 1.5 tiles ahead, every such key turns', () => {
+    expect(cases.length).toBeGreaterThan(100);
+    for (const c of cases)
+      expect(trial(c.J, c.h, c.B, c.key, 1.5), `${c.name} at ${c.J.id}`).toBe(true);
+  }, 60_000);
+
+  it('pressed late (half a tile ahead), at least 90% still turn', () => {
+    const ok = cases.filter((c) => trial(c.J, c.h, c.B, c.key, 0.6)).length;
+    expect(ok / cases.length).toBeGreaterThanOrEqual(0.9);
+  }, 60_000);
 });

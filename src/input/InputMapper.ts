@@ -72,7 +72,23 @@ export class InputMapper {
     this.keys.clear();
     this.mouse = null;
     this.touchTaps.clear();
+    this.pendingGoTo = null;
+    this.pendingAction = false;
+    this.pendingSiren = false;
     if (this.joystick.pointerId !== null) this.joystick.end(this.joystick.pointerId);
+  }
+
+  /**
+   * Let go of pointers that are no longer down, whose "up" never reached us (e.g. a press on the
+   * world let go over a HUD button, which keeps the event). Without this, mouse hold-to-steer or
+   * the joystick stayed on and walked the player on their own (playtest 2026-11-11).
+   * `isDown(id)` reports whether that pointer is really still pressed.
+   */
+  dropReleased(isDown: (id: number) => boolean): void {
+    if (this.mouse && !isDown(this.mouse.id)) this.mouse = null;
+    const js = this.joystick.pointerId;
+    if (js !== null && !isDown(js)) this.joystick.end(js);
+    for (const id of [...this.touchTaps.keys()]) if (!isDown(id)) this.touchTaps.delete(id);
   }
 
   pointerDown(p: PointerSample): void {

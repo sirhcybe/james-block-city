@@ -64,15 +64,15 @@ export class WindowSplashScene extends MinigameScene {
       const c = this.cell(i);
       g.fillStyle(PALETTE.windowBlue, 1).fillRect(c.x - 70, c.y - 55, 140, 110);
       g.lineStyle(5, PALETTE.outline, 1).strokeRect(c.x - 70, c.y - 55, 140, 110);
-      const img = this.add
-        .image(c.x, c.y + 10, iconKey('flame'))
-        .setScale(0)
-        .setInteractive(
-          new Phaser.Geom.Rectangle(-10, -10, 140, 140),
-          Phaser.Geom.Rectangle.Contains,
-        );
-      img.on('pointerdown', () => this.handle(this.model.tap(i)));
+      const img = this.add.image(c.x, c.y + 10, iconKey('flame')).setScale(0);
       this.flames.push(img);
+      // Tap target: the whole window cell (gaps included), not the flame sprite. The sprite
+      // starts at scale 0 and grows, and its hit box was in unscaled texture pixels, so taps on
+      // a flame often missed (playtest 2026-11-11).
+      this.add
+        .zone(c.x, c.y, W, H)
+        .setInteractive()
+        .on('pointerdown', () => this.handle(this.model.tap(i)));
     }
     this.add.image(60, 50, iconKey('flame')).setScale(0.45 / RS);
     this.scoreText = this.add.text(100, 50, '0', BIG_TEXT).setOrigin(0, 0.5);

@@ -82,9 +82,12 @@ export class LadderRescueScene extends MinigameScene {
     this.scoreText = this.add.text(100, 50, '0', BIG_TEXT).setOrigin(0, 0.5);
 
     voice.say('lr-intro', { interrupt: true });
-    this.input.on('pointerdown', () => this.model.press());
+    // Hold and let go at the cat, or tap to start and tap again to stop.
+    this.input.on('pointerdown', () => this.handle(this.model.press()));
     this.input.on('pointerup', () => this.handle(this.model.release()));
-    this.input.keyboard?.on('keydown-SPACE', () => this.model.press());
+    this.input.keyboard?.on('keydown-SPACE', (e: KeyboardEvent) => {
+      if (!e.repeat) this.handle(this.model.press());
+    });
     this.input.keyboard?.on('keyup-SPACE', () => this.handle(this.model.release()));
   }
 
@@ -122,12 +125,43 @@ export class LadderRescueScene extends MinigameScene {
       if (e.type === 'finished') this.finish();
       else this.handle(e);
     }
-    // The ladder leans from the truck up to the tower wall at its current height.
-    const top = this.floorY(this.model.height);
+    this.drawLadder();
+  }
+
+  /**
+   * The ladder swings up from the truck: its foot is on the truck, its top rests against the
+   * tower wall at the current height. Two rails with rungs, so it reads as a ladder and you can
+   * see it climb (playtest 2026-11-11: a thin line that barely moved).
+   */
+  private drawLadder(): void {
+    const x0 = LADDER_X;
+    const y0 = GROUND - 70;
+    const x1 = TOWER_X - 42;
+    // Never lower than the truck deck, so even at rest it points up the wall.
+    const y1 = Math.min(y0 - 20, this.floorY(this.model.height));
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    const ux = (x1 - x0) / len;
+    const uy = (y1 - y0) / len;
+    const nx = -uy * 13;
+    const ny = ux * 13;
     const g = this.ladder;
     g.clear();
-    g.lineStyle(10, PALETTE.outline, 1).lineBetween(LADDER_X, GROUND - 70, TOWER_X - 10, top);
-    g.lineStyle(6, 0xe4e7ee, 1).lineBetween(LADDER_X, GROUND - 70, TOWER_X - 10, top);
+    const rails = (w: number, color: number) => {
+      g.lineStyle(w, color, 1);
+      g.lineBetween(x0 + nx, y0 + ny, x1 + nx, y1 + ny);
+      g.lineBetween(x0 - nx, y0 - ny, x1 - nx, y1 - ny);
+    };
+    rails(12, PALETTE.outline);
+    for (let d = 14; d < len - 4; d += 26) {
+      const cx = x0 + ux * d;
+      const cy = y0 + uy * d;
+      g.lineStyle(9, PALETTE.outline, 1).lineBetween(cx + nx, cy + ny, cx - nx, cy - ny);
+      g.lineStyle(5, 0xe4e7ee, 1).lineBetween(cx + nx, cy + ny, cx - nx, cy - ny);
+    }
+    rails(7, 0xe4e7ee);
+    // A turntable on the truck that the ladder pivots on.
+    g.fillStyle(PALETTE.outline, 1).fillCircle(x0, y0, 16);
+    g.fillStyle(0xe4e7ee, 1).fillCircle(x0, y0, 10);
   }
 
   /** Test hook: raise to the cat and let go. */

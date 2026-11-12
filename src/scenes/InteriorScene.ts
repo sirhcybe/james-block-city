@@ -16,6 +16,9 @@ interface RoomFlame {
 }
 
 /** Flames per room (spec 004: one interior, the kitchen). */
+/** Tap target size around each flame (logical px). */
+const FLAME_HIT = 170;
+
 const ROOMS: Record<string, { x: number; y: number }[]> = {
   kitchen: [
     { x: 420, y: 400 }, // the toaster
@@ -67,12 +70,14 @@ export class InteriorScene extends Phaser.Scene {
     g.strokeRect(60, 300, 120, 220);
 
     for (const p of ROOMS[this.room] ?? []) {
-      const img = this.add
-        .image(p.x, p.y, iconKey('flame'))
-        .setScale(0.9 / RS)
-        .setInteractive({ useHandCursor: true });
+      const img = this.add.image(p.x, p.y, iconKey('flame')).setScale(0.9 / RS);
       const f: RoomFlame = { ...p, hp: 2, img };
-      img.on('pointerdown', () => this.spray(f));
+      // A fixed, generous tap target: the flame shrinks after the first squirt, and its own
+      // bounds made the second tap easy to miss (playtest 2026-11-11).
+      this.add
+        .zone(p.x, p.y, FLAME_HIT, FLAME_HIT)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => this.spray(f));
       this.tweens.add({ targets: img, scaleY: 1 / RS, duration: 260, yoyo: true, repeat: -1 });
       this.flames.push(f);
     }
