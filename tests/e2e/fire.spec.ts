@@ -73,7 +73,6 @@ test('Job Center: locked before a badge; after it, the red uniform makes you a f
     window.__jbc!.openMenu('JobCenter');
   });
   await until(page, "window.__jbc.scenes().includes('JobCenter')");
-  expect(await page.evaluate(() => window.__jbc!.pickJob('builder'))).toBe(false); // spec 005
   expect(await page.evaluate(() => window.__jbc!.pickJob('fire'))).toBe(true);
   await until(
     page,

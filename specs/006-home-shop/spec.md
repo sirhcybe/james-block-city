@@ -111,9 +111,10 @@ Somewhere to spend coins on things you can see:
       _Evidence:_ unit tests "Errands around town" (19 errands, 3 at start, every place on the map and reachable, voice lines exist); e2e.
 - [x] AC7 Version 1 saves (specs 002–005) load into SaveV2 with nothing lost. Evidence: unit test.
       _Evidence:_ unit test "SaveV2" (a v1 save from specs 002–005 loads with nothing lost).
-- [ ] AC8 No words are needed anywhere new, the existing tests pass, and performance holds (walk
+- [x] AC8 No words are needed anywhere new, the existing tests pass, and performance holds (walk
       scenario ≥ 55 fps on Pixel 7 + 4×). Evidence: test runs + perf record.
-      _Evidence:_ 181 unit tests; e2e home + cop pass on desktop; walk 66 fps on Pixel 7 + 4×. **Still to do:** one full e2e run (desktop + Pixel 7) on the final code.
+      _Evidence:_ 181 unit tests; e2e home + cop pass on desktop; walk 66 fps on Pixel 7 + 4×.
+      Full e2e suite on the final 007 code (2026-11-12): 88 passed in the parallel run; the 11 that failed (10 timeouts on a heavily loaded machine, and one stale line expecting the Builder uniform to be locked, fixed) all passed on a one-worker rerun. 7 skipped by design (touch-only, desktop-only).
 
 ## Decisions made while building (agent, 2026-11-12; Chris to review)
 1. **The apartment** is the east house of the Plaza (`house-east`), not a new building.

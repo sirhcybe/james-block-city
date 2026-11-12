@@ -126,7 +126,7 @@ Finish the game:
       _Evidence:_ e2e "J opens the uniforms only with all three badges".
 - [ ] AC10 All unit and e2e tests pass, lint and build are clean, and the parade holds ≥ 55 fps on
       Pixel 7 + 4× (`SCENARIO=parade`). Evidence: test runs + perf record.
-      _Evidence so far:_ 185 unit tests; lint and build clean; the 007 e2e pass on desktop. Parade 52–54 fps on Pixel 7 + 4× on a slow day (walk 61–63 in the same run). **Still to do:** re-measure the parade on a normal day (or a real phone), and one full e2e run (desktop + Pixel 7) on the final code.
+      _Evidence so far:_ 185 unit tests; lint and build clean; the 007 e2e pass on desktop. Parade 52–54 fps on Pixel 7 + 4× on a slow day (walk 61–63 in the same run). Full e2e suite: all pass (88 in the parallel run, the other 11 on a one-worker rerun after load timeouts and one stale Builder-lock line). **Still to do:** re-measure the parade on a normal day (or on a real phone); 52–54 fps is under the 55 target.
 
 ## Decisions made while building (agent, 2026-11-12; Chris to review)
 1. **"All 3 Pro badges"** means all 18 job missions done. There are no separate Pro badges, so the

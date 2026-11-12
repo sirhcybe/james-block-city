@@ -223,7 +223,7 @@ test('the whole game in one save: 18 job missions, the finale, and the parade (A
     .toContain('parade');
   // Play forever: after the parade the city carries on, and the boards still replay missions.
   await expect
-    .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), { timeout: 120_000 })
+    .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), { timeout: 400_000 })
     .toContain('morning');
   expect(await page.evaluate(() => window.__jbc!.scenes())).toContain('City');
   expect(errors).toEqual([]);
