@@ -147,7 +147,7 @@ export class HudScene extends Phaser.Scene {
       .setOrigin(0, 0)
       .setDepth(-10);
     const lights: Phaser.GameObjects.Arc[] = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 14; i++) {
       const l = this.add
         .circle(
           Math.random() * GAME_W,

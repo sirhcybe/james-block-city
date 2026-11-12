@@ -93,30 +93,40 @@ Finish the game:
 - App-store packaging.
 
 ## Acceptance criteria
-- [ ] AC1 The finale is locked until all 18 job missions are done. Then the mayor offers part 1,
+- [x] AC1 The finale is locked until all 18 job missions are done. Then the mayor offers part 1,
       and each part unlocks the next. Evidence: unit tests.
-- [ ] AC2 Each finale part switches the player to its job and can be completed with no reading,
+      _Evidence:_ unit test "locked until all 18 job missions are done; then the parts come one after another"; job bosses never offer finale parts.
+- [x] AC2 Each finale part switches the player to its job and can be completed with no reading,
       ending in the parade (night, convoy, fireworks), after which play continues. Evidence: e2e.
-- [ ] AC3 The helicopter flies over the roads, can be netted, and lands softly to be caught.
+      _Evidence:_ e2e whole-game playthrough (each part starts at the mayor with the right job; `finale-done`; `parade` then `morning` voice; the city keeps running); screenshot of the parade.
+- [x] AC3 The helicopter flies over the roads, can be netted, and lands softly to be caught.
       Evidence: e2e + screenshot.
-- [ ] AC4 The glowing job stations switch the job right away (once the finale is unlocked).
+      _Evidence:_ e2e playthrough catches the helicopter with the net; screenshot of the helicopter.
+- [x] AC4 The glowing job stations switch the job right away (once the finale is unlocked).
       Evidence: e2e.
-- [ ] AC5 The production build has a valid manifest with 192/512/maskable icons and a service
+      _Evidence:_ e2e "glowing job stations" (nothing before the finale opens; builder, then fire, after).
+- [x] AC5 The production build has a valid manifest with 192/512/maskable icons and a service
       worker. After one visit, the game reloads and starts with the network off. Evidence: e2e
       (offline reload) + manifest unit test.
-- [ ] AC6 The grown-up corner:
+      _Evidence:_ unit test (manifest, icons exist); e2e "installable and offline" (worker controls the page; reload with the network off reaches the Title).
+- [x] AC6 The grown-up corner:
   - opens only after a 2-second hold;
   - sound and voice levels work and survive a reload;
   - "unlock everything" opens all jobs, upgrades and the finale;
   - reset needs a 3-second hold and starts a fresh save.
   - Evidence: e2e + unit tests (settings).
-- [ ] AC7 One automated playthrough completes all 21 missions in one save, in order. Evidence: e2e.
-- [ ] AC8 A time budget for the whole game is written down, with a table for a grown-up's timed
+      _Evidence:_ unit tests (settings); e2e "the grown-up corner" (tap does nothing, 2 s hold opens, levels saved, unlock, 3 s reset gives a fresh save and keeps the levels).
+- [x] AC7 One automated playthrough completes all 21 missions in one save, in order. Evidence: e2e.
+      _Evidence:_ e2e "the whole game in one save" passed (8.5 min, desktop).
+- [x] AC8 A time budget for the whole game is written down, with a table for a grown-up's timed
       run. Evidence: `docs/playthrough.md`. A real timed run is for Chris and James at the
       playtest.
-- [ ] AC9 The `J` key opens the Job Center with all three badges, and not before. Evidence: e2e.
+      _Evidence:_ `docs/playthrough.md` (budget 1 h 40 – 2 h 55 story, up to ~4 h 20 with everything). **The real timed run is for Chris and James.**
+- [x] AC9 The `J` key opens the Job Center with all three badges, and not before. Evidence: e2e.
+      _Evidence:_ e2e "J opens the uniforms only with all three badges".
 - [ ] AC10 All unit and e2e tests pass, lint and build are clean, and the parade holds ≥ 55 fps on
       Pixel 7 + 4× (`SCENARIO=parade`). Evidence: test runs + perf record.
+      _Evidence so far:_ 185 unit tests; lint and build clean; the 007 e2e pass on desktop. Parade 52–54 fps on Pixel 7 + 4× on a slow day (walk 61–63 in the same run). **Still to do:** re-measure the parade on a normal day (or a real phone), and one full e2e run (desktop + Pixel 7) on the final code.
 
 ## Decisions made while building (agent, 2026-11-12; Chris to review)
 1. **"All 3 Pro badges"** means all 18 job missions done. There are no separate Pro badges, so the

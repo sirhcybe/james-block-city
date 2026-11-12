@@ -31,7 +31,9 @@ for (const [name, size, pad] of [
   ['apple-touch-icon.png', 180, 0],
 ]) {
   await p.setViewportSize({ width: size, height: size });
-  await p.setContent(`<style>html,body{margin:0}svg{width:${size}px;height:${size}px;display:block}</style>${svg(pad)}`);
+  await p.setContent(
+    `<style>html,body{margin:0}svg{width:${size}px;height:${size}px;display:block}</style>${svg(pad)}`,
+  );
   await p.screenshot({ path: `public/icons/${name}`, omitBackground: false });
   console.log('wrote', name);
 }

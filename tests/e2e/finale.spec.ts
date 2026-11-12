@@ -66,10 +66,9 @@ async function playGoal(page: Page): Promise<void> {
   const moved = `(() => { const m = window.__jbc.player()?.mission; return !m || m.id !== '${before?.id}' || m.goalIndex !== ${before?.goalIndex}; })()`;
   switch (g.type) {
     case 'goTo':
+      // Vehicles: hop in. People and places: walk up to them (like a child does).
       if (VEHICLES.includes(g.target!))
         await page.evaluate((v) => window.__jbc!.ride(v as never), g.target!);
-      else if ((await st(page)).mode === 'car')
-        await page.evaluate((m) => window.__jbc!.driveTo(m), g.target!);
       else await page.evaluate((m) => window.__jbc!.walkTo(m), g.target!);
       break;
     case 'checkpoints':

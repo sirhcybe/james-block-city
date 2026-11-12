@@ -518,7 +518,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       return { v, corner: 0 };
     });
     this.fireworks = this.time.addEvent({
-      delay: 650,
+      delay: 1000,
       loop: true,
       callback: () => {
         const c = gridToScreen(24 + (Math.random() - 0.5) * 12, 8 + (Math.random() - 0.5) * 12);

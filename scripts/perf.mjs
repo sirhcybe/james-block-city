@@ -3,7 +3,8 @@
 // police car chasing Pickles, donuts dropping, pedestrians hopping, siren on), or SCENARIO=double
 // (spec 003 AC20: Double Trouble, two getaway cars, socks dropping, 3 town cars, siren on), or
 // SCENARIO=fire (spec 004 AC14: fire truck among the Skyscraper Heights towers, 4 fires, hose on),
-// or SCENARIO=build (spec 005 AC12: the mixer building the boat shop in the Harbor, horn on).
+// SCENARIO=build (spec 005 AC12: the mixer building the boat shop in the Harbor, horn on), or
+// SCENARIO=parade (spec 007 AC10: the finale parade at night, convoy, fireworks).
 // Uses the installed Chrome with the real GPU and vsync off, so fps = uncapped throughput.
 // Usage: npm run dev, then `node scripts/perf.mjs` (URL=..., RATE=..., SCENARIO=... to override).
 import { chromium, devices } from 'playwright';
@@ -69,6 +70,12 @@ if (SCENARIO === 'chase' || SCENARIO === 'double') {
     j.startMission('fireworks-fiasco');
     j.ride('fire-truck');
     j.driveTo('fireworks-at');
+  });
+} else if (SCENARIO === 'parade') {
+  await p.evaluate(() => {
+    const j = window.__jbc;
+    j.grant({ badges: ['cop', 'fire', 'builder'], owned: ['police-bike', 'own-car'] });
+    j.parade();
   });
 } else if (SCENARIO === 'build') {
   await p.evaluate(() => {

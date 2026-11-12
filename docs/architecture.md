@@ -138,6 +138,11 @@ SaveV2 (spec 006, ADR-009) adds `hat: string | null` and `paint: string | null`;
 `Voice.say(lineId)` looks up text in `content/voice.json` and speaks via `speechSynthesis`.
 Later, if `public/voice/<lineId>.mp3` exists, play that instead. Never show the text on screen.
 
+## Offline and install (spec 007, ADR-010)
+`public/manifest.webmanifest` + icons; the build writes `sw.js` (precache of every built file,
+cache named by a hash of the list); `src/pwa.ts` registers it in production only. Grown-up settings
+(sound/voice levels) live in `jbc.settings`, apart from the save.
+
 ## Performance budget
 60 fps on a mid-range Android phone in Chrome. Bake all block art into textures at boot; avoid
 per-frame Graphics redraws. Cull off-screen sprites. Target initial download < 3 MB.

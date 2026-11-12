@@ -4,13 +4,16 @@ An isometric, blocky, comic-action city game for a 6-year-old (James) and kids a
 Pick a job (Cop, Firefighter, Builder), drive loud vehicles, catch goofy robbers, and earn
 coins through minigames and errands. Runs in Chrome on laptops and Android phones.
 
-**Status:** specs 003–005 built:
-- three jobs (Cop, Firefighter, Builder), each with 6 missions;
-- 7 minigames, the Job Center, the Shop, and mission boards;
-- four districts (Downtown, City Plaza, Skyscraper Heights, Harbor).
+**Status:** every spec on the roadmap is built (001–007):
+- three jobs (Cop, Firefighter, Builder) with 6 missions each, and 7 minigames;
+- the Job Center, the Shop, your apartment, and 19 errands;
+- four districts, the Golden Block Heist finale and parade;
+- installable as an app, and playable offline;
+- a grown-up corner (hold the gear on the title for 2 seconds).
 
-Next: playtest with James on a real Android phone (`docs/playtests/TEMPLATE.md`), then spec 006 (Home
-& Shop). Development is spec-driven; see `specs/README.md`.
+Next: playtest with James on a real Android phone, plus a timed playthrough
+(`docs/playthrough.md`). Each spec's "Decisions made while building" section lists choices to
+review. Development is spec-driven; see `specs/README.md`.
 
 ```sh
 npm install
@@ -36,6 +39,6 @@ npm run build
 
 ## Next step
 
-Playtest specs 003–005 with James (`docs/playtests/TEMPLATE.md`), including a real Android phone.
-Then write spec 006 from the findings. Each spec's "Decisions made while building" section lists
-choices to review.
+Playtest specs 003–007 with James (`docs/playtests/TEMPLATE.md`) on a real Android phone, and time a
+full playthrough (`docs/playthrough.md`). Then write new specs from what James enjoys (the roadmap
+is complete).

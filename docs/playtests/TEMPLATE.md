@@ -70,6 +70,19 @@ Spec 006: **does he want to spend coins, and does decorating hold his attention?
 | Bought his own car and painted it | | | | |
 | Helped people with picture bubbles (how many?) | | | | |
 
+Spec 007: **is the finale a satisfying ending, and does the game work as an installed app?**
+
+| Thing | Did it? | How long until? | Fun? (😀 / 😐 / 🙁) | Notes |
+| --- | --- | --- | --- | --- |
+| Noticed the mayor's bubble after the last mission | | | | |
+| Put out the tower fires | | | | |
+| Caught the helicopter | | | | |
+| Built the Golden Block tower | | | | |
+| Watched the parade (liked the night and fireworks?) | | | | |
+| Used a glowing job station | | | | |
+| Grown-up: installed on the home screen; played with Wi-Fi off | | | | |
+| Grown-up: the corner's volume and reset worked | | | | |
+
 ## Watch for
 - **Stuck moments:** where, for how long, did the bouncing arrow / voice hint help?
 - **Needed reading or a grown-up to explain?** (should be never)
