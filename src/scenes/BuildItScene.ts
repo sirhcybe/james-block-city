@@ -25,8 +25,8 @@ const U = 78;
 const PAPER = { x: 150, y: 96, w: 720, h: 420 };
 const TRAY_Y = 618;
 const TOOL_X = 1090;
-const TOOL_Y = [180, 330, 480];
-const TOOL_R = 62;
+const TOOL_Y = [166, 300, 434];
+const TOOL_R = 58;
 
 const MAT_COLOR: Record<Material, number> = {
   wood: 0xc98a4b,
@@ -106,8 +106,8 @@ export class BuildItScene extends Phaser.Scene {
     g.fillStyle(0x9c6b3f, 1).fillRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 146, 18);
     g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 160, 18);
     // Tool board.
-    g.fillStyle(0xf3e3c0, 1).fillRoundedRect(TOOL_X - 100, 90, 200, 470, 22);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(TOOL_X - 100, 90, 200, 470, 22);
+    g.fillStyle(0xf3e3c0, 1).fillRoundedRect(TOOL_X - 100, 90, 200, 420, 22);
+    g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(TOOL_X - 100, 90, 200, 420, 22);
 
     // Centre the picture on the paper.
     const ps = this.model.pieces;
@@ -125,7 +125,7 @@ export class BuildItScene extends Phaser.Scene {
       const sg = this.add.graphics();
       const x = this.origin.x + p.x * U;
       const y = this.origin.y + p.y * U;
-      sg.fillStyle(MAT_COLOR[p.material], 0.3).fillRoundedRect(
+      sg.fillStyle(lighten(MAT_COLOR[p.material], 0.25), 0.55).fillRoundedRect(
         x + 3,
         y + 3,
         p.w * U - 6,
@@ -430,7 +430,7 @@ export class BuildItScene extends Phaser.Scene {
     v.box.setAngle(0);
     const c = this.slotCentre(slot);
     const img = this.add
-      .image(TOOL_X, 330, key)
+      .image(TOOL_X, 300, key)
       .setScale(0.9 / RS)
       .setDepth(40);
     this.tweens.add({
