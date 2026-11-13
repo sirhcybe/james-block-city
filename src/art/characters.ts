@@ -77,6 +77,7 @@ export const LOOKS: Record<string, CharacterLook> = {
   kid: { shirt: PALETTE.coinGold, pants: 0x2f6fde, hair: 0x2b1d14, skin: 0x8d5a3b },
   grandma: { shirt: PALETTE.donutPink, pants: 0x6e6e8a, hair: 0xe8e8e8, skin: 0xf2c9a0 },
   baker: { shirt: 0xffffff, pants: PALETTE.donutPink, hair: 0x3b2a1a, skin: 0xc68a5e, hat: 'chef' },
+  lifeguard: { shirt: PALETTE.fireRed, pants: PALETTE.coinGold, hair: 0xf0c75e, skin: 0xd9a066 },
   walkerRed: { shirt: PALETTE.fireRed, pants: 0x3a3d52, hair: 0x2b1d14, skin: 0xe0ac7e },
   walkerGreen: { shirt: PALETTE.grass, pants: 0x5a4632, hair: 0xf0c75e, skin: PALETTE.skin },
   walkerBlue: { shirt: PALETTE.harborTeal, pants: 0x3a3d52, hair: 0x111111, skin: 0x8d5a3b },

@@ -20,6 +20,8 @@ export const EV = {
   interiorDone: 'interior:done',
   /** The finale is won: night-time parade (spec 007). */
   parade: 'finale:parade',
+  /** Build It! was finished for a build spot (spec 008). */
+  buildDone: 'build:done',
   /** Night tint on/off (the HUD draws it). */
   night: 'finale:night',
 } as const;

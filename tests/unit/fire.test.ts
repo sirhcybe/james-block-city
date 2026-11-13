@@ -24,7 +24,7 @@ const progress = (p: Partial<Progress> = {}): Progress => ({
   missionsDone: {},
   ...p,
 });
-const fire = content.missions.filter((m) => m.job === 'fire' && m.tier !== 'finale');
+const fire = content.missions.filter((m) => m.job === 'fire' && m.tier !== 'finale' && m.tier !== 'rescue');
 
 describe('Job Center rules (AC1)', () => {
   it('no switching before the first badge; jobs without missions stay locked', () => {

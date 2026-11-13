@@ -34,7 +34,9 @@ export class BlockStackModel {
   topX = 0;
   phase = 0;
   missesInRow = 0;
-  readonly speed: number;
+  private readonly baseSpeed: number;
+  /** Level inside the round (the scene sets it): the crane swings a little faster. */
+  level = 1;
   private busy = 0;
 
   constructor(
@@ -43,7 +45,11 @@ export class BlockStackModel {
     step: number,
   ) {
     const d = Math.min(1, plays * step);
-    this.speed = BS.speed + (BS.maxSpeed - BS.speed) * d;
+    this.baseSpeed = BS.speed + (BS.maxSpeed - BS.speed) * d;
+  }
+
+  get speed(): number {
+    return Math.min(BS.maxSpeed * 1.1, this.baseSpeed * (1 + 0.05 * (this.level - 1)));
   }
 
   get easier(): boolean {
@@ -101,7 +107,9 @@ export class CopyBuildModel {
   score = 0;
   elapsed = 0;
   finished = false;
-  readonly size: number;
+  size: number;
+  /** Level inside the round (the scene sets it): from level 3 the pictures are 3×3. */
+  level = 1;
   target: number[] = [];
   grid: number[] = [];
 
@@ -110,12 +118,16 @@ export class CopyBuildModel {
     plays: number,
     private readonly rand: () => number = Math.random,
   ) {
-    this.size = plays >= 2 ? CB.maxSize : CB.size;
+    this.big = plays >= 2;
+    this.size = this.big ? CB.maxSize : CB.size;
     this.newPicture();
   }
 
+  private readonly big: boolean;
+
   /** A new picture with at least two coloured squares; the player's grid is cleared. */
   newPicture(): void {
+    this.size = this.big || this.level >= 3 ? CB.maxSize : CB.size;
     const n = this.size * this.size;
     do {
       this.target = Array.from({ length: n }, () => Math.floor(this.rand() * (CB.colors + 1)));
@@ -165,7 +177,9 @@ export const CP = {
   resetSec: 0.7,
 };
 
-export type CPEvent = { type: 'poured'; points: number; diff: number } | { type: 'finished' };
+export type CPEvent =
+  /** `spilled`: it went over the top of the mould (a heart in the scene). */
+  { type: 'poured'; points: number; diff: number; spilled: boolean } | { type: 'finished' };
 
 export class CementPourModel {
   score = 0;
@@ -176,15 +190,21 @@ export class CementPourModel {
   private holding = false;
   private busy = 0;
   private t = 0;
-  readonly drift: number;
+  private readonly baseDrift: number;
+  /** Level inside the round (the scene sets it): the line starts to drift, then drifts more. */
+  stage = 1;
 
   constructor(
     readonly durationSec: number,
     plays: number,
     private readonly rand: () => number = Math.random,
   ) {
-    this.drift = plays === 0 ? 0 : Math.min(0.3, CP.drift * plays);
+    this.baseDrift = plays === 0 ? 0 : Math.min(0.3, CP.drift * plays);
     this.line = this.newLine();
+  }
+
+  get drift(): number {
+    return Math.min(0.36, this.baseDrift + 0.04 * (this.stage - 1));
   }
 
   private newLine(): number {
@@ -203,7 +223,7 @@ export class CementPourModel {
     const points = a <= CP.close ? 3 : a <= CP.near ? 2 : 1;
     this.score += points;
     this.busy = CP.resetSec;
-    return { type: 'poured', points, diff };
+    return { type: 'poured', points, diff, spilled: this.level > 1.001 };
   }
 
   update(dt: number): CPEvent[] {

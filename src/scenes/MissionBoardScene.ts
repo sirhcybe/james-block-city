@@ -1,3 +1,4 @@
+import { isJobMission } from '../systems/missions';
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
@@ -28,7 +29,7 @@ export class MissionBoardScene extends Phaser.Scene {
     this.add.rectangle(0, 0, GAME_W, GAME_H, 0x1f4fa8, 0.92).setOrigin(0, 0);
 
     const missions = this.state.content.missions.filter(
-      (m) => m.job === this.state.job && m.tier !== 'finale',
+      (m) => m.job === this.state.job && isJobMission(m),
     );
     const perRow = 3;
     missions.forEach((m, i) => {

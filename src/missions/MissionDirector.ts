@@ -8,6 +8,8 @@ import { depthOf, gridToScreen, type Vec2 } from '../iso/projection';
 import type { MissionResult } from '../systems/GameState';
 import {
   finaleOffer,
+  rescueOffer,
+  rescuesOpen,
   type Goal,
   type Mission,
   type MissionEvent,
@@ -15,6 +17,7 @@ import {
 } from '../systems/missions';
 import { EV } from '../scenes/keys';
 import { JOBS, NEED_UPGRADE_LINE } from '../systems/jobs';
+import { isJobMission } from '../systems/missions';
 import { makeHandler, type GoalHandler, type Hint } from './handlers';
 import type { MissionWorld, VehicleId } from './world';
 
@@ -25,7 +28,7 @@ const CHIEF_TALK_DIST = 1.6;
 function missionVehicle(m: Mission): VehicleId {
   const goTos = m.goals.filter((g): g is Extract<Goal, { type: 'goTo' }> => g.type === 'goTo');
   for (const g of goTos)
-    if (['police-bike', 'fire-truck', 'mixer-truck'].includes(g.target))
+    if (['police-bike', 'fire-truck', 'mixer-truck', 'rescue-boat'].includes(g.target))
       return g.target as VehicleId;
   if (m.job === 'fire') return 'fire-truck';
   if (m.job === 'builder') return 'mixer-truck';
@@ -76,7 +79,7 @@ export class MissionDirector {
     // The boss hands over the uniform's hat on the job's first mission.
     const first = this.w.state.content.missions.find((m) => m.job === def.job);
     if (first?.id === id) this.w.give(JOBS[def.job].gift);
-    const boss = this.w.townsperson(this.bossId());
+    const boss = this.w.townsperson(def.tier === 'rescue' ? 'lifeguard' : this.bossId());
     boss?.setOffering(false);
     boss?.cheer();
     sfx.play('tada', 1.2, 0.6);
@@ -133,6 +136,7 @@ export class MissionDirector {
     const res: MissionResult = this.w.state.completeMission();
     this.run = null;
     this.cooldown = 4;
+    if (run.mission.tier === 'rescue') this.rescueTurn++;
     this.handOverCompanion(run.mission);
     const scene = this.w.stage;
     scene.time.delayedCall(900, () => {
@@ -235,7 +239,52 @@ export class MissionDirector {
 
   /** Whether the director draws this townsperson's bubble (the job boss; the mayor in the finale). */
   ownsBubble(id: string): boolean {
-    return id === this.bossId() || (id === 'mayor' && !!this.finale());
+    return (
+      id === this.bossId() ||
+      (id === 'mayor' && !!this.finale()) ||
+      (id === 'lifeguard' && this.rescuesOn())
+    );
+  }
+
+  /** Rescues finished this session (so finished rescues come round again in turn). */
+  private rescueTurn = 0;
+  private nearLifeguard = false;
+
+  /** The boat rescue the lifeguard offers right now (spec 008), if any. */
+  rescue(): Mission | null {
+    if (this.run || this.cooldown > 0) return null;
+    const s = this.w.state;
+    return rescueOffer(s.content.missions, s.job, s.progress, this.rescueTurn);
+  }
+
+  /** The dock is built, so the lifeguard has something to say to every job. */
+  private rescuesOn(): boolean {
+    return !this.run && rescuesOpen(this.w.state.content.missions, this.w.state.progress);
+  }
+
+  /**
+   * The lifeguard by the dock offers boat rescues to firefighters and police officers; a builder
+   * is told to come back in another uniform.
+   */
+  private updateLifeguard(): void {
+    const guard = this.w.townsperson('lifeguard');
+    if (!guard) return;
+    const offer = this.rescue();
+    const open = this.rescuesOn() && this.cooldown <= 0;
+    if (!open) {
+      guard.setOffering(false);
+      this.nearLifeguard = false;
+      return;
+    }
+    guard.setBubble(getBaked(bubbleKey((offer?.icon ?? 'boat') as IconName)));
+    guard.setOffering(true);
+    const f = this.w.focus();
+    const near = Math.hypot(f.x - guard.pos.x, f.y - guard.pos.y) < CHIEF_TALK_DIST;
+    if (near && !this.nearLifeguard) {
+      if (offer) this.begin(offer.id);
+      else voice.say('lifeguard-other-job', { interrupt: true });
+    }
+    this.nearLifeguard = near;
   }
 
   private nearMayor = false;
@@ -258,6 +307,7 @@ export class MissionDirector {
 
   private updateBoss(): void {
     this.updateMayor();
+    this.updateLifeguard();
     const boss = this.w.townsperson(this.bossId());
     if (!boss) return;
     const next = this.offer();
@@ -295,7 +345,7 @@ export class MissionDirector {
   private lockedOnlyByShop(): boolean {
     const s = this.w.state;
     const left = s.content.missions.filter(
-      (m) => m.job === s.job && m.tier !== 'finale' && !(s.stars(m.id) > 0),
+      (m) => m.job === s.job && isJobMission(m) && !(s.stars(m.id) > 0),
     );
     return (
       left.length > 0 &&
@@ -318,6 +368,10 @@ export class MissionDirector {
       return { at: this.w.marker('shop'), line: NEED_UPGRADE_LINE[this.w.state.job] };
     const mayor = this.w.townsperson('mayor');
     if (mayor && this.finale()) return { at: mayor.pos, line: 'finale-ready' };
+    // Nothing else to do for this job right now: the lifeguard's next rescue.
+    const guard = this.w.townsperson('lifeguard');
+    if (guard && this.rescue() && !this.w.state.nextMission())
+      return { at: guard.pos, line: 'hint-lifeguard' };
     return null;
   }
 }

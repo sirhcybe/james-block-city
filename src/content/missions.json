@@ -726,5 +726,140 @@
         "seconds": 90
       }
     ]
+  },
+  {
+    "id": "barge-blaze",
+    "job": "fire",
+    "tier": "rescue",
+    "icon": "flame",
+    "voiceIntro": "intro-barge-blaze",
+    "voiceDone": "done-rescue",
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "rescue-boat"
+      },
+      {
+        "type": "spray",
+        "fires": ["barge-fire-1", "barge-fire-2"]
+      },
+      {
+        "type": "goTo",
+        "target": "dock-landing"
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "requires": ["owned:built:dock"],
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 90
+      }
+    ]
+  },
+  {
+    "id": "castaway-cat",
+    "job": "fire",
+    "tier": "rescue",
+    "icon": "kitten",
+    "voiceIntro": "intro-castaway-cat",
+    "voiceDone": "done-rescue",
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "rescue-boat"
+      },
+      {
+        "type": "goTo",
+        "target": "castaway",
+        "carry": "kitten"
+      },
+      {
+        "type": "goTo",
+        "target": "dock-landing"
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "requires": ["owned:built:dock"],
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 60
+      }
+    ]
+  },
+  {
+    "id": "duckling-patrol",
+    "job": "cop",
+    "tier": "rescue",
+    "icon": "duck",
+    "voiceIntro": "intro-duckling-patrol",
+    "voiceDone": "done-rescue",
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "rescue-boat"
+      },
+      {
+        "type": "checkpoints",
+        "flags": ["floaty-1", "floaty-2", "floaty-3"],
+        "look": "floaty"
+      },
+      {
+        "type": "goTo",
+        "target": "dock-landing"
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "requires": ["owned:built:dock"],
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 120
+      }
+    ]
+  },
+  {
+    "id": "sailboat-tow",
+    "job": "cop",
+    "tier": "rescue",
+    "icon": "boat",
+    "voiceIntro": "intro-sailboat-tow",
+    "voiceDone": "done-rescue",
+    "goals": [
+      {
+        "type": "goTo",
+        "target": "rescue-boat"
+      },
+      {
+        "type": "goTo",
+        "target": "sailboat",
+        "carry": "sailboat"
+      },
+      {
+        "type": "goTo",
+        "target": "dock-landing"
+      }
+    ],
+    "reward": {
+      "coins": 30
+    },
+    "requires": ["owned:built:dock"],
+    "bonus": [
+      {
+        "type": "fastGoal",
+        "goal": 1,
+        "seconds": 75
+      }
+    ]
   }
 ]

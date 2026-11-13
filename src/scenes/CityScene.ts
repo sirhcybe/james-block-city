@@ -9,6 +9,7 @@ import { groundChunkKey } from '../art/ground';
 import type { IconName } from '../art/icons';
 import { iconKey } from '../art/menu';
 import { bubbleKey, MPROP, padKey } from '../art/missionProps';
+import { RESCUE_BOAT, SEA } from '../art/boats';
 import { PROP } from '../art/props';
 import { RS, WT } from '../art/renderScale';
 import { UI } from '../art/ui';
@@ -42,7 +43,8 @@ import {
   WORLD_ZOOM,
 } from '../config';
 import { tileAt, type BuildingDef, type MapDef, type TileKind } from '../content/schema';
-import { buildRoadGraph, buildWalkGrid } from '../content/world';
+import { buildRoadGraph, buildSeaGrid, buildWalkGrid } from '../content/world';
+import { Boat } from '../entities/Boat';
 import { BuildSite } from '../entities/BuildSite';
 import { Bumpable } from '../entities/Bumpable';
 import { Fire } from '../entities/Fire';
@@ -60,8 +62,9 @@ import { PathFinder } from '../iso/path';
 import { depthOf, footprintDepth, gridToScreen, screenToGrid, type Vec2 } from '../iso/projection';
 import type { LaneGraph, LaneNode } from '../iso/roads';
 import { MissionDirector } from '../missions/MissionDirector';
-import type { MissionWorld, VehicleId } from '../missions/world';
+import type { MissionWorld, Ride, VehicleId } from '../missions/world';
 import type { GameState } from '../systems/GameState';
+import { ObjectiveGuide } from '../systems/guide';
 import { IdleHints } from '../systems/hints';
 import type { MissionEvent, RobberSpec } from '../systems/missions';
 import { BUILD, pickSite } from '../systems/build';
@@ -117,9 +120,9 @@ export const MINIGAMES: Record<string, { scene: string; icon: IconName }> = {
 
 /** The vehicles each job may hop into. */
 const JOB_VEHICLES: Record<string, VehicleId[]> = {
-  cop: ['police-car', 'police-bike', 'own-car'],
-  fire: ['fire-truck', 'own-car'],
-  builder: ['mixer-truck', 'own-car'],
+  cop: ['police-car', 'police-bike', 'own-car', 'rescue-boat'],
+  fire: ['fire-truck', 'own-car', 'rescue-boat'],
+  builder: ['mixer-truck', 'own-car', 'rescue-boat'],
 };
 
 /** Townspeople who give missions or errands: marker id → look. */
@@ -140,6 +143,7 @@ const TOWNSPEOPLE: Record<string, string> = {
   chef: 'baker',
   grandpa: 'grandpa',
   keeper: 'mayor',
+  lifeguard: 'lifeguard',
 };
 
 /** What each errand's giver says when it is offered. */
@@ -193,6 +197,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   fireTruck: Vehicle | null = null;
   mixer: Vehicle | null = null;
   ownCar: Vehicle | null = null;
+  /** The rescue boat, moored at the dock once the dock is built (spec 008). */
+  boat: Boat | null = null;
+  private seaGrid!: WalkGrid;
+  private waves: Phaser.GameObjects.TileSprite | null = null;
+  private guide = new ObjectiveGuide();
   private stationImgs: Phaser.GameObjects.Image[] = [];
   /** Builder build spots by id (spec 005). */
   readonly sites = new Map<string, BuildSite>();
@@ -289,13 +298,14 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     return this;
   }
 
-  riding(): { id: VehicleId; vehicle: Vehicle } | null {
+  riding(): { id: VehicleId; vehicle: Ride } | null {
     if (this.mode !== 'car' || !this.ridingId) return null;
     const v = this.vehicle(this.ridingId);
     return v ? { id: this.ridingId, vehicle: v } : null;
   }
 
-  vehicle(id: VehicleId): Vehicle | null {
+  vehicle(id: VehicleId): Ride | null {
+    if (id === 'rescue-boat') return this.boat;
     if (id === 'police-car') return this.car;
     if (id === 'police-bike') return this.bike;
     if (id === 'fire-truck') return this.fireTruck;
@@ -605,47 +615,90 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     return pickSite(this.focus(), mode, active);
   }
 
-  /** One press of the block blaster. */
+  /**
+   * The block blaster at a build spot opens Build It! (spec 008: drag the materials, pick the
+   * fasteners). The spot is built when that is finished.
+   */
   blast(id: string): void {
     const site = this.sites.get(id);
-    if (!site || !site.active || this.blastCooldown > 0) return;
+    if (!site || !site.active || this.blastCooldown > 0 || !this.scene.isActive()) return;
     this.blastCooldown = BUILD.cooldownSec;
+    sfx.play('thunk');
+    this.pauseForOverlay();
+    this.scene.launch('BuildIt', { site: id, giant: this.state.owns('giant-drum') });
+  }
+
+  /** Build It! is done: the real thing rises out of the ground. */
+  private onBuildDone(r: { spot: string }): void {
+    const id = r.spot;
+    const site = this.sites.get(id);
+    if (!site || !site.active) return;
     const from = gridToScreen(this.focus().x, this.focus().y);
     from.y -= 30;
-    sfx.play('thunk');
-    const n = this.state.owns('giant-drum') ? BUILD.giantPerPress : BUILD.perPress;
-    if (site.addBlocks(n, from)) {
-      this.time.delayedCall(560, () => {
-        this.state.give(`built:${id}`);
-        this.state.save.flush();
-        this.refreshWalkGrid();
-        // Built things block the way (or, for docks and bridges, let you walk on the water).
-        if (!this.props.some((p) => p.def.id === id)) {
-          const depth = footprintDepth({
-            x: site.def.gx,
-            y: site.def.gy,
-            w: site.def.w,
-            d: site.def.d,
-          });
-          this.props.push({
-            def: site.def,
-            image: site.img,
-            bounds: site.img.getBounds(),
-            depth,
-            faded: false,
-          });
-        }
-        sfx.play('tada');
-        this.sparkleAt(site.centre);
-        voice.say('built', { interrupt: true });
-        this.notifyMission({ type: 'built', spot: id });
-      });
-    }
+    site.complete(from);
+    this.time.delayedCall(700, () => {
+      this.state.give(`built:${id}`);
+      this.state.save.flush();
+      this.refreshWalkGrid();
+      // Built things block the way (or, for docks and bridges, let you walk on the water).
+      if (!this.props.some((p) => p.def.id === id)) {
+        const depth = footprintDepth({
+          x: site.def.gx,
+          y: site.def.gy,
+          w: site.def.w,
+          d: site.def.d,
+        });
+        this.props.push({
+          def: site.def,
+          image: site.img,
+          bounds: site.img.getBounds(),
+          depth,
+          faded: false,
+        });
+      }
+      sfx.play('tada');
+      this.sparkleAt(site.centre);
+      voice.say('built', { interrupt: true });
+      this.notifyMission({ type: 'built', spot: id });
+    });
   }
 
   private refreshWalkGrid(): void {
     this.grid.copyFrom(buildWalkGrid(this.map, this.builtIds()));
+    this.seaGrid.copyFrom(buildSeaGrid(this.map, this.builtIds()));
     this.pathFinder.refresh();
+    if (this.builtIds().has('dock') && !this.boat) {
+      this.spawnBoat(true);
+      this.time.delayedCall(2600, () => voice.say('boat-ready'));
+    }
+  }
+
+  /** The closest point of open water to a grid point (tests put the boat next to things). */
+  nearestWater(p: Vec2): Vec2 {
+    let best = { ...p };
+    let bestD = Infinity;
+    for (let y = Math.floor(p.y) - 4; y <= Math.floor(p.y) + 4; y++)
+      for (let x = Math.floor(p.x) - 4; x <= Math.floor(p.x) + 4; x++) {
+        if (!this.seaGrid.circleFits(x + 0.5, y + 0.5, 0.45)) continue;
+        const d = (x + 0.5 - p.x) ** 2 + (y + 0.5 - p.y) ** 2;
+        if (d < bestD) {
+          bestD = d;
+          best = { x: x + 0.5, y: y + 0.5 };
+        }
+      }
+    return this.seaGrid.circleFits(p.x, p.y, 0.45) ? { ...p } : best;
+  }
+
+  /** The rescue boat appears beside the dock (just built: with a splash). */
+  spawnBoat(splash: boolean): void {
+    if (this.boat || !this.hasMarker('rescue-boat')) return;
+    this.boat = new Boat(this, this.seaGrid, RESCUE_BOAT, this.marker('rescue-boat'), 0);
+    this.boat.img.setName('rescue-boat');
+    if (splash) {
+      this.puff(this.boat.pos);
+      sfx.play('splash');
+      this.tweens.add({ targets: this.boat, hop: 16, duration: 200, yoyo: true });
+    }
   }
 
   goInside(room: string): void {
@@ -687,6 +740,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     );
     const grid = buildWalkGrid(this.map, built);
     this.grid = grid;
+    this.seaGrid = buildSeaGrid(this.map, built);
     this.pathFinder = new PathFinder(grid);
     this.carGraph = buildRoadGraph(this.map, 'car');
     this.bikeGraph = buildRoadGraph(this.map, 'bike');
@@ -714,12 +768,21 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.fireTruck = null;
     this.mixer = null;
     this.ownCar = null;
+    this.boat = null;
+    this.guide.reset();
     this.sites.clear();
     this.fires.clear();
     this.spraying = null;
 
     const cam = this.cameras.main;
     cam.setZoom(RS * WORLD_ZOOM).setBackgroundColor(PALETTE.water);
+
+    // The sea: one tile of wave marks that follows the camera and drifts (cheap, any map size).
+    this.waves = this.add
+      .tileSprite(0, 0, 64, 64, SEA.waves)
+      .setOrigin(0, 0)
+      .setDepth(-1_000_001)
+      .setTileScale(0.5);
 
     // Ground chunks (all-sea chunks have no texture).
     for (let cy = 0; cy < this.map.height; cy += 16) {
@@ -846,6 +909,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.car.img.setName('police-car');
     if (this.state.owns('police-bike')) this.spawnBike(false);
     if (this.state.owns('own-car')) this.spawnOwnCar(false);
+    if (built.has('dock')) this.spawnBoat(false);
     this.stationImgs = [];
     for (const [job, color] of [
       ['cop', PALETTE.policeBlue],
@@ -930,11 +994,13 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.game.events.on(EV.menuClosed, this.onMenuClosed, this);
     this.game.events.on(EV.interiorDone, this.onInteriorDone, this);
     this.game.events.on(EV.parade, this.parade, this);
+    this.game.events.on(EV.buildDone, this.onBuildDone, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off(EV.minigameComplete, this.onMinigameComplete, this);
       this.game.events.off(EV.menuClosed, this.onMenuClosed, this);
       this.game.events.off(EV.interiorDone, this.onInteriorDone, this);
       this.game.events.off(EV.parade, this.parade, this);
+      this.game.events.off(EV.buildDone, this.onBuildDone, this);
       this.scene.stop('Hud');
     });
     this.scene.launch('Hud');
@@ -1154,19 +1220,24 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.tweens.add({ targets: this.target, scale: 1 / WT, duration: 260, ease: 'Back.easeOut' });
   }
 
-  private distTo(v: Vehicle): number {
+  private distTo(v: Ride): number {
     return Math.hypot(this.player.pos.x - v.pos.x, this.player.pos.y - v.pos.y);
+  }
+
+  /** How close you must be to hop in (the boat floats a little way off the dock). */
+  private enterDist(v: Ride): number {
+    return v instanceof Boat ? ENTER_CAR_DIST + 0.7 : ENTER_CAR_DIST;
   }
 
   /** The closest vehicle the player can hop into right now. */
   private nearestVehicle(): VehicleId | null {
     let best: VehicleId | null = null;
-    let bestD = ENTER_CAR_DIST;
+    let bestD = Infinity;
     for (const id of JOB_VEHICLES[this.state.job] ?? []) {
       const v = this.vehicle(id);
       if (!v) continue;
       const d = this.distTo(v);
-      if (d <= bestD) {
+      if (d <= this.enterDist(v) && d <= bestD) {
         bestD = d;
         best = id;
       }
@@ -1185,7 +1256,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.player.cancelPath();
     this.target.setVisible(false);
     sfx.play('pop');
-    if (id === 'police-bike') v.setLook(POLICE_BIKE_RIDDEN);
+    if (v === this.bike) this.bike.setLook(POLICE_BIKE_RIDDEN);
     this.tweens.add({
       targets: this.playerImg,
       scale: 0,
@@ -1201,19 +1272,15 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const r = this.riding();
     if (!r) return;
     const v = r.vehicle;
-    this.mode = 'foot';
-    this.ridingId = null;
-    v.driver.speed = 0;
-    v.driver.cancelPath();
-    if (v === this.bike) v.setLook(POLICE_BIKE);
-    // Hop out onto the nearest sidewalk/grass tile.
+    // Hop out onto the nearest sidewalk/grass tile (from the boat: a dock or a beach).
     const c = v.pos;
-    let best: Vec2 = { ...c };
+    let best: Vec2 | null = null;
     let bestD = Infinity;
-    for (let y = Math.floor(c.y) - 3; y <= Math.floor(c.y) + 3; y++) {
-      for (let x = Math.floor(c.x) - 3; x <= Math.floor(c.x) + 3; x++) {
+    const reach = v instanceof Boat ? 2 : 3;
+    for (let y = Math.floor(c.y) - reach; y <= Math.floor(c.y) + reach; y++) {
+      for (let x = Math.floor(c.x) - reach; x <= Math.floor(c.x) + reach; x++) {
         if (!this.grid.isWalkable(x, y)) continue;
-        const k = tileAt(this.map, x, y);
+        const k = this.tileKind(x, y);
         if (k === 'road' || k === 'path') continue;
         const d = (x + 0.5 - c.x) ** 2 + (y + 0.5 - c.y) ** 2;
         if (d < bestD) {
@@ -1222,7 +1289,19 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
         }
       }
     }
-    this.player.pos = best;
+    if (v instanceof Boat && (!best || bestD > 2.2 ** 2)) {
+      // Out at sea there is nowhere to stand: stay aboard.
+      sfx.play('boing', 0.9, 0.5);
+      voice.say('boat-no-land', { minGapMs: 6000 });
+      this.tweens.add({ targets: v, hop: 8, duration: 110, yoyo: true });
+      return;
+    }
+    this.mode = 'foot';
+    this.ridingId = null;
+    v.driver.speed = 0;
+    v.driver.cancelPath();
+    if (v === this.bike) this.bike.setLook(POLICE_BIKE);
+    this.player.pos = best ?? { ...c };
     this.player.cancelPath();
     this.playerImg.setVisible(true).setScale(0);
     this.tweens.add({
@@ -1436,7 +1515,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   aimHose(): string | null {
     if (this.state.job !== 'fire' || this.fires.size === 0) return null;
     const r = this.riding();
-    const mode = r ? (r.id === 'fire-truck' ? 'truck' : null) : 'foot';
+    // The rescue boat has a water cannon: it reaches like the truck.
+    const mode = r ? (r.id === 'fire-truck' || r.id === 'rescue-boat' ? 'truck' : null) : 'foot';
     if (!mode) return null;
     const from = this.focus();
     const ladder = this.state.owns('long-ladder') ? 'long' : 'standard';
@@ -1499,6 +1579,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       sfx.play('honk', 0.9);
     } else if (r) {
       sfx.sirenBlast();
+      if (r.vehicle instanceof Boat) sfx.play('horn', 0.8);
       r.vehicle.flash(2.5);
     } else {
       sfx.play('whistle');
@@ -1536,7 +1617,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     else this.updateDriving(dt, a);
 
     const r = this.riding();
-    for (const robber of this.robbers) robber.update(dt, this.focus(), r?.vehicle ?? null);
+    for (const robber of this.robbers)
+      robber.update(dt, this.focus(), r && !(r.vehicle instanceof Boat) ? r.vehicle : null);
     if (this.mode === 'foot' || this.ridingId !== 'police-car')
       this.car.update(dt, { stick: null });
     if (this.bike && (this.mode === 'foot' || this.ridingId !== 'police-bike'))
@@ -1547,6 +1629,12 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       this.ownCar.update(dt, { stick: null });
     if (this.fireTruck && (this.mode === 'foot' || this.ridingId !== 'fire-truck'))
       this.fireTruck.update(dt, { stick: null });
+    if (this.boat) {
+      if (this.mode === 'foot' || this.ridingId !== 'rescue-boat')
+        this.boat.update(dt, { stick: null });
+      if (this.boat.model.bumped) sfx.play('boing', 0.8, 0.35);
+    }
+    this.updateWaves(time);
     this.updateNets(dt);
     this.updateFires(dt);
     this.updateTraffic(dt);
@@ -1591,9 +1679,42 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       const h = this.hintTarget();
       if (h) voice.say(h.line);
     }
+    this.updateGuide(dt);
 
     this.updateDepths();
     this.publishHud();
+  }
+
+  /** The moving sea: the wave tile sits under the camera and slides slowly. */
+  private updateWaves(time: number): void {
+    const w = this.waves;
+    if (!w) return;
+    const v = this.cameras.main.worldView;
+    w.setPosition(v.x - 8, v.y - 8).setSize(v.width + 16, v.height + 16);
+    const drift = time * 0.012;
+    w.setTilePosition((v.x + drift) / w.tileScaleX, (v.y + drift * 0.45) / w.tileScaleY);
+  }
+
+  /**
+   * Objective arrow (spec 008): during a mission (or with the boss waiting), not getting closer
+   * to the objective for a few seconds shows an arrow that stays until the player gets there.
+   */
+  private updateGuide(dt: number): void {
+    const h = this.paradeOn ? null : this.director.hint();
+    if (!h) {
+      this.guide.update(dt, null);
+      return;
+    }
+    const f = this.focus();
+    // A fleeing robber never stands still: one arrow for the whole chase.
+    const moving = h.line === 'hint-chase';
+    const was = this.guide.showing;
+    const on = this.guide.update(dt, {
+      key: moving ? h.line : `${h.line}|${Math.round(h.at.x)},${Math.round(h.at.y)}`,
+      dist: Math.hypot(h.at.x - f.x, h.at.y - f.y),
+      urgent: this.director.busy,
+    });
+    if (on && !was) sfx.play('sparkle', 1.4, 0.4);
   }
 
   private allVehicles(): Vehicle[] {
@@ -1643,7 +1764,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       if (tapped) {
         // Tapped a vehicle: walk over and hop in.
         const v = this.vehicle(tapped)!;
-        if (this.distTo(v) <= ENTER_CAR_DIST) this.enterCar(tapped);
+        if (this.distTo(v) <= this.enterDist(v)) this.enterCar(tapped);
         else {
           this.goTo(Math.floor(v.pos.x), Math.floor(v.pos.y));
           this.autoEnter = tapped;
@@ -1668,7 +1789,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (!this.player.following) this.target.setVisible(false);
     if (this.autoEnter) {
       const v = this.vehicle(this.autoEnter);
-      if (v && this.distTo(v) <= ENTER_CAR_DIST) {
+      if (v && this.distTo(v) <= this.enterDist(v)) {
         this.enterCar(this.autoEnter);
         return;
       }
@@ -1711,15 +1832,19 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       } else if (world) {
         const g = screenToGrid(world.x, world.y);
         if (v.driver.goToward(g)) {
-          const end = v.driver.graph.node(v.driver.path.at(-1) ?? v.driver.to.id);
-          this.showTarget(gridToScreen(end.x, end.y));
+          if (v instanceof Boat) this.showTarget(gridToScreen(g.x, g.y));
+          else {
+            const end = v.driver.graph.node(v.driver.path.at(-1) ?? v.driver.to.id);
+            this.showTarget(gridToScreen(end.x, end.y));
+          }
         }
       }
     }
     // Road assist steers by screen direction (ADR-004).
     const stick = Math.hypot(a.move.x, a.move.y) > 0 ? a.move : null;
     v.update(dt, { stick });
-    if (v.driver.path.length === 0 && v.driver.speed === 0) this.target.setVisible(false);
+    const going = v instanceof Boat ? !!v.model.target : v.driver.path.length > 0;
+    if (!going && v.driver.speed === 0) this.target.setVisible(false);
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -1760,6 +1885,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       if (v === r?.vehicle) continue;
       this.sortMover(v.img, v.pos, 0.4, null);
     }
+    if (this.boat && this.boat !== r?.vehicle)
+      this.boat.img.setDepth(depthOf(this.boat.pos.x, this.boat.pos.y) + 40);
     for (const w of this.walkers) this.sortMover(w.img, w.pos, 0.25, null);
 
     for (const prop of this.props) {
@@ -1794,8 +1921,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
 
   private publishHud(): void {
     let hint: Vec2 | null = null;
-    if (this.hints.showing) {
-      const t = this.hintTarget();
+    if (this.hints.showing || this.guide.showing) {
+      const t = this.guide.showing ? this.director.hint() : this.hintTarget();
       if (t) {
         const w = gridToScreen(t.at.x, t.at.y);
         const cam = this.cameras.main;
@@ -1899,12 +2026,32 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       pickups: this.pickups.length,
       bumpables: this.bumpables.map((b) => ({ id: b.id, tumbling: b.tumbling, bumps: b.bumps })),
       hintShowing: this.hints.showing,
+      guideShowing: this.guide.showing,
+      boat: this.boat ? { ...this.boat.pos, speed: this.boat.model.speed } : null,
+      lifeguard: this.director.rescue()?.id ?? null,
       riddenSpeed: riding?.vehicle.driver.speed ?? 0,
     };
   }
 
+  /** Test hook: a build spot is built right now (as if Build It! had been finished earlier). */
+  debugBuilt(id: string): void {
+    const site = this.sites.get(id);
+    if (!site) return;
+    site.cancel(true);
+    this.refreshWalkGrid();
+    if (!this.props.some((p) => p.def.id === id))
+      this.props.push({
+        def: site.def,
+        image: site.img,
+        bounds: site.img.getBounds(),
+        depth: footprintDepth({ x: site.def.gx, y: site.def.gy, w: site.def.w, d: site.def.d }),
+        faded: false,
+      });
+  }
+
   /** Test hooks: run the idle clock forward (hints) without waiting 20 real seconds. */
   debugIdle(seconds: number): void {
+    this.updateGuide(seconds);
     if (this.hints.update(seconds, false)) {
       const h = this.hintTarget();
       if (h) voice.say(h.line);

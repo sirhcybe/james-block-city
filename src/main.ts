@@ -4,6 +4,7 @@ import { GAME_H, GAME_W, PALETTE } from './config';
 import { installDebugHook } from './debug';
 import { registerServiceWorker } from './pwa';
 import { BootScene } from './scenes/BootScene';
+import { BuildItScene } from './scenes/BuildItScene';
 import { CityScene } from './scenes/CityScene';
 import { GalleryScene } from './scenes/GalleryScene';
 import { ApartmentScene } from './scenes/ApartmentScene';
@@ -38,6 +39,7 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   BlockStackScene,
   CopyBuildScene,
   CementPourScene,
+  BuildItScene,
   ApartmentScene,
   GrownUpScene,
 ];

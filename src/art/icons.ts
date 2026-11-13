@@ -78,7 +78,10 @@ export type IconName =
   | 'paint'
   | 'heart'
   | 'home'
-  | 'gear';
+  | 'gear'
+  | 'hammer'
+  | 'trowel'
+  | 'retry';
 
 type G = Phaser.GameObjects.Graphics;
 const OL = PALETTE.outline;
@@ -1038,6 +1041,64 @@ export function drawIcon(g: G, name: IconName, x: number, y: number, r: number, 
       g.fillCircle(x + r * 0.45, y - r * 0.45, r * 0.32);
       g.fillStyle(0xffffff, 1);
       g.fillCircle(x + r * 0.58, y - r * 0.58, r * 0.14);
+      return;
+    }
+    case 'hammer': {
+      // Wooden handle, chunky grey head.
+      g.lineStyle(11 * s, OL, 1);
+      g.lineBetween(x - r * 0.55, y + r * 0.7, x + r * 0.2, y - r * 0.25);
+      g.lineStyle(6 * s, 0xc98a4b, 1);
+      g.lineBetween(x - r * 0.55, y + r * 0.7, x + r * 0.2, y - r * 0.25);
+      const head = [
+        { x: x - r * 0.3, y: y - r * 0.55 },
+        { x: x + r * 0.45, y: y - r * 0.95 },
+        { x: x + r * 0.75, y: y - r * 0.45 },
+        { x: x, y: y - r * 0.05 },
+      ];
+      g.fillStyle(0x9aa0b0, 1);
+      g.fillPoints(head, true);
+      outline(g, s);
+      g.strokePoints(head, true);
+      return;
+    }
+    case 'trowel': {
+      // Red handle, a pointed steel blade with a dab of mortar.
+      g.lineStyle(11 * s, OL, 1);
+      g.lineBetween(x - r * 0.8, y + r * 0.6, x - r * 0.25, y + r * 0.1);
+      g.lineStyle(6 * s, PALETTE.fireRed, 1);
+      g.lineBetween(x - r * 0.8, y + r * 0.6, x - r * 0.25, y + r * 0.1);
+      const blade = [
+        { x: x - r * 0.4, y: y - r * 0.15 },
+        { x: x + r * 0.05, y: y + r * 0.3 },
+        { x: x + r * 0.85, y: y - r * 0.8 },
+      ];
+      g.fillStyle(0xc9ced8, 1);
+      g.fillPoints(blade, true);
+      outline(g, s);
+      g.strokePoints(blade, true);
+      g.fillStyle(0x8a8fa0, 1);
+      g.fillCircle(x + r * 0.15, y - r * 0.2, r * 0.16);
+      return;
+    }
+    case 'retry': {
+      // A round "go again" arrow.
+      g.lineStyle(10 * s, OL, 1);
+      g.beginPath();
+      g.arc(x, y, r * 0.6, -Math.PI * 0.35, Math.PI * 1.15, false);
+      g.strokePath();
+      g.lineStyle(5 * s, 0xffffff, 1);
+      g.beginPath();
+      g.arc(x, y, r * 0.6, -Math.PI * 0.35, Math.PI * 1.15, false);
+      g.strokePath();
+      const tip = [
+        { x: x + r * 0.1, y: y - r * 0.95 },
+        { x: x + r * 0.75, y: y - r * 0.6 },
+        { x: x + r * 0.15, y: y - r * 0.2 },
+      ];
+      g.fillStyle(0xffffff, 1);
+      g.fillPoints(tip, true);
+      outline(g, s);
+      g.strokePoints(tip, true);
       return;
     }
   }

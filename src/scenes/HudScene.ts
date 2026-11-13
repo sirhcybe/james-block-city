@@ -6,6 +6,7 @@ import { UI } from '../art/ui';
 import { GAME_H, GAME_W } from '../config';
 import type { InputMapper } from '../input/InputMapper';
 import type { GameState } from '../systems/GameState';
+import { arrowPlace } from '../systems/guide';
 import {
   EV,
   HUD_HIT_KEY,
@@ -19,6 +20,8 @@ import {
 const ACTION_POS = { x: GAME_W - 110, y: GAME_H - 110 };
 const SIREN_POS = { x: GAME_W - 110, y: GAME_H - 270 };
 const UNIFORM_POS = { x: GAME_W - 80, y: 70 };
+/** The objective arrow keeps clear of the coin counter and the buttons. */
+const ARROW_MARGIN = { left: 70, right: 230, top: 120, bottom: 70 };
 
 /**
  * Screen-space overlay: coin counter (icon + number), carried donuts, the big Action button,
@@ -384,13 +387,16 @@ export class HudScene extends Phaser.Scene {
     this.donutText.setVisible(donuts).setText(`${info.donuts}`);
 
     if (info.hint) {
-      const x = Phaser.Math.Clamp(info.hint.x, 50, GAME_W - 50);
-      const y = Phaser.Math.Clamp(info.hint.y, 100, GAME_H - 20);
-      this.arrow.setVisible(true).setPosition(x, y);
-      // Off-screen targets: tip the arrow toward them.
-      const dx = info.hint.x - x;
-      const dy = info.hint.y - y;
-      this.arrow.setRotation(dx || dy ? Math.atan2(dy, dx) - Math.PI / 2 : 0);
+      // On screen: the arrow bounces above the target. Off screen: it sits on the edge of the
+      // screen (clear of the buttons) and points the way to go.
+      const a = arrowPlace(info.hint, GAME_W, GAME_H, ARROW_MARGIN);
+      const bob = Math.sin(this.time.now / 160) * 8;
+      if (a.onScreen) this.arrow.setPosition(a.x, a.y - 6 + bob).setRotation(0);
+      else
+        this.arrow
+          .setPosition(a.x + Math.cos(a.angle) * bob, a.y + Math.sin(a.angle) * bob)
+          .setRotation(a.angle - Math.PI / 2);
+      this.arrow.setVisible(true);
     } else this.arrow.setVisible(false);
   }
 }

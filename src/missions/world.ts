@@ -3,6 +3,7 @@ import type { RobberChase } from '../entities/RobberChase';
 import type { TimeOutTower } from '../entities/TimeOutTower';
 import type { Townsperson } from '../entities/Townsperson';
 import type { TrafficCar } from '../entities/TrafficCar';
+import type { Boat } from '../entities/Boat';
 import type { Vehicle } from '../entities/Vehicle';
 import type { TileKind } from '../content/schema';
 import type { Vec2 } from '../iso/projection';
@@ -10,7 +11,11 @@ import type { GameState } from '../systems/GameState';
 import type { RobberSpec } from '../systems/missions';
 
 /** Which of the player's vehicles. */
-export type VehicleId = 'police-car' | 'police-bike' | 'fire-truck' | 'mixer-truck' | 'own-car';
+export type VehicleId =
+  'police-car' | 'police-bike' | 'fire-truck' | 'mixer-truck' | 'own-car' | 'rescue-boat';
+
+/** Anything the player can ride: a road vehicle or the boat (they share what missions read). */
+export type Ride = Vehicle | Boat;
 
 /**
  * What mission goal handlers may use from the city. CityScene implements it; handlers never touch
@@ -34,8 +39,8 @@ export interface MissionWorld {
   playerPos(): Vec2;
   moveMode(): 'foot' | 'car';
   /** The vehicle being driven, if any, and which one it is. */
-  riding(): { id: VehicleId; vehicle: Vehicle } | null;
-  vehicle(id: VehicleId): Vehicle | null;
+  riding(): { id: VehicleId; vehicle: Ride } | null;
+  vehicle(id: VehicleId): Ride | null;
   townsperson(id: string): Townsperson | null;
   /** Put a robber on the map (not fleeing yet). */
   spawnRobber(spec: RobberSpec, bumps: number, onCaught: (name: string) => void): RobberChase;

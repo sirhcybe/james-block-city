@@ -12,7 +12,9 @@ import type { ShopScene } from './scenes/ShopScene';
 import type { TrafficHelperScene } from './scenes/TrafficHelperScene';
 import type { WhoTookItScene } from './scenes/WhoTookItScene';
 import type { VehicleId } from './missions/world';
-import { closeMenu as closeMenuScene } from './scenes/minigameKit';
+import type { BuildItScene } from './scenes/BuildItScene';
+import { closeMenu as closeMenuScene, type MinigameScene } from './scenes/minigameKit';
+import { Boat } from './entities/Boat';
 import { SAVE_KEY } from './systems/save';
 
 /** `window.__jbc`: test/debug hook. Only installed in dev builds or when VITE_DEBUG_HOOK=1. */
@@ -78,6 +80,37 @@ export interface DebugHook {
   hose(): string | null;
   /** Press the block blaster (as Action with a build spot in reach). Returns the spot or null. */
   blast(): string | null;
+  /** Build It!: what it shows; finish it now (everything placed and fixed). */
+  buildIt(): {
+    site: string;
+    fixed: number;
+    total: number;
+    pending: number;
+    toolNeeded: string | null;
+    busy: boolean;
+  } | null;
+  finishBuildIt(): boolean;
+  /** Build It!: put the next piece in its slot; pick a tool; where to drag from and to. */
+  buildPlace(): boolean;
+  buildTool(tool: 'hammer' | 'trowel' | 'wrench'): void;
+  buildDrag(): { from: { x: number; y: number }; to: { x: number; y: number } } | null;
+  /** The running minigame's round (hearts, level, top bar), or null. */
+  round(): {
+    id: string;
+    score: number;
+    hearts: number;
+    maxHearts: number;
+    level: number;
+    failed: boolean;
+    fails: number;
+    bar: boolean;
+  } | null;
+  /** Lose a heart in the running minigame; retry after an Oops. */
+  oops(): void;
+  retry(): void;
+  /** Traffic Helper: the light and the crossing; switch the light. */
+  traffic(): { red: boolean; crossing: number; waiting: number; scares: number } | null;
+  toggleLight(): void;
   /** Kitchen: put every flame out, then leave. */
   interiorDone(): boolean;
   pickMission(id: string): void;
@@ -104,6 +137,23 @@ export function installDebugHook(game: Phaser.Game): void {
   const canvasScale = () => {
     const rect = game.canvas.getBoundingClientRect();
     return { rect, k: rect.width / game.canvas.width };
+  };
+  const MINIGAME_KEYS = [
+    'TrafficHelper',
+    'WhoTookIt',
+    'WindowSplash',
+    'LadderRescue',
+    'BlockStack',
+    'CopyBuild',
+    'CementPour',
+  ];
+  /** The minigame scene that is running right now, if any. */
+  const minigame = (): MinigameScene | null => {
+    for (const key of MINIGAME_KEYS) {
+      const s = game.scene.getScene(key) as MinigameScene | null;
+      if (s && s.scene.isActive()) return s;
+    }
+    return null;
   };
   window.__jbc = {
     game,
@@ -170,7 +220,8 @@ export function installDebugHook(game: Phaser.Game): void {
       const c = city();
       if (!c) return;
       // Pull the vehicle being driven up right behind the nearest fleeing robber.
-      const v = c.riding()?.vehicle ?? c.car;
+      const ride = c.riding()?.vehicle;
+      const v = ride && !(ride instanceof Boat) ? ride : c.car;
       const rb = c.robbers
         .filter((x) => x.phase === 'fleeing')
         .sort(
@@ -186,23 +237,10 @@ export function installDebugHook(game: Phaser.Game): void {
     },
     startMinigame: (id) => city()?.startMinigame(id),
     finishMinigame: (score) => {
-      for (const key of [
-        'TrafficHelper',
-        'WhoTookIt',
-        'WindowSplash',
-        'LadderRescue',
-        'BlockStack',
-        'CopyBuild',
-        'CementPour',
-      ]) {
-        const s = game.scene.getScene(key) as TrafficHelperScene | WhoTookItScene | null;
-        // (Window Splash and Ladder Rescue share the same debugFinish via MinigameScene.)
-        if (s && s.scene.isActive()) {
-          s.debugFinish(score);
-          return true;
-        }
-      }
-      return false;
+      const s = minigame();
+      if (!s) return false;
+      s.debugFinish(score);
+      return true;
     },
     startMission: (id) => city()?.director.begin(id),
     grant: (p) => {
@@ -216,6 +254,7 @@ export function installDebugHook(game: Phaser.Game): void {
         for (const d of p.done ?? []) s.missionsDone[d] = Math.max(1, s.missionsDone[d] ?? 0);
       });
       if (p.owned?.includes('police-bike')) c.spawnBike(false);
+      for (const o of p.owned ?? []) if (o.startsWith('built:')) c.debugBuilt(o.slice(6));
       st.save.flush();
     },
     ride: (id) => {
@@ -231,6 +270,11 @@ export function installDebugHook(game: Phaser.Game): void {
       const v = c?.riding()?.vehicle;
       if (!c || !v) return;
       const m = c.hasMarker(marker) ? c.marker(marker) : c.perch(marker);
+      if (v instanceof Boat) {
+        // The boat goes straight there (to the nearest open water if the point is on land).
+        v.moveTo(c.nearestWater(m));
+        return;
+      }
       let best = v.driver.from;
       let bestD = Infinity;
       for (const n of v.driver.graph.nodes.values()) {
@@ -293,6 +337,39 @@ export function installDebugHook(game: Phaser.Game): void {
       const t = c.aimBlast();
       if (t) c.blast(t);
       return t;
+    },
+    buildIt: () => {
+      const b = game.scene.getScene('BuildIt') as BuildItScene | null;
+      return b && b.scene.isActive() ? b.debugState() : null;
+    },
+    finishBuildIt: () => {
+      const b = game.scene.getScene('BuildIt') as BuildItScene | null;
+      if (!b || !b.scene.isActive()) return false;
+      b.debugFinish();
+      return true;
+    },
+    buildPlace: () => {
+      const b = game.scene.getScene('BuildIt') as BuildItScene | null;
+      return b && b.scene.isActive() ? b.debugPlaceNext() : false;
+    },
+    buildTool: (tool) => {
+      const b = game.scene.getScene('BuildIt') as BuildItScene | null;
+      if (b && b.scene.isActive()) b.pickTool(tool);
+    },
+    buildDrag: () => {
+      const b = game.scene.getScene('BuildIt') as BuildItScene | null;
+      return b && b.scene.isActive() ? b.debugDragPath() : null;
+    },
+    round: () => minigame()?.debugRound() ?? null,
+    oops: () => minigame()?.debugOops(),
+    retry: () => minigame()?.retry(),
+    traffic: () => {
+      const t = game.scene.getScene('TrafficHelper') as TrafficHelperScene | null;
+      return t && t.scene.isActive() ? t.debugTraffic() : null;
+    },
+    toggleLight: () => {
+      const t = game.scene.getScene('TrafficHelper') as TrafficHelperScene | null;
+      if (t && t.scene.isActive()) t.debugToggle();
     },
     interiorDone: () => {
       const s = game.scene.getScene('Interior') as InteriorScene | null;

@@ -7,6 +7,10 @@ export const MinigameDef = z.object({
   /** Score thresholds for 5 / 15 / 30 coins. tiers[0] is the floor (always paid). */
   tiers: z.tuple([z.number(), z.number(), z.number()]),
   difficultyStepPerReplay: z.number().nonnegative(),
+  /** Hearts a round starts with (spec 008); mistakes cost one, none left = Oops. 0 = no hearts. */
+  hearts: z.number().int().nonnegative().default(0),
+  /** Points per level inside a round (the game speeds up a little each level). */
+  levelEvery: z.number().int().positive().default(5),
 });
 export type MinigameDef = z.infer<typeof MinigameDef>;
 export const MinigameList = z.array(MinigameDef);
@@ -43,6 +47,10 @@ export const TH = {
   baseCarEvery: 2.4,
   baseWalkerEvery: 3.2,
   maxQueue: 6,
+  /** Extra pace per level inside a round. */
+  levelPace: 0.08,
+  /** A walker who has only just stepped out hops back without a fuss (no heart lost). */
+  graceT: 0.15,
 } as const;
 
 export interface THCar {
@@ -64,6 +72,8 @@ export interface THWalker {
 export type THEvent =
   | { type: 'score'; walker: number }
   | { type: 'miss'; reason: 'walker' | 'car' }
+  /** The light went green with someone still on the crossing: they flap back to the kerb. */
+  | { type: 'scare'; walker: number; hurt: boolean }
   | { type: 'light'; red: boolean }
   | { type: 'finished' };
 
@@ -71,6 +81,10 @@ export class TrafficHelperModel {
   red = false;
   score = 0;
   misses = 0;
+  /** Times a walker was scared back by a car (each costs a heart in the scene). */
+  scares = 0;
+  /** Level inside the round (the scene sets it): more cars and walkers each level. */
+  level = 1;
   elapsed = 0;
   finished = false;
   cars: THCar[] = [];
@@ -90,7 +104,9 @@ export class TrafficHelperModel {
 
   /** Spawn-rate multiplier: harder on replay, easier after misses. */
   get pace(): number {
-    const p = (1 + this.step * this.plays) / (1 + 0.15 * this.misses);
+    const p =
+      ((1 + this.step * this.plays) * (1 + TH.levelPace * (this.level - 1))) /
+      (1 + 0.15 * this.misses);
     return Math.max(0.5, Math.min(2, p));
   }
 
@@ -136,8 +152,9 @@ export class TrafficHelperModel {
       this.walkerTimer = TH.baseWalkerEvery * (0.75 + this.rand() * 0.5);
     }
 
-    // Cars: stop at the line when the light is red or someone is on the crosswalk.
-    const mustStop = this.red || this.anyoneCrossing();
+    // Cars stop at the line only for a red light (spec 008: letting them go while someone is
+    // still crossing is the player's mistake).
+    const mustStop = this.red;
     let limit = Infinity; // front of the car ahead minus its length and gap
     for (const c of this.cars) {
       let target = c.x + TH.carSpeed * dt;
@@ -156,6 +173,19 @@ export class TrafficHelperModel {
       limit = c.x - TH.carLength - TH.carGap;
     }
     this.cars = this.cars.filter((c) => c.x - TH.carLength < TH.despawnX);
+
+    // A car on the crossing while someone is on it: honk! They flap back to the kerb.
+    if (this.carOnCrosswalk()) {
+      for (const w of this.walkers) {
+        if (w.state !== 'crossing') continue;
+        const hurt = w.t >= TH.graceT;
+        w.state = 'waiting';
+        w.t = 0;
+        w.waitedFor = 0;
+        if (hurt) this.scares++;
+        ev.push({ type: 'scare', walker: w.id, hurt });
+      }
+    }
 
     // Walkers: start crossing only when cars are held at red and the crosswalk is clear.
     const front = this.walkers.find((w) => w.state === 'waiting');

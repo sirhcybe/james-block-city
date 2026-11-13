@@ -4,48 +4,62 @@
     "job": "cop",
     "durationSec": 120,
     "tiers": [0, 8, 16],
-    "difficultyStepPerReplay": 0.1
+    "difficultyStepPerReplay": 0.1,
+    "hearts": 3,
+    "levelEvery": 4
   },
   {
     "id": "who-took-it",
     "job": "cop",
     "durationSec": 110,
     "tiers": [0, 6, 11],
-    "difficultyStepPerReplay": 0.15
+    "difficultyStepPerReplay": 0.15,
+    "hearts": 4,
+    "levelEvery": 3
   },
   {
     "id": "window-splash",
     "job": "fire",
     "durationSec": 100,
     "tiers": [0, 25, 45],
-    "difficultyStepPerReplay": 0.15
+    "difficultyStepPerReplay": 0.15,
+    "hearts": 5,
+    "levelEvery": 10
   },
   {
     "id": "ladder-rescue",
     "job": "fire",
     "durationSec": 100,
     "tiers": [0, 6, 11],
-    "difficultyStepPerReplay": 0.15
+    "difficultyStepPerReplay": 0.15,
+    "hearts": 4,
+    "levelEvery": 3
   },
   {
     "id": "block-stack",
     "job": "builder",
     "durationSec": 100,
     "tiers": [0, 8, 15],
-    "difficultyStepPerReplay": 0.15
+    "difficultyStepPerReplay": 0.15,
+    "hearts": 4,
+    "levelEvery": 4
   },
   {
     "id": "copy-the-build",
     "job": "builder",
     "durationSec": 110,
     "tiers": [0, 4, 8],
-    "difficultyStepPerReplay": 0.15
+    "difficultyStepPerReplay": 0.15,
+    "hearts": 0,
+    "levelEvery": 2
   },
   {
     "id": "cement-pour",
     "job": "builder",
     "durationSec": 90,
     "tiers": [0, 25, 42],
-    "difficultyStepPerReplay": 0.15
+    "difficultyStepPerReplay": 0.15,
+    "hearts": 3,
+    "levelEvery": 10
   }
 ]

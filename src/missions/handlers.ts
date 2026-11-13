@@ -2,6 +2,7 @@ import type Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
 import { addBakedImage, getBaked } from '../art/blocks';
+import { boatFrameKey, SAILBOAT, SEA } from '../art/boats';
 import { MPROP } from '../art/missionProps';
 import { DuckLine } from '../entities/DuckLine';
 import type { RobberChase } from '../entities/RobberChase';
@@ -45,19 +46,31 @@ export abstract class GoalHandler {
 
   /** "Hop in your car" hint when the goal needs driving and the player is walking. */
   protected vehicleHint(): Hint | null {
-    if (this.w.moveMode() === 'car') return null;
+    // Driving something counts, except on a boat mission: only the boat gets you there.
+    const r = this.w.riding();
+    if (r && (r.id === this.c.vehicle || this.c.vehicle !== 'rescue-boat')) return null;
     const v = this.w.vehicle(this.c.vehicle);
     if (!v) return null;
     return { at: v.pos, line: GOTO_LINES[this.c.vehicle] ?? 'hint-car' };
   }
 }
 
-const VEHICLE_IDS: VehicleId[] = ['police-car', 'police-bike', 'fire-truck', 'mixer-truck'];
+const VEHICLE_IDS: VehicleId[] = [
+  'police-car',
+  'police-bike',
+  'fire-truck',
+  'mixer-truck',
+  'rescue-boat',
+];
 const GOTO_LINES: Record<string, string> = {
   'police-car': 'hint-car',
   'police-bike': 'hint-bike',
   'fire-truck': 'hint-truck',
   'mixer-truck': 'hint-mixer',
+  'rescue-boat': 'hint-boat',
+  'dock-landing': 'hint-dock',
+  castaway: 'hint-castaway',
+  sailboat: 'hint-sailboat',
   mayor: 'hint-mayor',
   island: 'hint-island',
   'puppy-owner': 'hint-owner',
@@ -65,9 +78,13 @@ const GOTO_LINES: Record<string, string> = {
 
 /** Go somewhere: hop into a vehicle (CityScene reports it), or reach a person/place. */
 export class GoToHandler extends GoalHandler {
+  /** Whatever waits at the target to be fetched (a kitten, a sailboat), until it's picked up. */
+  private waiting: Phaser.GameObjects.Image | null = null;
+
   constructor(
     c: HandlerCtx,
     private readonly target: string,
+    private readonly carry?: 'kitten' | 'sailboat',
   ) {
     super(c);
   }
@@ -80,12 +97,43 @@ export class GoToHandler extends GoalHandler {
     const r = this.w.riding();
     if (this.isVehicle && r?.id === this.target)
       this.c.notify({ type: 'reached', target: this.target });
+    if (!this.carry) return;
+    const perch = `${this.target}-perch`;
+    const at = this.w.marker(this.w.hasMarker(perch) ? perch : this.target);
+    const s = gridToScreen(at.x, at.y);
+    const key = this.carry === 'kitten' ? MPROP.kitten : boatFrameKey(SAILBOAT.name, 1, 0);
+    const img = addBakedImage(this.w.stage, getBaked(key), s.x, s.y).setDepth(
+      depthOf(at.x, at.y) + 45,
+    );
+    this.w.stage.tweens.add({
+      targets: img,
+      y: s.y - 5,
+      angle: this.carry === 'sailboat' ? { from: -4, to: 4 } : 0,
+      duration: 700,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    this.waiting = img;
   }
 
   override update(): void {
     if (this.isVehicle) return;
-    if (dist(this.w.focus(), this.w.marker(this.target)) < 1.7)
+    // A boat mission is only done from the boat (you can't walk a kitten home across the sea).
+    if (this.c.vehicle === 'rescue-boat' && this.w.riding()?.id !== 'rescue-boat') return;
+    if (dist(this.w.focus(), this.w.marker(this.target)) < 1.7) {
+      if (this.waiting) {
+        // It hops aboard (or is tied on) and follows from here.
+        const img = this.waiting;
+        this.waiting = null;
+        this.w.stage.tweens.killTweensOf(img);
+        img.setAngle(0);
+        sfx.play('pop', 1.3);
+        voice.say(this.carry === 'kitten' ? 'castaway-got' : 'sailboat-got', { interrupt: true });
+        this.c.setCompanion(img);
+      }
       this.c.notify({ type: 'reached', target: this.target });
+    }
   }
 
   hint(): Hint | null {
@@ -93,7 +141,16 @@ export class GoToHandler extends GoalHandler {
       const v = this.w.vehicle(this.target as VehicleId);
       return v ? { at: v.pos, line: GOTO_LINES[this.target] ?? 'hint-car' } : null;
     }
+    if (this.c.vehicle === 'rescue-boat') {
+      const v = this.vehicleHint();
+      if (v) return v;
+    }
     return { at: this.w.marker(this.target), line: GOTO_LINES[this.target] ?? 'hint-errand' };
+  }
+
+  override end(): void {
+    this.waiting?.destroy();
+    this.waiting = null;
   }
 }
 
@@ -152,34 +209,71 @@ export class CatchHandler extends GoalHandler {
   }
 }
 
-/** Drive through checkpoint flags (First Day). */
+/**
+ * Drive through checkpoint flags (First Day), or fetch ducklings on floaties with the boat
+ * (Duckling Patrol). Every point gets a tall beam of light so it shows from far away.
+ */
 export class CheckpointsHandler extends GoalHandler {
   private flags = new Map<string, Phaser.GameObjects.Image>();
+  private beams = new Map<string, Phaser.GameObjects.Image>();
+  private done = new Set<string>();
 
   constructor(
     c: HandlerCtx,
     private readonly ids: string[],
+    private readonly look: 'flag' | 'floaty' = 'flag',
   ) {
     super(c);
+  }
+
+  private get floaty(): boolean {
+    return this.look === 'floaty';
   }
 
   override start(): void {
     for (const id of this.ids) {
       const m = this.w.marker(id);
       const s = gridToScreen(m.x, m.y);
-      const img = addBakedImage(this.w.stage, getBaked(MPROP.flag), s.x, s.y).setDepth(
-        depthOf(m.x, m.y) + 35,
-      );
+      const beam = addBakedImage(this.w.stage, getBaked(SEA.beam), s.x, s.y - 30)
+        .setDepth(depthOf(m.x, m.y) + 34)
+        .setAlpha(0);
+      this.w.stage.tweens.add({
+        targets: beam,
+        alpha: { from: 0.35, to: 0.9 },
+        duration: 700,
+        yoyo: true,
+        repeat: -1,
+      });
+      this.beams.set(id, beam);
+      const img = addBakedImage(
+        this.w.stage,
+        getBaked(this.floaty ? SEA.floaty : MPROP.flag),
+        s.x,
+        s.y,
+      ).setDepth(depthOf(m.x, m.y) + 35);
       const full = img.scaleX;
       img.setScale(0);
       this.w.stage.tweens.add({ targets: img, scale: full, duration: 300, ease: 'Back.easeOut' });
+      if (this.floaty)
+        this.w.stage.tweens.add({
+          targets: img,
+          y: s.y - 4,
+          angle: { from: -6, to: 6 },
+          duration: 900,
+          delay: 300,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
       this.flags.set(id, img);
     }
+    if (this.floaty) voice.say('floaties-now');
   }
 
   override update(): void {
     const r = this.w.riding();
     if (!r) return;
+    if (this.floaty && r.id !== 'rescue-boat') return;
     for (const id of this.ids) {
       if (dist(r.vehicle.pos, this.w.marker(id)) < 1.4)
         this.c.notify({ type: 'checkpoint', flag: id });
@@ -189,24 +283,68 @@ export class CheckpointsHandler extends GoalHandler {
   override onPart(part: string): void {
     const img = this.flags.get(part);
     if (!img) return;
-    img.setTexture(MPROP.flagDone);
+    this.done.add(part);
+    this.dropBeam(part);
     sfx.play('sparkle');
+    if (this.floaty) {
+      // The duckling hops into the boat; its floaty drifts off.
+      img.setTexture(SEA.floatyEmpty);
+      const f = this.w.focus();
+      const to = gridToScreen(f.x, f.y);
+      const duck = addBakedImage(
+        this.w.stage,
+        getBaked(MPROP.duckling),
+        img.x,
+        img.y - 12,
+      ).setDepth(img.depth + 60);
+      this.w.stage.tweens.add({
+        targets: duck,
+        x: to.x,
+        y: to.y - 30,
+        scale: duck.scaleX * 0.5,
+        duration: 450,
+        ease: 'Quad.easeOut',
+        onComplete: () => duck.destroy(),
+      });
+      sfx.play('quack', 1.3);
+      voice.say('floaty-got', { interrupt: true });
+      this.w.stage.tweens.add({ targets: img, alpha: 0, delay: 500, duration: 900 });
+      return;
+    }
+    img.setTexture(MPROP.flagDone);
     voice.say('flag', { interrupt: true });
     this.w.stage.tweens.add({ targets: img, y: img.y - 16, duration: 140, yoyo: true });
+  }
+
+  private dropBeam(id: string): void {
+    const beam = this.beams.get(id);
+    if (!beam) return;
+    this.beams.delete(id);
+    this.w.stage.tweens.killTweensOf(beam);
+    this.w.stage.tweens.add({
+      targets: beam,
+      alpha: 0,
+      duration: 300,
+      onComplete: () => beam.destroy(),
+    });
   }
 
   hint(): Hint | null {
     const v = this.vehicleHint();
     if (v) return v;
     const f = this.w.focus();
-    const left = this.ids.filter((id) => this.flags.get(id)?.texture.key === MPROP.flag);
+    const left = this.ids.filter((id) => !this.done.has(id));
     left.sort((a, b) => dist(this.w.marker(a), f) - dist(this.w.marker(b), f));
-    return left[0] ? { at: this.w.marker(left[0]), line: 'hint-flags' } : null;
+    return left[0]
+      ? { at: this.w.marker(left[0]), line: this.floaty ? 'hint-floaties' : 'hint-flags' }
+      : null;
   }
 
   override end(): void {
+    for (const id of [...this.beams.keys()]) this.dropBeam(id);
     for (const img of this.flags.values()) {
-      img.setTexture(MPROP.flagDone);
+      if (!this.floaty) img.setTexture(MPROP.flagDone);
+      this.w.stage.tweens.killTweensOf(img);
       this.w.stage.tweens.add({
         targets: img,
         alpha: 0,
@@ -459,8 +597,8 @@ export class SprayHandler extends GoalHandler {
     const f = this.w.focus();
     burning.sort((a, b) => dist(a, f) - dist(b, f));
     const target = burning[0]!;
-    // High fires need the truck: hint at it while walking.
-    if (target.z > 1.5) {
+    // High fires need the truck, and fires out at sea need the boat: hint at it while walking.
+    if (target.z > 1.5 || this.c.vehicle === 'rescue-boat') {
       const v = this.vehicleHint();
       if (v) return v;
     }
@@ -654,11 +792,11 @@ export class NoopHandler extends GoalHandler {
 export function makeHandler(goal: Goal, c: HandlerCtx): GoalHandler {
   switch (goal.type) {
     case 'goTo':
-      return new GoToHandler(c, goal.target);
+      return new GoToHandler(c, goal.target, goal.carry);
     case 'catch':
       return new CatchHandler(c, goal);
     case 'checkpoints':
-      return new CheckpointsHandler(c, goal.flags);
+      return new CheckpointsHandler(c, goal.flags, goal.look);
     case 'siren':
       return new SirenHandler(c);
     case 'minigame':

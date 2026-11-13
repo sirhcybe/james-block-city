@@ -92,12 +92,18 @@ function stretch(m, xc, yc) {
   m.tiles.forEach((row, y) => {
     for (const c of yc)
       if (c.src === c.p && c.p === y)
-        for (let i = 0; i < c.n; i++) (rows.push(row), newRow.push(true));
+        for (let i = 0; i < c.n; i++) {
+          rows.push(row);
+          newRow.push(true);
+        }
     rows.push(row);
     newRow.push(false);
     for (const c of yc)
       if (c.src === c.p - 1 && c.src === y)
-        for (let i = 0; i < c.n; i++) (rows.push(row), newRow.push(true));
+        for (let i = 0; i < c.n; i++) {
+          rows.push(row);
+          newRow.push(true);
+        }
   });
   const newCol = [];
   rows = rows.map((row, ri) => {

@@ -1,0 +1,284 @@
+[
+  {
+    "id": "practice-wall",
+    "pieces": [
+      {
+        "material": "brick",
+        "x": 0,
+        "y": 2.6,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 2,
+        "y": 2.6,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 4,
+        "y": 2.6,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 1,
+        "y": 1.6,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 3,
+        "y": 1.6,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "wood",
+        "x": 0,
+        "y": 1,
+        "w": 6,
+        "h": 0.6
+      }
+    ]
+  },
+  {
+    "id": "dock",
+    "pieces": [
+      {
+        "material": "steel",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 1,
+        "h": 2
+      },
+      {
+        "material": "steel",
+        "x": 4.5,
+        "y": 1.6,
+        "w": 1,
+        "h": 2
+      },
+      {
+        "material": "wood",
+        "x": 0,
+        "y": 1,
+        "w": 2,
+        "h": 0.6
+      },
+      {
+        "material": "wood",
+        "x": 2,
+        "y": 1,
+        "w": 2,
+        "h": 0.6
+      },
+      {
+        "material": "wood",
+        "x": 4,
+        "y": 1,
+        "w": 2,
+        "h": 0.6
+      },
+      {
+        "material": "wood",
+        "x": 0.5,
+        "y": 0.2,
+        "w": 5,
+        "h": 0.6
+      }
+    ]
+  },
+  {
+    "id": "lighthouse",
+    "pieces": [
+      {
+        "material": "brick",
+        "x": 1.5,
+        "y": 3.2,
+        "w": 3,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 1.5,
+        "y": 2.2,
+        "w": 3,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 1.5,
+        "y": 1.2,
+        "w": 3,
+        "h": 1
+      },
+      {
+        "material": "steel",
+        "x": 2,
+        "y": 0.2,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "wood",
+        "x": 1,
+        "y": 4.2,
+        "w": 4,
+        "h": 0.6
+      }
+    ]
+  },
+  {
+    "id": "boat-shop",
+    "pieces": [
+      {
+        "material": "brick",
+        "x": 0,
+        "y": 3.4,
+        "w": 3,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 3,
+        "y": 3.4,
+        "w": 3,
+        "h": 1
+      },
+      {
+        "material": "wood",
+        "x": 0,
+        "y": 1.4,
+        "w": 1,
+        "h": 2
+      },
+      {
+        "material": "wood",
+        "x": 5,
+        "y": 1.4,
+        "w": 1,
+        "h": 2
+      },
+      {
+        "material": "steel",
+        "x": 2,
+        "y": 1.4,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "wood",
+        "x": 0,
+        "y": 0.8,
+        "w": 6,
+        "h": 0.6
+      },
+      {
+        "material": "steel",
+        "x": 1,
+        "y": 0,
+        "w": 4,
+        "h": 0.8
+      }
+    ]
+  },
+  {
+    "id": "bridge",
+    "pieces": [
+      {
+        "material": "steel",
+        "x": 0.5,
+        "y": 1.8,
+        "w": 1,
+        "h": 2
+      },
+      {
+        "material": "steel",
+        "x": 4.5,
+        "y": 1.8,
+        "w": 1,
+        "h": 2
+      },
+      {
+        "material": "wood",
+        "x": 0,
+        "y": 1.2,
+        "w": 2,
+        "h": 0.6
+      },
+      {
+        "material": "wood",
+        "x": 2,
+        "y": 1.2,
+        "w": 2,
+        "h": 0.6
+      },
+      {
+        "material": "wood",
+        "x": 4,
+        "y": 1.2,
+        "w": 2,
+        "h": 0.6
+      },
+      {
+        "material": "steel",
+        "x": 0,
+        "y": 0.4,
+        "w": 6,
+        "h": 0.4
+      }
+    ]
+  },
+  {
+    "id": "golden-tower",
+    "pieces": [
+      {
+        "material": "brick",
+        "x": 1,
+        "y": 3.6,
+        "w": 4,
+        "h": 1
+      },
+      {
+        "material": "steel",
+        "x": 1.5,
+        "y": 2.6,
+        "w": 3,
+        "h": 1
+      },
+      {
+        "material": "brick",
+        "x": 1.5,
+        "y": 1.6,
+        "w": 3,
+        "h": 1
+      },
+      {
+        "material": "steel",
+        "x": 2,
+        "y": 0.6,
+        "w": 2,
+        "h": 1
+      },
+      {
+        "material": "wood",
+        "x": 0.5,
+        "y": 4.6,
+        "w": 5,
+        "h": 0.6
+      },
+      {
+        "material": "wood",
+        "x": 2.5,
+        "y": 0,
+        "w": 1,
+        "h": 0.6
+      }
+    ]
+  }
+]

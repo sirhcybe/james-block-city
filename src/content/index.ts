@@ -1,8 +1,10 @@
 import { z } from 'zod';
+import { BlueprintList, type Blueprint } from '../systems/buildJob';
 import { ErrandList, type Errand } from '../systems/errands';
 import { MinigameList, type MinigameDef } from '../systems/minigames';
 import { MissionList, type Mission } from '../systems/missions';
 import { ShopList, type ShopItem } from '../systems/shop';
+import blueprintsRaw from './blueprints.json';
 import errandsRaw from './errands.json';
 import minigamesRaw from './minigames.json';
 import missionsRaw from './missions.json';
@@ -18,6 +20,8 @@ export interface Content {
   minigames: MinigameDef[];
   shop: ShopItem[];
   voice: VoiceLines;
+  /** Build It! pictures, one per build spot (spec 008). */
+  blueprints: Blueprint[];
 }
 
 function parse<T>(name: string, schema: z.ZodType<T>, raw: unknown): T {
@@ -38,5 +42,6 @@ export function loadContent(): Content {
     minigames: parse('minigames.json', MinigameList, minigamesRaw),
     shop: parse('shop.json', ShopList, shopRaw),
     voice: parse('voice.json', VoiceLines, voiceRaw),
+    blueprints: parse('blueprints.json', BlueprintList, blueprintsRaw),
   };
 }
