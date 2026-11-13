@@ -50,7 +50,7 @@ async function build(page: Page, spot: string): Promise<void> {
   await page.evaluate((s) => window.__jbc!.driveTo(`${s}-at`), spot);
   await until(
     page,
-    `(() => { window.__jbc.blast(); return window.__jbc.player().mission?.goal !== 'build'; })()`,
+    `(() => { window.__jbc.blast(); const p = window.__jbc.player(); return !!p && p.mission?.goal !== 'build'; })()`,
   );
 }
 
@@ -84,7 +84,7 @@ test('Hard Hat Day: hard hat, 3 cones, build the wall; it stays built after a re
   await expect.poll(async () => (await st(page)).blastAim, LONG).toBe('practice-wall');
   await until(
     page,
-    `(() => { window.__jbc.blast(); return window.__jbc.player().mission === null; })()`,
+    `(() => { window.__jbc.blast(); const p = window.__jbc.player(); return !!p && p.mission === null; })()`,
   );
   expect((await st(page)).owned).toContain('built:practice-wall');
   await page.reload();
@@ -147,7 +147,7 @@ test('Bridge to the Island: build the bridge, then walk across (AC6)', async ({ 
   await page.evaluate(() => window.__jbc!.startMission('bridge-to-the-island'));
   await build(page, 'bridge');
   await page.evaluate(() => window.__jbc!.exitCar());
-  expect(await page.evaluate(() => window.__jbc!.goTo(46, 25))).toBe(true);
+  expect(await page.evaluate(() => window.__jbc!.goTo(58, 32))).toBe(true);
   await expect.poll(async () => (await st(page)).mission, LONG).toBeNull();
   expect((await st(page)).gx).toBeGreaterThan(44);
   expect(errors).toEqual([]);
@@ -194,7 +194,7 @@ test('Block Stack, Copy the Build and Cement Pour run from their pads and pay by
     await page.keyboard.press('Space');
     await until(page, "window.__jbc.scenes().includes('Hud')");
     expect((await st(page)).coins).toBe(before + coins);
-    await page.evaluate(() => window.__jbc!.teleport(35.5, 9.5));
+    await page.evaluate(() => window.__jbc!.teleport(46.5, 12.5));
     await page.waitForTimeout(300);
   }
   expect(errors).toEqual([]);

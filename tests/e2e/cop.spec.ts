@@ -54,7 +54,7 @@ test('First Day: walk to the chief, get the cap, 3 flags, siren, Traffic Helper'
   await boot(page);
   expect((await st(page)).offer).toBe('first-day');
   // Walk up to the chief: the mission starts with a voice intro, and you get your cap.
-  await page.evaluate(() => window.__jbc!.goTo(6, 3));
+  await page.evaluate(() => window.__jbc!.goTo(7, 4));
   await expect.poll(async () => (await st(page)).mission?.id, LONG).toBe('first-day');
   expect(await page.evaluate(() => window.__jbc!.voiceLog())).toContain('intro-first-day');
   expect((await st(page)).owned).toContain('cap-cop');
@@ -126,7 +126,7 @@ test('Duck Crossing: ducks follow you to the pond, and the Cop badge ceremony pl
     window.__jbc!.walkTo('ducks');
   });
   await page.waitForTimeout(500);
-  await page.evaluate(() => window.__jbc!.goTo(10, 25));
+  await page.evaluate(() => window.__jbc!.goTo(13, 32));
   await expect.poll(async () => (await st(page)).mission, { timeout: 120_000 }).toBeNull();
   await expect.poll(async () => (await st(page)).badges, LONG).toEqual(['cop']);
   await expect

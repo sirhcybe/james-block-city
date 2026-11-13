@@ -18,6 +18,13 @@ when available. **The images guide mood and palette only; all game art is drawn 
 - HUD: coin icon + number top-left; joystick bottom-left (touch only); Action (large) and Siren
   buttons bottom-right; job/uniform button top-right when unlocked. Round, chunky, outlined.
 
+## Minigames and the home screen (spec 008)
+- Every minigame has the same top bar: picture + score in a pill top-left, star meter, clock + time
+  bar, hearts under the score. Backdrops are sky bands, a sun, drifting clouds and hills.
+- The home screen shows the skyline on its island, the three heroes by their vehicles, the sea
+  with the boat, and the name in bouncing blocks. Play stays in the middle.
+- The sea moves: one wave tile slides slowly under the whole world.
+
 ## Geometry
 - Tile: 64 × 32 px (2:1). One block unit = one tile footprint; block height unit = 32 px on screen.
 - Render at device pixel ratio up to 2. Game logical size 1280 × 720, `Scale.FIT`, landscape.
@@ -37,6 +44,7 @@ when available. **The images guide mood and palette only; all game art is drawn 
 | Sidewalk | `#D9DCE3` |
 | Coin gold | `#FFD23F` |
 | Water | `#3FB8E0` |
+| Sand | `#F3DC9C` |
 
 ## Block renderer spec (implemented in spec 001)
 `drawIsoBlock(g, {w, d, h, color, bevel=4, outline=2})` → draws one rectangular block of `w × d`

@@ -144,7 +144,7 @@ test('AC6/AC7/AC8/AC10: coins only from minigame + errand, and they survive a re
   expect((await st(page)).coins).toBe(0);
 
   // Traffic Helper: walk onto the pad, it runs as its own scene, pays by tier, returns to the city.
-  await page.evaluate(() => window.__jbc!.goTo(9, 5));
+  await page.evaluate(() => window.__jbc!.goTo(11, 6));
   await page.waitForFunction(() => window.__jbc!.scenes().includes('TrafficHelper'), null, LONG);
   expect(await page.evaluate(() => window.__jbc!.scenes())).not.toContain('Hud');
   await page.evaluate(() => window.__jbc!.finishMinigame(17));
@@ -165,7 +165,7 @@ test('AC6/AC7/AC8/AC10: coins only from minigame + errand, and they survive a re
     c.state.errands.offer('return-donuts');
     c.state.pickUp('donut');
   });
-  await page.evaluate(() => window.__jbc!.goTo(10, 6));
+  await page.evaluate(() => window.__jbc!.goTo(13, 7));
   await expect.poll(async () => (await st(page)).errand, LONG).toBe('done');
   expect((await st(page)).coins).toBe(40);
 

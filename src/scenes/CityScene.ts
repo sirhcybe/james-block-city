@@ -66,7 +66,7 @@ import type { MissionWorld, Ride, VehicleId } from '../missions/world';
 import type { GameState } from '../systems/GameState';
 import { ObjectiveGuide } from '../systems/guide';
 import { IdleHints } from '../systems/hints';
-import type { MissionEvent, RobberSpec } from '../systems/missions';
+import { goalParts, type MissionEvent, type RobberSpec } from '../systems/missions';
 import { BUILD, pickSite } from '../systems/build';
 import { FIRE, pickFire, tooHigh } from '../systems/fire';
 import { JOBS, lookFor } from '../systems/jobs';
@@ -1369,6 +1369,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     for (const [id, p] of this.people) {
       if (id === this.director.bossId() && (this.director.offer() || !showing.has(id))) continue;
       if (id === 'mayor' && this.director.finale()) continue;
+      if (id === 'lifeguard') continue; // the director draws the lifeguard's bubble
       const icon = showing.get(id);
       if (icon) {
         p.setBubble(getBaked(bubbleKey(icon)));
@@ -1714,7 +1715,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       dist: Math.hypot(h.at.x - f.x, h.at.y - f.y),
       urgent: this.director.busy,
     });
-    if (on && !was) sfx.play('sparkle', 1.4, 0.4);
+    if (on && !was) {
+      // The arrow pops up with a sparkle and says where to go (never more than every 15 s).
+      sfx.play('sparkle', 1.4, 0.4);
+      voice.say(h.line, { minGapMs: 15000 });
+    }
   }
 
   private allVehicles(): Vehicle[] {
@@ -1933,6 +1938,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       }
     }
     const r = this.riding();
+    const run = this.director.run;
+    const parts = run?.goal ? goalParts(run.goal) : null;
     const info: HudInfo = {
       mode: this.mode,
       action: this.blastAim
@@ -1949,6 +1956,14 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       donuts: this.state.inventory.donut ?? 0,
       sirenOn: r?.vehicle.flashing ?? false,
       hint,
+      mission: run
+        ? {
+            goals: run.mission.goals.length,
+            index: run.goalIndex,
+            parts: parts?.length ?? 0,
+            partsDone: parts ? run.parts.size : 0,
+          }
+        : null,
     };
     this.registry.set(HUD_INFO_KEY, info);
   }

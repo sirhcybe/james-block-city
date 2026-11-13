@@ -14,7 +14,9 @@ import { earnedBadges, isUnlocked, type Progress } from '../../src/systems/missi
 
 const content = loadContent();
 const world = loadWorld();
-const builder = content.missions.filter((m) => m.job === 'builder' && m.tier !== 'finale' && m.tier !== 'rescue');
+const builder = content.missions.filter(
+  (m) => m.job === 'builder' && m.tier !== 'finale' && m.tier !== 'rescue',
+);
 const progress = (p: Partial<Progress> = {}): Progress => ({
   badges: [],
   owned: [],

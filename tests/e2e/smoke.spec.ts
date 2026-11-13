@@ -46,7 +46,7 @@ test('arrow up walks the player up the screen', async ({ page, isMobile }) => {
   const errors = watchErrors(page);
   await startGame(page, isMobile);
   // Open plaza paving, away from walls (so nothing slides the player sideways).
-  await page.evaluate(() => window.__jbc!.teleport(26.5, 10.5));
+  await page.evaluate(() => window.__jbc!.teleport(34.5, 13.5));
   await page.waitForTimeout(100);
   const before = await player(page);
   await page.keyboard.down('ArrowUp');
@@ -64,10 +64,10 @@ test('click / tap a tile walks there around buildings; manual input cancels', as
 }) => {
   const errors = watchErrors(page);
   await startGame(page, isMobile);
-  // Plaza (16 tiles east of downtown): start south of the fountain, go round to its west side.
-  await page.evaluate(() => window.__jbc!.teleport(24.5, 9.5));
+  // Plaza: start south of the fountain (tiles 30-31 × 9-10), go round to its west side.
+  await page.evaluate(() => window.__jbc!.teleport(31.5, 11.5));
   await page.waitForTimeout(100);
-  const target = await page.evaluate(() => window.__jbc!.tileToClient(22, 7));
+  const target = await page.evaluate(() => window.__jbc!.tileToClient(29, 9));
   expect(target).not.toBeNull();
   if (isMobile) await page.touchscreen.tap(target!.x, target!.y);
   else await page.mouse.click(target!.x, target!.y);
@@ -80,10 +80,10 @@ test('click / tap a tile walks there around buildings; manual input cancels', as
       },
       { timeout: 45_000 },
     )
-    .toEqual([22, 7]);
+    .toEqual([29, 9]);
 
   // A new go-to, then a key press: the path is cancelled immediately.
-  await page.evaluate(() => window.__jbc!.goTo(29, 13));
+  await page.evaluate(() => window.__jbc!.goTo(37, 16));
   expect((await player(page)).following).toBe(true);
   await page.keyboard.down('ArrowLeft');
   await page.waitForTimeout(100);
@@ -94,7 +94,7 @@ test('click / tap a tile walks there around buildings; manual input cancels', as
 
 test('walking behind a tower fades it, walking out restores it', async ({ page, isMobile }) => {
   await startGame(page, isMobile);
-  await page.evaluate(() => window.__jbc!.teleport(25.5, 4.5));
+  await page.evaluate(() => window.__jbc!.teleport(33.5, 5.5));
   await expect.poll(async () => (await player(page)).faded).toContain('tower-east');
   const alpha = await page.evaluate(() => {
     const city = window.__jbc!.game.scene.getScene('City');
@@ -102,7 +102,7 @@ test('walking behind a tower fades it, walking out restores it', async ({ page, 
     return img.alpha;
   });
   expect(alpha).toBeLessThan(0.5);
-  await page.evaluate(() => window.__jbc!.teleport(28.5, 6.5));
+  await page.evaluate(() => window.__jbc!.teleport(36.5, 8.5));
   await expect.poll(async () => (await player(page)).faded).not.toContain('tower-east');
 });
 

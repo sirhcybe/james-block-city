@@ -78,7 +78,10 @@ export interface DebugHook {
   pickJob(job: 'cop' | 'fire' | 'builder'): boolean;
   /** Press the hose (as Action with a fire in reach). Returns the aimed fire or null. */
   hose(): string | null;
-  /** Press the block blaster (as Action with a build spot in reach). Returns the spot or null. */
+  /**
+   * Press the block blaster (as Action with a build spot in reach): opens Build It!. Called again
+   * while Build It! is open, it finishes it. Returns the spot or null.
+   */
   blast(): string | null;
   /** Build It!: what it shows; finish it now (everything placed and fixed). */
   buildIt(): {
@@ -332,6 +335,13 @@ export function installDebugHook(game: Phaser.Game): void {
       return t;
     },
     blast: () => {
+      // With Build It! open, "blasting" again builds everything (tests don't drag pieces).
+      const open = game.scene.getScene('BuildIt') as BuildItScene | null;
+      if (open && open.scene.isActive()) {
+        const site = open.debugState().site;
+        open.debugFinish();
+        return site;
+      }
       const c = city();
       if (!c) return null;
       const t = c.aimBlast();

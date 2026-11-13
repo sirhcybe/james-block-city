@@ -43,6 +43,8 @@ export class HudScene extends Phaser.Scene {
   private state!: GameState;
   private shownCoins = 0;
   private lastAction: HudInfo['action'] | null = null;
+  private tracker!: Phaser.GameObjects.Graphics;
+  private trackerSig = '';
 
   constructor() {
     super('Hud');
@@ -76,6 +78,10 @@ export class HudScene extends Phaser.Scene {
       .text(54 + 34, 186, '0', { ...textStyle, fontSize: '36px' })
       .setOrigin(0, 0.5)
       .setVisible(false);
+
+    // Mission tracker (top middle): one dot per step, small dots for a step's parts.
+    this.tracker = this.add.graphics();
+    this.trackerSig = '';
 
     // Badges earned (under the coins).
     this.badges = [];
@@ -347,6 +353,53 @@ export class HudScene extends Phaser.Scene {
     );
   }
 
+  /**
+   * Mission progress (spec 008): a row of dots, one per step. Done steps are gold with a tick,
+   * the step you're on is a white ring, and under it small dots count its parts (flags passed,
+   * fires out, robbers caught). Redrawn only when something changes.
+   */
+  private drawTracker(m: HudInfo['mission']): void {
+    const sig = m ? `${m.goals}:${m.index}:${m.parts}:${m.partsDone}` : '';
+    if (sig === this.trackerSig) return;
+    this.trackerSig = sig;
+    const g = this.tracker;
+    g.clear();
+    if (!m) return;
+    const gap = 46;
+    const x0 = GAME_W / 2 - ((m.goals - 1) * gap) / 2;
+    const y = 40;
+    g.fillStyle(0x2b2d42, 0.3);
+    g.fillRoundedRect(x0 - 32, y - 26, (m.goals - 1) * gap + 64, 52, 26);
+    g.lineStyle(5, 0x2b2d42, 1);
+    if (m.goals > 1) g.lineBetween(x0, y, x0 + (m.goals - 1) * gap, y);
+    for (let i = 0; i < m.goals; i++) {
+      const x = x0 + i * gap;
+      const done = i < m.index;
+      const now = i === m.index;
+      g.fillStyle(done ? 0xffd23f : now ? 0xffffff : 0x9aa0b0, 1);
+      g.fillCircle(x, y, now ? 16 : 13);
+      g.lineStyle(4, 0x2b2d42, 1);
+      g.strokeCircle(x, y, now ? 16 : 13);
+      if (done) {
+        g.lineStyle(4, 0x2b2d42, 1);
+        g.beginPath();
+        g.moveTo(x - 6, y);
+        g.lineTo(x - 1, y + 5);
+        g.lineTo(x + 7, y - 5);
+        g.strokePath();
+      }
+    }
+    if (m.parts > 1) {
+      const px = x0 + m.index * gap - ((m.parts - 1) * 20) / 2;
+      for (let i = 0; i < m.parts; i++) {
+        g.fillStyle(i < m.partsDone ? 0x7bd35a : 0xffffff, 1);
+        g.fillCircle(px + i * 20, y + 38, 7);
+        g.lineStyle(3, 0x2b2d42, 1);
+        g.strokeCircle(px + i * 20, y + 38, 7);
+      }
+    }
+  }
+
   update(): void {
     const info = this.registry.get(HUD_INFO_KEY) as HudInfo | undefined;
     const js = this.mapper()?.joystick;
@@ -381,6 +434,8 @@ export class HudScene extends Phaser.Scene {
     this.siren.setVisible(true);
     this.uniform.setVisible(this.state.progress.badges.length >= 3);
     this.siren.setTexture(info.sirenOn ? HUD.sirenOn : HUD.siren);
+
+    this.drawTracker(info.mission);
 
     const donuts = info.donuts > 0;
     this.donutIcon.setVisible(donuts);
