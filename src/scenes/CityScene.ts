@@ -1040,8 +1040,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   }
 
   /** Put on another uniform (Job Center closed with a job): spin, sparkle, new boss. */
-  private applyJob(): void {
-    if (this.mode === 'car') this.exitCar();
+  private applyJob(kick = true): void {
+    if (kick && this.mode === 'car') this.exitCar();
     if (this.director.run && this.director.run.mission.job !== this.state.job)
       this.director.abort();
     const look = this.playerLook();
@@ -1448,7 +1448,12 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     job?: string;
     changed?: string;
   }): void {
-    if (r.job) this.time.delayedCall(150, () => this.applyJob());
+    if (r.job) {
+      // Out of the old job's vehicle right now; the spin and sparkle follow a moment later. (Doing
+      // both later threw the player back out of a vehicle they had hopped into in between.)
+      if (this.mode === 'car') this.exitCar();
+      this.time.delayedCall(150, () => this.applyJob(false));
+    }
     if (r.changed) this.refreshLooks();
     if (r.bought === 'own-car') this.time.delayedCall(300, () => this.spawnOwnCar(true));
     if (r.bought === 'police-bike') this.time.delayedCall(300, () => this.spawnBike(true));
