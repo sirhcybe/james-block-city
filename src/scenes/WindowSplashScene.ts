@@ -116,7 +116,8 @@ export class WindowSplashScene extends MinigameScene {
     } else if (e.type === 'fizzle') {
       this.tweens.killTweensOf(img);
       this.tweens.add({ targets: img, scale: 0, duration: 250 });
-      // It burned all the way down: the window goes sooty for a moment, and a heart goes.
+      // It burned all the way down: the window goes sooty for a moment. Every second one costs
+      // a heart (one a time was too quick an Oops for small fingers).
       const soot = this.soot[(e as { window: number }).window];
       if (soot) {
         soot.setFillStyle(0x2b2d42, 0.55);
@@ -124,7 +125,7 @@ export class WindowSplashScene extends MinigameScene {
       }
       sfx.play('shrug', 1.1, 0.7);
       voice.say('ws-sooty', { minGapMs: 9000 });
-      this.oops();
+      if (this.model.fizzled % 2 === 0) this.oops();
     }
   }
 

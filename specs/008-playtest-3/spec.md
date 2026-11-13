@@ -42,7 +42,7 @@ pointers, water you can't use, a dull build mechanic, and a bare title screen.
   - Traffic Helper ("Ducks Crossing"): turning the light green while someone is still on the
     crossing. The car honks, the duck flaps back to the kerb.
   - Who Took It?: tapping the wrong suspect.
-  - Window Splash: a flame that burns all the way down leaves the window sooty.
+  - Window Splash: flames that burn all the way down leave the window sooty (every second one costs a heart).
   - Ladder Rescue: stopping the ladder at the wrong floor.
   - Block Stack: a block that falls off.
   - Cement Pour: overflowing the mould.

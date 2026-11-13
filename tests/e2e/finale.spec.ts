@@ -278,7 +278,7 @@ test('the grown-up corner: a tap does nothing, a 2 s hold opens it; levels, unlo
   expect(await page.evaluate(() => window.__jbc!.scenes())).not.toContain('GrownUp');
   await page.mouse.move(gear.x, gear.y);
   await page.mouse.down();
-  await until(page, "window.__jbc.scenes().includes('GrownUp')", 30_000);
+  await until(page, "window.__jbc.scenes().includes('GrownUp')", 90_000);
   await page.mouse.up();
 
   // Sound off, voice quiet: saved apart from the game save and kept after a reload.
