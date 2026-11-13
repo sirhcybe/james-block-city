@@ -1698,6 +1698,15 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const w = this.waves;
     if (!w) return;
     const v = this.cameras.main.worldView;
+    // Skip the layer when no sea is on screen (inland it is a full-screen quad nobody sees).
+    let sea = false;
+    for (let iy = 0; iy <= 4 && !sea; iy++)
+      for (let ix = 0; ix <= 6 && !sea; ix++) {
+        const g = screenToGrid(v.x + (v.width * ix) / 6, v.y + (v.height * iy) / 4);
+        sea = this.tileKind(Math.floor(g.x), Math.floor(g.y)) === 'water';
+      }
+    w.setVisible(sea);
+    if (!sea) return;
     w.setPosition(v.x - 8, v.y - 8).setSize(v.width + 16, v.height + 16);
     const drift = time * 0.012;
     w.setTilePosition((v.x + drift) / w.tileScaleX, (v.y + drift * 0.45) / w.tileScaleY);

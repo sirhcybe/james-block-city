@@ -97,22 +97,35 @@ pointers, water you can't use, a dull build mechanic, and a bare title screen.
 - Real voice recordings.
 
 ## Acceptance criteria
-- [ ] AC1 A firefighter with the badge and no long ladder hears the ladder line, the arrow points
+- [x] AC1 A firefighter with the badge and no long ladder hears the ladder line, the arrow points
   at the Shop, and after buying the ladder the fire chief offers Barbecue Blaze.
-- [ ] AC2 Every minigame shows score, star meter and time bar; six have hearts.
-- [ ] AC3 Traffic Helper: green while a walker is crossing costs a heart; no hearts = Oops with
+  *(unit `playtest3.test.ts` "the boss names the right upgrade"; e2e `playtest3.spec.ts` "AC1 firefighter upgrade")*
+- [x] AC2 Every minigame shows score, star meter and time bar; six have hearts.
+  *(e2e "AC2 minigame top bar"; screenshots checked by eye)*
+- [x] AC3 Traffic Helper: green while a walker is crossing costs a heart; no hearts = Oops with
   retry, no coins; retry has more hearts.
-- [ ] AC4 The merged world is ≥ 45% bigger in tiles than 48 × 32, every marker a mission uses is
+  *(unit "Traffic Helper failure", "rounds, hearts and levels"; e2e "AC3 Ducks Crossing", "AC3 Oops then the back arrow")*
+- [x] AC4 The merged world is ≥ 45% bigger in tiles than 48 × 32, every marker a mission uses is
   reachable, and every job vehicle starts on a road.
-- [ ] AC5 The objective arrow appears when no progress is made for 5 s during a mission and goes
+  *(unit "the bigger world": 72 × 48 world, 60 × 40 city, one road network, every pad and person reachable)*
+- [x] AC5 The objective arrow appears when no progress is made for 5 s during a mission and goes
   away at the target.
-- [ ] AC6 After the dock is built the boat can be boarded from the dock, sails on water only, and
+  *(unit "objective guide"; e2e "AC5 objective arrow")*
+- [x] AC6 After the dock is built the boat can be boarded from the dock, sails on water only, and
   can be left at the dock.
-- [ ] AC7 The four rescues can be played to the end as fire and cop.
-- [ ] AC8 Build goals are finished by Build It!, by drag-and-drop and by the test hook.
-- [ ] AC9 The title shows the new art and Play still starts the game.
-- [ ] AC10 `npm run build`, `npm test`, `npm run lint` pass; the e2e suite passes on desktop and
+  *(unit "the rescue boat"; e2e "AC6 boat")*
+- [x] AC7 The four rescues can be played to the end as fire and cop.
+  *(unit "lifeguard rescues"; e2e "AC7 rescues as fire", "as cop", "a builder is sent to change uniform")*
+- [x] AC8 Build goals are finished by Build It!, by drag-and-drop and by the test hook.
+  *(unit "Build It!"; e2e "AC8 Build It!" with a real mouse/touch drag, "AC8 leaving Build It! part-way", and every build mission in `builder.spec.ts` / `finale.spec.ts`)*
+- [x] AC9 The title shows the new art and Play still starts the game.
+  *(e2e "AC9 home screen" and the smoke tests' Play button; screenshot checked by eye)*
+- [x] AC10 `npm run build`, `npm test`, `npm run lint` pass; the e2e suite passes on desktop and
   Pixel 7 emulation.
+  *(2026-11-13: 222 unit tests. e2e in the agent's sandbox, which renders in software at 6–20 fps:
+  desktop 58 of 63 on the full run and the other 5 after their fixes; Pixel 7 56 of 60 on the
+  full run and the other 4 after their fixes. Not yet one clean full run on both in a single go:
+  CI should give that.)*
 
 ## Decisions made while building
 - **"Small failure state" versus the "no fail states" rule.** Chris asked for it, so the rule is
@@ -125,3 +138,16 @@ pointers, water you can't use, a dull build mechanic, and a bare title screen.
 - **The boat steers freely** (not on lanes): open water has no roads to snap to.
 - **Rescues come from a lifeguard**, not the job bosses, so the bosses' "all done" logic and the
   finale's list don't change.
+- **Wider sidewalks moved people and buildings away from the road.** The e2e suite caught three
+  knock-ons, all fixed: coming up to a person counts from further away when you're driving
+  (`DRIVE_REACH`), the fire truck's hose reaches 5 tiles (was 3.5), and street furniture never
+  blocks walking.
+- **Window Splash** takes a heart for every second flame that burns down, not every one: one a
+  time ended rounds too fast.
+- **The moving sea** is only drawn when sea is on screen (inland it was a full-screen layer
+  nobody saw; it cost about 12% of frames in a software renderer).
+- **A mission tracker** (dots for the steps, small dots for flags/fires) was added to the city
+  HUD, as part of "improve things across the board".
+- **A race from before this spec:** switching jobs spun the uniform 150 ms later and at that
+  moment threw the player out of any vehicle, even one they had just hopped into. The old vehicle
+  is now left at once.

@@ -49,11 +49,12 @@ test('arrow up walks the player up the screen', async ({ page, isMobile }) => {
   await page.evaluate(() => window.__jbc!.teleport(34.5, 13.5));
   await page.waitForTimeout(100);
   const before = await player(page);
+  // Hold the key until the player has clearly moved (a slow machine may draw few frames in a
+  // fixed wait), then check the direction.
   await page.keyboard.down('ArrowUp');
-  await page.waitForTimeout(800);
+  await expect.poll(async () => (await player(page)).screen.y).toBeLessThan(before.screen.y - 8);
   await page.keyboard.up('ArrowUp');
   const after = await player(page);
-  expect(after.screen.y).toBeLessThan(before.screen.y - 8);
   expect(Math.abs(after.screen.x - before.screen.x)).toBeLessThan(1);
   expect(errors).toEqual([]);
 });
