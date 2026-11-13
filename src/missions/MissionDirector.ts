@@ -19,7 +19,7 @@ import { EV } from '../scenes/keys';
 import { JOBS, NEED_UPGRADE_LINE } from '../systems/jobs';
 import { isJobMission } from '../systems/missions';
 import { makeHandler, type GoalHandler, type Hint } from './handlers';
-import type { MissionWorld, VehicleId } from './world';
+import { DRIVE_REACH, type MissionWorld, type VehicleId } from './world';
 
 /** How close (tiles) you must come to the chief for them to start the next mission. */
 const CHIEF_TALK_DIST = 1.6;
@@ -230,6 +230,11 @@ export class MissionDirector {
     this.updateBoss();
   }
 
+  /** How close counts as "came up to them": further from a vehicle (people stand back from the road). */
+  private talkDist(): number {
+    return CHIEF_TALK_DIST + (this.w.moveMode() === 'car' ? DRIVE_REACH : 0);
+  }
+
   /** The boss's bubble shows the next mission's picture; walking up to them starts it. */
   /** The finale part the mayor offers right now (spec 007), if any. */
   finale(): Mission | null {
@@ -279,7 +284,7 @@ export class MissionDirector {
     guard.setBubble(getBaked(bubbleKey((offer?.icon ?? 'boat') as IconName)));
     guard.setOffering(true);
     const f = this.w.focus();
-    const near = Math.hypot(f.x - guard.pos.x, f.y - guard.pos.y) < CHIEF_TALK_DIST;
+    const near = Math.hypot(f.x - guard.pos.x, f.y - guard.pos.y) < this.talkDist();
     if (near && !this.nearLifeguard) {
       if (offer) this.begin(offer.id);
       else voice.say('lifeguard-other-job', { interrupt: true });
@@ -300,7 +305,7 @@ export class MissionDirector {
     mayor.setBubble(getBaked(bubbleKey(f.icon as IconName)));
     mayor.setOffering(true);
     const near =
-      Math.hypot(this.w.focus().x - mayor.pos.x, this.w.focus().y - mayor.pos.y) < CHIEF_TALK_DIST;
+      Math.hypot(this.w.focus().x - mayor.pos.x, this.w.focus().y - mayor.pos.y) < this.talkDist();
     if (near && !this.nearMayor) this.begin(f.id);
     this.nearMayor = near;
   }
@@ -322,7 +327,7 @@ export class MissionDirector {
     } else boss.setOffering(false);
 
     const near =
-      Math.hypot(this.w.focus().x - boss.pos.x, this.w.focus().y - boss.pos.y) < CHIEF_TALK_DIST;
+      Math.hypot(this.w.focus().x - boss.pos.x, this.w.focus().y - boss.pos.y) < this.talkDist();
     if (near && !this.nearBoss) {
       if (next) this.begin(next.id);
       else if (needBike) voice.say(NEED_UPGRADE_LINE[this.w.state.job], { interrupt: true });

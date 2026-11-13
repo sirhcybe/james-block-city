@@ -322,7 +322,10 @@ test('AC8 Build It!: drag a piece to its slot with the pointer, pick the wrong t
   });
   for (const f of ['bflag-1', 'bflag-2', 'bflag-3']) {
     await page.evaluate((m) => window.__jbc!.driveTo(m), f);
-    await page.waitForTimeout(400);
+    await until(
+      page,
+      `(() => { const m = window.__jbc.player().mission; return m.goal !== 'checkpoints' || m.parts.includes('${f}'); })()`,
+    );
   }
   await expect.poll(async () => (await st(page)).mission?.goal, LONG).toBe('build');
   await page.evaluate(() => window.__jbc!.driveTo('practice-wall-at'));

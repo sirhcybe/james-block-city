@@ -62,7 +62,7 @@ import { PathFinder } from '../iso/path';
 import { depthOf, footprintDepth, gridToScreen, screenToGrid, type Vec2 } from '../iso/projection';
 import type { LaneGraph, LaneNode } from '../iso/roads';
 import { MissionDirector } from '../missions/MissionDirector';
-import type { MissionWorld, Ride, VehicleId } from '../missions/world';
+import { DRIVE_REACH, type MissionWorld, type Ride, type VehicleId } from '../missions/world';
 import type { GameState } from '../systems/GameState';
 import { ObjectiveGuide } from '../systems/guide';
 import { IdleHints } from '../systems/hints';
@@ -1327,6 +1327,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const book = this.state.errands;
     const inv = this.state.inventory;
     const showing = new Map<string, IconName>();
+    // From a vehicle, "next to them" reaches across the wide sidewalk.
+    const near = 2.2 + (this.mode === 'car' ? DRIVE_REACH : 0);
     for (const e of book.all) {
       if (book.statusOf(e.id) !== 'offered') continue;
       // Find errands: the lost thing lies at its spot.
@@ -1340,7 +1342,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       // Deliver: the giver hands the item over when you come by.
       if (e.kind === 'deliver' && !carrying && giver) {
         showing.set(e.giver, e.icon as IconName);
-        if (Math.hypot(f.x - giver.pos.x, f.y - giver.pos.y) < 2.2) {
+        if (Math.hypot(f.x - giver.pos.x, f.y - giver.pos.y) < near) {
           this.state.pickUp(e.item);
           sfx.play('pop', 1.2);
           voice.say('got-it', { interrupt: true });
@@ -1352,7 +1354,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       if (!who) continue;
       showing.set(receiver, e.icon as IconName);
       const d = Math.hypot(f.x - who.pos.x, f.y - who.pos.y);
-      if (d < 2.2 && carrying) {
+      if (d < near && carrying) {
         const reward = this.state.completeErrand(e.id);
         if (reward !== null) {
           who.cheer();
@@ -1360,7 +1362,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
           voice.say('errand-done', { interrupt: true });
           this.notifyMission({ type: 'errandDone', id: e.id });
         }
-      } else if (d < 4 && !this.errandAsked.has(e.id)) {
+      } else if (d < near + 1.8 && !this.errandAsked.has(e.id)) {
         this.errandAsked.add(e.id);
         voice.say(e.voice ?? ERRAND_LINES[e.id] ?? 'hint-errand');
       }
@@ -2015,6 +2017,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
             goal: run.goal?.type ?? 'done',
             goalIndex: run.goalIndex,
             waiting: false,
+            parts: [...run.parts],
           }
         : null,
       offer: this.director.offer()?.id ?? null,

@@ -96,12 +96,16 @@ test('walking behind a tower fades it, walking out restores it', async ({ page, 
   await startGame(page, isMobile);
   await page.evaluate(() => window.__jbc!.teleport(33.5, 5.5));
   await expect.poll(async () => (await player(page)).faded).toContain('tower-east');
-  const alpha = await page.evaluate(() => {
-    const city = window.__jbc!.game.scene.getScene('City');
-    const img = city.children.getByName('tower-east') as unknown as { alpha: number };
-    return img.alpha;
-  });
-  expect(alpha).toBeLessThan(0.5);
+  // The fade is a short tween: wait for it rather than reading the alpha on the same frame.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const city = window.__jbc!.game.scene.getScene('City');
+        const img = city.children.getByName('tower-east') as unknown as { alpha: number };
+        return img.alpha;
+      }),
+    )
+    .toBeLessThan(0.5);
   await page.evaluate(() => window.__jbc!.teleport(36.5, 8.5));
   await expect.poll(async () => (await player(page)).faded).not.toContain('tower-east');
 });

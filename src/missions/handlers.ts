@@ -10,7 +10,7 @@ import { depthOf, gridToScreen, type Vec2 } from '../iso/projection';
 import { EscortState } from '../systems/escort';
 import { FindState } from '../systems/find';
 import type { Goal, MissionEvent } from '../systems/missions';
-import type { MissionWorld, VehicleId } from './world';
+import { DRIVE_REACH, type MissionWorld, type VehicleId } from './world';
 
 export interface Hint {
   at: Vec2;
@@ -121,7 +121,8 @@ export class GoToHandler extends GoalHandler {
     if (this.isVehicle) return;
     // A boat mission is only done from the boat (you can't walk a kitten home across the sea).
     if (this.c.vehicle === 'rescue-boat' && this.w.riding()?.id !== 'rescue-boat') return;
-    if (dist(this.w.focus(), this.w.marker(this.target)) < 1.7) {
+    const reach = 1.7 + (this.w.moveMode() === 'car' ? DRIVE_REACH : 0);
+    if (dist(this.w.focus(), this.w.marker(this.target)) < reach) {
       if (this.waiting) {
         // It hops aboard (or is tied on) and follows from here.
         const img = this.waiting;

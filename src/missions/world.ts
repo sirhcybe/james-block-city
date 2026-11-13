@@ -10,6 +10,13 @@ import type { Vec2 } from '../iso/projection';
 import type { GameState } from '../systems/GameState';
 import type { RobberSpec } from '../systems/missions';
 
+/**
+ * Extra reach (tiles) when the player is in a vehicle. Since spec 008 widened the sidewalks,
+ * people stand up to 3 tiles from the middle of the road: driving up to someone must still count
+ * as coming up to them.
+ */
+export const DRIVE_REACH = 1.5;
+
 /** Which of the player's vehicles. */
 export type VehicleId =
   'police-car' | 'police-bike' | 'fire-truck' | 'mixer-truck' | 'own-car' | 'rescue-boat';

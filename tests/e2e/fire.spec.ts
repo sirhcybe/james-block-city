@@ -99,8 +99,13 @@ test('Siren School: helmet, 3 flags in the truck, siren, spray the practice fire
   expect((await st(page)).owned).toContain('helmet-fire');
   await page.evaluate(() => window.__jbc!.ride('fire-truck'));
   await expect.poll(async () => (await st(page)).mission?.goal, LONG).toBe('checkpoints');
-  for (const f of ['fflag-1', 'fflag-2', 'fflag-3'])
+  for (const f of ['fflag-1', 'fflag-2', 'fflag-3']) {
     await page.evaluate((m) => window.__jbc!.driveTo(m), f);
+    await until(
+      page,
+      `(() => { const m = window.__jbc.player().mission; return m.goal !== 'checkpoints' || m.parts.includes('${f}'); })()`,
+    );
+  }
   await expect.poll(async () => (await st(page)).mission?.goal, LONG).toBe('siren');
   await page.keyboard.press('KeyQ');
   await expect.poll(async () => (await st(page)).mission?.goal, LONG).toBe('spray');
