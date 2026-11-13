@@ -71,6 +71,7 @@ export const PALETTE = {
   coneOrange: 0xff8c2e,
   parkPath: 0xe9cf96,
   pondDeep: 0x2f9fcc,
+  sand: 0xf3dc9c,
 } as const;
 
 export type PaletteKey = keyof typeof PALETTE;

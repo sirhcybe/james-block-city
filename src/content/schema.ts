@@ -3,7 +3,7 @@ import { PALETTE, type PaletteKey } from '../config';
 
 const paletteKeys = Object.keys(PALETTE) as [PaletteKey, ...PaletteKey[]];
 
-export const TileKind = z.enum(['grass', 'road', 'sidewalk', 'plaza', 'path', 'water']);
+export const TileKind = z.enum(['grass', 'road', 'sidewalk', 'plaza', 'path', 'water', 'sand']);
 export type TileKind = z.infer<typeof TileKind>;
 
 export const BuildingKind = z.enum([
@@ -27,6 +27,9 @@ export const BuildingKind = z.enum([
   'crane',
   'apartment',
   'goldentower',
+  'barge',
+  'rock',
+  'palm',
 ]);
 export type BuildingKind = z.infer<typeof BuildingKind>;
 
@@ -46,7 +49,19 @@ export type BuildingDef = z.infer<typeof BuildingDef>;
 
 const Point = z.object({ gx: z.number(), gy: z.number() });
 
-export const PropKind = z.enum(['cone', 'trashcan', 'trafficLight', 'bush', 'board', 'grill']);
+export const PropKind = z.enum([
+  'cone',
+  'trashcan',
+  'trafficLight',
+  'bush',
+  'board',
+  'grill',
+  'bench',
+  'lamp',
+  'planter',
+  'flowers',
+  'buoy',
+]);
 export type PropKind = z.infer<typeof PropKind>;
 
 export const PropDef = z.object({
@@ -138,9 +153,10 @@ export interface MapPiece {
 
 /**
  * Merge map pieces into one world map. Tiles, buildings, props, walkers and markers are shifted by
- * each piece's offset; gaps are water (the sea around the island). The world spawn is the first piece's spawn.
+ * each piece's offset; gaps are water (the sea around the island). Later pieces are laid over earlier ones
+ * (the sea is the first piece). The world spawn is the `spawnFrom` piece's spawn (default: the first).
  */
-export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
+export function mergeMaps(id: string, pieces: MapPiece[], spawnFrom = 0): MapDef {
   const width = Math.max(...pieces.map((p) => p.ox + p.map.width));
   const height = Math.max(...pieces.map((p) => p.oy + p.map.height));
   const legend: Record<string, TileKind> = {
@@ -150,6 +166,7 @@ export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
     p: 'plaza',
     k: 'path',
     w: 'water',
+    d: 'sand',
   };
   const code: Record<TileKind, string> = {
     grass: 'g',
@@ -158,6 +175,7 @@ export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
     plaza: 'p',
     path: 'k',
     water: 'w',
+    sand: 'd',
   };
   const rows = [...Array(height)].map(() => Array<string>(width).fill('w'));
   const shift = <T extends { gx: number; gy: number }>(o: T, p: MapPiece): T => ({
@@ -171,7 +189,7 @@ export function mergeMaps(id: string, pieces: MapPiece[]): MapDef {
     height,
     legend,
     tiles: [],
-    spawn: shift(pieces[0]!.map.spawn, pieces[0]!),
+    spawn: shift(pieces[spawnFrom]!.map.spawn, pieces[spawnFrom]!),
     buildings: [],
     markers: {},
     props: [],

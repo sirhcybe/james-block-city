@@ -1,0 +1,269 @@
+{
+  "id": "sea",
+  "width": 72,
+  "height": 48,
+  "legend": {
+    "g": "grass",
+    "w": "water",
+    "d": "sand"
+  },
+  "tiles": [
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwddwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwddddww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwddwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwdddwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwddggdwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwdgggddwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwddggdwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwdddwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwddddwwwwwwwwwwwwwwwwddwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwddddddwwwwwwwwwwwwwwwdddwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwdddwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
+  ],
+  "spawn": {
+    "gx": 0.5,
+    "gy": 0.5
+  },
+  "markers": {
+    "rescue-boat": {
+      "gx": 56.5,
+      "gy": 8.7
+    },
+    "dock-landing": {
+      "gx": 56.5,
+      "gy": 9.4
+    },
+    "lifeguard": {
+      "gx": 54.5,
+      "gy": 8.5
+    },
+    "castaway": {
+      "gx": 65.2,
+      "gy": 11.5
+    },
+    "castaway-perch": {
+      "gx": 67.5,
+      "gy": 11.3
+    },
+    "floaty-1": {
+      "gx": 61.5,
+      "gy": 15.5
+    },
+    "floaty-2": {
+      "gx": 67.5,
+      "gy": 22.5
+    },
+    "floaty-3": {
+      "gx": 62.5,
+      "gy": 36.5
+    },
+    "sailboat": {
+      "gx": 69.5,
+      "gy": 34.5
+    },
+    "barge": {
+      "gx": 63,
+      "gy": 19.5
+    }
+  },
+  "buildings": [
+    {
+      "id": "barge",
+      "kind": "barge",
+      "gx": 63,
+      "gy": 19,
+      "w": 2,
+      "d": 1,
+      "h": 0.5,
+      "color": "coneOrange"
+    },
+    {
+      "id": "rock-1",
+      "kind": "rock",
+      "gx": 68,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 0.8,
+      "color": "sidewalk"
+    },
+    {
+      "id": "palm-1",
+      "kind": "palm",
+      "gx": 67,
+      "gy": 10,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "palm-2",
+      "kind": "palm",
+      "gx": 65,
+      "gy": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "palm-3",
+      "kind": "palm",
+      "gx": 66,
+      "gy": 30,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "palm-4",
+      "kind": "palm",
+      "gx": 11,
+      "gy": 44,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "rock-2",
+      "kind": "rock",
+      "gx": 31,
+      "gy": 44,
+      "w": 1,
+      "d": 1,
+      "h": 0.8,
+      "color": "sidewalk"
+    },
+    {
+      "id": "rock-3",
+      "kind": "rock",
+      "gx": 70,
+      "gy": 4,
+      "w": 1,
+      "d": 1,
+      "h": 0.8,
+      "color": "sidewalk"
+    },
+    {
+      "id": "rock-4",
+      "kind": "rock",
+      "gx": 60,
+      "gy": 44,
+      "w": 1,
+      "d": 1,
+      "h": 0.8,
+      "color": "sidewalk"
+    }
+  ],
+  "props": [
+    {
+      "id": "buoy-1",
+      "kind": "buoy",
+      "gx": 59.5,
+      "gy": 11.5
+    },
+    {
+      "id": "buoy-2",
+      "kind": "buoy",
+      "gx": 64.5,
+      "gy": 15.5
+    },
+    {
+      "id": "buoy-3",
+      "kind": "buoy",
+      "gx": 69.5,
+      "gy": 18.5
+    },
+    {
+      "id": "buoy-4",
+      "kind": "buoy",
+      "gx": 61.5,
+      "gy": 24.5
+    },
+    {
+      "id": "buoy-5",
+      "kind": "buoy",
+      "gx": 68.5,
+      "gy": 38.5
+    },
+    {
+      "id": "buoy-6",
+      "kind": "buoy",
+      "gx": 50.5,
+      "gy": 43.5
+    },
+    {
+      "id": "buoy-7",
+      "kind": "buoy",
+      "gx": 38.5,
+      "gy": 45.5
+    },
+    {
+      "id": "buoy-8",
+      "kind": "buoy",
+      "gx": 20.5,
+      "gy": 43.5
+    },
+    {
+      "id": "buoy-9",
+      "kind": "buoy",
+      "gx": 62.5,
+      "gy": 3.5
+    }
+  ],
+  "walkers": [],
+  "perches": [
+    {
+      "id": "barge-fire-1",
+      "gx": 63.5,
+      "gy": 19.6,
+      "z": 0.5
+    },
+    {
+      "id": "barge-fire-2",
+      "gx": 64.5,
+      "gy": 19.6,
+      "z": 0.5
+    }
+  ]
+}

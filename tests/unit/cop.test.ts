@@ -439,8 +439,8 @@ describe('Downtown map (AC10)', () => {
   it('water is not walkable; the duck pond and Time-Out Tower are there', () => {
     const grid = buildWalkGrid(world);
     const pond = world.markers.pond!;
-    expect(tileAt(world, 10, 26)).toBe('water');
-    expect(grid.isWalkable(10, 26)).toBe(false);
+    expect(tileAt(world, 13, 33)).toBe('water');
+    expect(grid.isWalkable(13, 33)).toBe(false);
     expect(grid.isWalkable(Math.floor(pond.gx), Math.floor(pond.gy))).toBe(true);
     expect(world.buildings.some((b) => b.kind === 'timeout')).toBe(true);
     expect(world.buildings.some((b) => b.kind === 'shop')).toBe(true);

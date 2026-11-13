@@ -12,6 +12,7 @@ const TILE_COLOR: Record<TileKind, number> = {
   plaza: PALETTE.plaza,
   path: PALETTE.parkPath,
   water: PALETTE.water,
+  sand: PALETTE.sand,
 };
 
 const EARTH = 0xb98a5a;

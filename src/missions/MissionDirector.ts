@@ -14,7 +14,7 @@ import {
   type MissionRun,
 } from '../systems/missions';
 import { EV } from '../scenes/keys';
-import { JOBS } from '../systems/jobs';
+import { JOBS, NEED_UPGRADE_LINE } from '../systems/jobs';
 import { makeHandler, type GoalHandler, type Hint } from './handlers';
 import type { MissionWorld, VehicleId } from './world';
 
@@ -261,8 +261,8 @@ export class MissionDirector {
     const boss = this.w.townsperson(this.bossId());
     if (!boss) return;
     const next = this.offer();
-    const upgrade = this.w.state.content.shop.find((i) => i.job === this.w.state.job);
-    const needBike = !next && !this.run && !!upgrade && this.lockedOnlyByShop();
+    const upgrade = this.upgradeItem();
+    const needBike = !next && this.needsUpgrade();
     if (next) {
       boss.setBubble(getBaked(bubbleKey(next.icon as IconName)));
       boss.setOffering(true);
@@ -275,10 +275,20 @@ export class MissionDirector {
       Math.hypot(this.w.focus().x - boss.pos.x, this.w.focus().y - boss.pos.y) < CHIEF_TALK_DIST;
     if (near && !this.nearBoss) {
       if (next) this.begin(next.id);
-      else if (needBike) voice.say('chief-need-bike', { interrupt: true });
+      else if (needBike) voice.say(NEED_UPGRADE_LINE[this.w.state.job], { interrupt: true });
       else if (!this.run) voice.say('chief-later', { minGapMs: 8000 });
     }
     this.nearBoss = near;
+  }
+
+  /** The job's Shop upgrade (police bike, long ladder, giant drum). */
+  private upgradeItem() {
+    return this.w.state.content.shop.find((i) => i.job === this.w.state.job && i.tab === 'job');
+  }
+
+  /** The job's next missions only wait for its Shop upgrade: buying it is the objective now. */
+  needsUpgrade(): boolean {
+    return !this.run && !!this.upgradeItem() && this.lockedOnlyByShop();
   }
 
   /** Every remaining mission of the job only needs a Shop item the player doesn't own yet. */
@@ -303,6 +313,9 @@ export class MissionDirector {
     if (this.handler) return this.handler.hint();
     const boss = this.w.townsperson(this.bossId());
     if (boss && this.offer()) return { at: boss.pos, line: 'hint-chief' };
+    // Waiting on the Shop upgrade: the Shop is the objective (playtest 2026-11-12).
+    if (this.needsUpgrade() && this.w.hasMarker('shop'))
+      return { at: this.w.marker('shop'), line: NEED_UPGRADE_LINE[this.w.state.job] };
     const mayor = this.w.townsperson('mayor');
     if (mayor && this.finale()) return { at: mayor.pos, line: 'finale-ready' };
     return null;

@@ -4,6 +4,7 @@ import downtownRaw from './downtown.json';
 import harborRaw from './harbor.json';
 import heightsRaw from './heights.json';
 import plazaRaw from './plaza.json';
+import seaRaw from './sea.json';
 import { mergeMaps, parseMap, tileAt, type MapDef, type TileKind } from './schema';
 
 /** Build spots you can walk on once built (they span water). */
@@ -44,15 +45,35 @@ export function buildRoadGraph(m: MapDef, cls: VehicleClass): LaneGraph {
 }
 
 /**
- * The playable world (ADR-005): Downtown (west, 16×32), the City Plaza (16×16, east of Downtown's
- * north half), Skyscraper Heights (16×16, under the Plaza; spec 004) and the Harbor (16×32, east;
- * spec 005).
+ * Where the rescue boat may sail (spec 008): sea tiles, minus anything built or standing in the
+ * water (a built dock or bridge, the barge, rocks). Outside the map is not navigable.
+ */
+export function buildSeaGrid(m: MapDef, built: ReadonlySet<string> = new Set()): WalkGrid {
+  const g = new WalkGrid(m.width, m.height);
+  for (let y = 0; y < m.height; y++)
+    for (let x = 0; x < m.width; x++) if (tileAt(m, x, y) !== 'water') g.block(x, y);
+  for (const b of m.buildings) {
+    if (b.site && !built.has(b.id)) continue;
+    g.blockRect(b.gx, b.gy, b.w, b.d);
+  }
+  return g;
+}
+
+/**
+ * The playable world (ADR-005, stretched and given open sea in spec 008): the sea is the
+ * background piece; over it lie Downtown (west), the City Plaza, Skyscraper Heights (under the
+ * Plaza) and the Harbor (east). Offsets come from `scripts/stretch-map.mjs`.
  */
 export function loadWorld(): MapDef {
-  return mergeMaps('city', [
-    { map: parseMap(downtownRaw), ox: 0, oy: 0 },
-    { map: parseMap(plazaRaw), ox: 16, oy: 0 },
-    { map: parseMap(heightsRaw), ox: 16, oy: 16 },
-    { map: parseMap(harborRaw), ox: 32, oy: 0 },
-  ]);
+  return mergeMaps(
+    'city',
+    [
+      { map: parseMap(seaRaw), ox: 0, oy: 0 },
+      { map: parseMap(downtownRaw), ox: 0, oy: 0 },
+      { map: parseMap(plazaRaw), ox: 21, oy: 0 },
+      { map: parseMap(heightsRaw), ox: 21, oy: 21 },
+      { map: parseMap(harborRaw), ox: 42, oy: 0 },
+    ],
+    1,
+  );
 }

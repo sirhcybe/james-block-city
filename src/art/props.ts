@@ -14,6 +14,11 @@ export const PROP = {
   donut: 'pickup-donut',
   bubble: 'bubble-donut',
   puff: 'fx-puff',
+  bench: 'prop-bench',
+  lamp: 'prop-lamp',
+  planter: 'prop-planter',
+  flowers: 'prop-flowers',
+  buoy: 'prop-buoy',
 } as const;
 
 export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedMeta> {
@@ -192,5 +197,167 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
     },
   ]);
 
-  return { cone, trashcan, trafficLight, pad, donut, bubble, puff };
+  // Street furniture and sea things (spec 008). None of them block the way.
+  const wood = 0xb9834d;
+  const bench = bakeParts(scene, PROP.bench, [
+    { type: 'block', gx: -0.3, gy: -0.1, w: 0.08, d: 0.2, h: 0.2, color: 0x4a4e5c, bevel: 1 },
+    { type: 'block', gx: 0.22, gy: -0.1, w: 0.08, d: 0.2, h: 0.2, color: 0x4a4e5c, bevel: 1 },
+    {
+      type: 'block',
+      gx: -0.34,
+      gy: -0.13,
+      gz: 0.2,
+      w: 0.68,
+      d: 0.26,
+      h: 0.07,
+      color: wood,
+      bevel: 1,
+    },
+    {
+      type: 'block',
+      gx: -0.34,
+      gy: -0.16,
+      gz: 0.27,
+      w: 0.68,
+      d: 0.06,
+      h: 0.24,
+      color: wood,
+      bevel: 1,
+    },
+  ]);
+  const lamp = bakeParts(scene, PROP.lamp, [
+    { type: 'block', gx: -0.08, gy: -0.08, w: 0.16, d: 0.16, h: 0.12, color: 0x4a4e5c, bevel: 1 },
+    {
+      type: 'block',
+      gx: -0.035,
+      gy: -0.035,
+      gz: 0.12,
+      w: 0.07,
+      d: 0.07,
+      h: 1.5,
+      color: 0x5a5f6b,
+      bevel: 1,
+    },
+    {
+      type: 'block',
+      gx: -0.12,
+      gy: -0.12,
+      gz: 1.62,
+      w: 0.24,
+      d: 0.24,
+      h: 0.24,
+      color: 0xfff1a8,
+      bevel: 2,
+    },
+    {
+      type: 'block',
+      gx: -0.15,
+      gy: -0.15,
+      gz: 1.86,
+      w: 0.3,
+      d: 0.3,
+      h: 0.07,
+      color: 0x4a4e5c,
+      bevel: 1,
+    },
+  ]);
+  const flowerDots = (
+    g: Phaser.GameObjects.Graphics,
+    ox: number,
+    oy: number,
+    s: number,
+    z: number,
+    spread: number,
+  ) => {
+    const cols = [PALETTE.fireRed, PALETTE.coinGold, 0xffffff, PALETTE.donutPink, 0xb48cf0];
+    for (let i = 0; i < 7; i++) {
+      const a = i * 2.4;
+      const r = (0.08 + (i % 3) * 0.07) * spread;
+      const p = project(Math.cos(a) * r, Math.sin(a) * r, z, s);
+      g.lineStyle(1.5 * s, darken(PALETTE.leaf, 0.2), 1);
+      g.lineBetween(p.x + ox, p.y + oy, p.x + ox, p.y + oy - 6 * s);
+      g.fillStyle(cols[i % cols.length]!, 1);
+      g.fillCircle(p.x + ox, p.y + oy - 7 * s, 3.2 * s);
+      g.lineStyle(1.2 * s, PALETTE.outline, 1);
+      g.strokeCircle(p.x + ox, p.y + oy - 7 * s, 3.2 * s);
+      g.fillStyle(PALETTE.coinGold, 1);
+      g.fillCircle(p.x + ox, p.y + oy - 7 * s, 1.1 * s);
+    }
+  };
+  const planter = bakeParts(scene, PROP.planter, [
+    { type: 'block', gx: -0.3, gy: -0.3, w: 0.6, d: 0.6, h: 0.22, color: 0xc98a5e, bevel: 2 },
+    {
+      type: 'block',
+      gx: -0.24,
+      gy: -0.24,
+      gz: 0.22,
+      w: 0.48,
+      d: 0.48,
+      h: 0.04,
+      color: 0x6b4a2f,
+      bevel: 1,
+    },
+    {
+      type: 'custom',
+      bounds: [
+        { x: -18, y: -30 },
+        { x: 18, y: 4 },
+      ],
+      draw: (g, ox, oy, s) => flowerDots(g, ox, oy, s, 0.26, 0.8),
+    },
+  ]);
+  const flowers = bakeParts(scene, PROP.flowers, [
+    {
+      type: 'custom',
+      bounds: [
+        { x: -20, y: -22 },
+        { x: 20, y: 12 },
+      ],
+      draw: (g, ox, oy, s) => flowerDots(g, ox, oy, s, 0, 1.3),
+    },
+  ]);
+  const buoy = bakeParts(scene, PROP.buoy, [
+    {
+      type: 'custom',
+      bounds: [
+        { x: -16, y: -44 },
+        { x: 16, y: 8 },
+      ],
+      draw: (g, ox, oy, s) => {
+        g.fillStyle(0xffffff, 0.5);
+        g.fillEllipse(ox, oy, 30 * s, 12 * s);
+        const body = [
+          { x: ox - 10 * s, y: oy },
+          { x: ox - 6 * s, y: oy - 20 * s },
+          { x: ox + 6 * s, y: oy - 20 * s },
+          { x: ox + 10 * s, y: oy },
+        ];
+        g.fillStyle(PALETTE.fireRed, 1);
+        g.fillPoints(body, true);
+        g.fillStyle(0xffffff, 1);
+        g.fillRect(ox - 8 * s, oy - 12 * s, 16 * s, 5 * s);
+        g.lineStyle(2 * s, PALETTE.outline, 1);
+        g.strokePoints(body, true);
+        g.lineBetween(ox, oy - 20 * s, ox, oy - 32 * s);
+        g.fillStyle(PALETTE.coinGold, 1);
+        g.fillCircle(ox, oy - 35 * s, 4.5 * s);
+        g.strokeCircle(ox, oy - 35 * s, 4.5 * s);
+      },
+    },
+  ]);
+
+  return {
+    cone,
+    trashcan,
+    trafficLight,
+    pad,
+    donut,
+    bubble,
+    puff,
+    bench,
+    lamp,
+    planter,
+    flowers,
+    buoy,
+  };
 }

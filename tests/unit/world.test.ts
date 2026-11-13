@@ -9,7 +9,7 @@ describe('plaza content', () => {
   const plaza = parseMap(plazaRaw);
 
   it('is valid and has the required landmarks', () => {
-    expect(plaza.width).toBe(16);
+    expect(plaza.width).toBe(21);
     const kinds = plaza.buildings.map((b) => b.kind);
     expect(kinds.filter((k) => k === 'cityhall')).toHaveLength(1);
     expect(kinds.filter((k) => k === 'tower')).toHaveLength(2);

@@ -49,6 +49,17 @@ export const JOBS: Record<JobId, JobInfo> = {
 
 export const JOB_ORDER: JobId[] = ['cop', 'fire', 'builder'];
 
+/**
+ * What the boss says when the job's next missions only wait for its Shop upgrade (playtest
+ * 2026-11-12: the fire chief asked for a police bike, so buying the ladder never felt like the
+ * objective).
+ */
+export const NEED_UPGRADE_LINE: Record<JobId, string> = {
+  cop: 'chief-need-bike',
+  fire: 'chief-need-ladder',
+  builder: 'chief-need-drum',
+};
+
 /** A job can be picked once it has missions in the content (later specs add them). */
 export function jobAvailable(job: JobId, missions: readonly { job: string }[]): boolean {
   return missions.some((m) => m.job === job);

@@ -1,7 +1,7 @@
 {
   "id": "heights",
-  "width": 16,
-  "height": 16,
+  "width": 21,
+  "height": 19,
   "legend": {
     "g": "grass",
     "r": "road",
@@ -11,192 +11,195 @@
     "w": "water"
   },
   "tiles": [
-    "grrggggggggggrrg",
-    "grrggggggggggrrg",
-    "grrggggggggggrrg",
-    "rrrrrrrrrrrrrrrr",
-    "rrrrrrrrrrrrrrrr",
-    "grrssssrrssssrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrssssrrssssrrg",
-    "rrrrrrrrrrrrrrrr",
-    "rrrrrrrrrrrrrrrr",
-    "gggggggggggggggg"
+    "grrggggggggggggggrrgg",
+    "grrggggggggggggggrrgg",
+    "grrggggggggggggggrrgg",
+    "grrggggggggggggggrrgg",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "ggggggggggggggggggggg"
   ],
   "spawn": {
-    "gx": 3.5,
-    "gy": 7.5
+    "gx": 4.5,
+    "gy": 9.5
   },
   "markers": {
     "fire-chief": {
-      "gx": 3.5,
-      "gy": 7.5
+      "gx": 4.5,
+      "gy": 9.5
     },
     "fire-truck": {
       "gx": 2,
-      "gy": 8
-    },
-    "fire-board": {
-      "gx": 5.5,
-      "gy": 12.5
-    },
-    "window-splash": {
-      "gx": 6.5,
-      "gy": 7.5
-    },
-    "ladder-rescue": {
-      "gx": 6.5,
-      "gy": 10.5
-    },
-    "fflag-1": {
-      "gx": 5,
-      "gy": 4
-    },
-    "fflag-2": {
-      "gx": 8,
-      "gy": 9
-    },
-    "fflag-3": {
-      "gx": 11,
-      "gy": 14
-    },
-    "kitty-at": {
-      "gx": 8,
-      "gy": 7
-    },
-    "tallest-at": {
-      "gx": 8,
       "gy": 10
     },
-    "kitty-owner": {
-      "gx": 9.5,
-      "gy": 5.5
+    "fire-board": {
+      "gx": 6.5,
+      "gy": 15.5
     },
-    "kid-heights": {
-      "gx": 9.5,
+    "window-splash": {
+      "gx": 8.5,
+      "gy": 9.5
+    },
+    "ladder-rescue": {
+      "gx": 8.5,
       "gy": 12.5
     },
+    "fflag-1": {
+      "gx": 6,
+      "gy": 5
+    },
+    "fflag-2": {
+      "gx": 10,
+      "gy": 11
+    },
+    "fflag-3": {
+      "gx": 14,
+      "gy": 17
+    },
+    "kitty-at": {
+      "gx": 10,
+      "gy": 9
+    },
+    "tallest-at": {
+      "gx": 10,
+      "gy": 12
+    },
+    "kitty-owner": {
+      "gx": 12.5,
+      "gy": 7.5
+    },
+    "kid-heights": {
+      "gx": 12.5,
+      "gy": 14.5
+    },
     "balloon-spot": {
-      "gx": 11.5,
+      "gx": 14.5,
       "gy": 1.5
     },
     "bbq-at": {
-      "gx": 7.5,
+      "gx": 9.5,
       "gy": 2.5
     },
     "fireworks-at": {
-      "gx": 8,
-      "gy": 8
+      "gx": 10,
+      "gy": 10
     },
     "traffic-4": {
-      "gx": 8,
-      "gy": 14
+      "gx": 10,
+      "gy": 17
     },
     "traffic-5": {
-      "gx": 14,
-      "gy": 4
+      "gx": 18,
+      "gy": 5
     },
     "pour-2": {
-      "gx": 8,
-      "gy": 14
+      "gx": 10,
+      "gy": 17
     },
     "chef": {
-      "gx": 9.5,
-      "gy": 9.5
+      "gx": 12.5,
+      "gy": 11.5
     },
     "feather-spot": {
-      "gx": 4.5,
+      "gx": 5.5,
       "gy": 0.5
     }
   },
   "perches": [
     {
       "id": "practice-fire",
-      "gx": 5.5,
-      "gy": 5.4,
+      "gx": 6.5,
+      "gy": 7.4,
       "z": 0
     },
     {
       "id": "kitty-perch",
-      "gx": 11,
-      "gy": 8.05,
+      "gx": 14,
+      "gy": 10.05,
       "z": 9.3
     },
     {
       "id": "tallest-fire",
-      "gx": 11,
-      "gy": 11.05,
+      "gx": 14,
+      "gy": 13.05,
       "z": 12.2
     },
     {
       "id": "parrot-perch",
-      "gx": 11,
-      "gy": 10,
+      "gx": 14,
+      "gy": 12,
       "z": 13.2
     },
     {
       "id": "bbq-1",
-      "gx": 5.5,
+      "gx": 6.5,
       "gy": 1.5,
       "z": 0
     },
     {
       "id": "bbq-2",
-      "gx": 8.5,
+      "gx": 10.5,
       "gy": 0.7,
       "z": 0
     },
     {
       "id": "bbq-3",
-      "gx": 10.5,
+      "gx": 13.5,
       "gy": 1.5,
       "z": 0
     },
     {
       "id": "fw-1",
-      "gx": 5,
-      "gy": 11.05,
+      "gx": 6,
+      "gy": 13.05,
       "z": 3.3
     },
     {
       "id": "fw-2",
-      "gx": 6.05,
-      "gy": 9.6,
+      "gx": 7.05,
+      "gy": 11.6,
       "z": 5.3
     },
     {
       "id": "fw-3",
-      "gx": 10.5,
-      "gy": 8.05,
+      "gx": 13.5,
+      "gy": 10.05,
       "z": 4.3
     },
     {
       "id": "fw-4",
-      "gx": 12.05,
-      "gy": 7,
+      "gx": 15.05,
+      "gy": 9,
       "z": 6.3
     },
     {
       "id": "finale-fire-1",
-      "gx": 10.5,
-      "gy": 11.05,
+      "gx": 13.5,
+      "gy": 13.05,
       "z": 4.3
     },
     {
       "id": "finale-fire-2",
-      "gx": 12.05,
-      "gy": 10,
+      "gx": 15.05,
+      "gy": 12,
       "z": 8.3
     },
     {
       "id": "finale-fire-3",
-      "gx": 11.5,
-      "gy": 11.05,
+      "gx": 14.5,
+      "gy": 13.05,
       "z": 11.3
     }
   ],
@@ -204,8 +207,8 @@
     {
       "id": "fire-station",
       "kind": "firestation",
-      "gx": 4,
-      "gy": 6,
+      "gx": 5,
+      "gy": 8,
       "w": 2,
       "d": 2,
       "h": 2.4,
@@ -214,8 +217,8 @@
     {
       "id": "tower-h1",
       "kind": "skyscraper",
-      "gx": 4,
-      "gy": 9,
+      "gx": 5,
+      "gy": 11,
       "w": 2,
       "d": 2,
       "h": 8,
@@ -224,8 +227,8 @@
     {
       "id": "kitty-tower",
       "kind": "skyscraper",
-      "gx": 10,
-      "gy": 6,
+      "gx": 13,
+      "gy": 8,
       "w": 2,
       "d": 2,
       "h": 10,
@@ -234,8 +237,8 @@
     {
       "id": "tallest-tower",
       "kind": "skyscraper",
-      "gx": 10,
-      "gy": 9,
+      "gx": 13,
+      "gy": 11,
       "w": 2,
       "d": 2,
       "h": 13,
@@ -244,7 +247,7 @@
     {
       "id": "h-tree-1",
       "kind": "tree",
-      "gx": 3,
+      "gx": 4,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -254,7 +257,7 @@
     {
       "id": "h-tree-2",
       "kind": "tree",
-      "gx": 12,
+      "gx": 15,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -264,7 +267,7 @@
     {
       "id": "h-tree-3",
       "kind": "tree",
-      "gx": 5,
+      "gx": 6,
       "gy": 2,
       "w": 1,
       "d": 1,
@@ -274,7 +277,7 @@
     {
       "id": "h-tree-4",
       "kind": "tree",
-      "gx": 10,
+      "gx": 13,
       "gy": 2,
       "w": 1,
       "d": 1,
@@ -284,7 +287,7 @@
     {
       "id": "h-tree-5",
       "kind": "tree",
-      "gx": 15,
+      "gx": 19,
       "gy": 1,
       "w": 1,
       "d": 1,
@@ -294,8 +297,8 @@
     {
       "id": "h-tree-6",
       "kind": "tree",
-      "gx": 15,
-      "gy": 6,
+      "gx": 19,
+      "gy": 8,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -304,8 +307,8 @@
     {
       "id": "h-tree-7",
       "kind": "tree",
-      "gx": 15,
-      "gy": 11,
+      "gx": 19,
+      "gy": 13,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -325,7 +328,7 @@
       "id": "h-tree-9",
       "kind": "tree",
       "gx": 0,
-      "gy": 8,
+      "gy": 10,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -335,7 +338,7 @@
       "id": "h-tree-10",
       "kind": "tree",
       "gx": 0,
-      "gy": 11,
+      "gy": 13,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -344,8 +347,8 @@
     {
       "id": "h-tree-11",
       "kind": "tree",
-      "gx": 4,
-      "gy": 15,
+      "gx": 5,
+      "gy": 18,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -354,8 +357,8 @@
     {
       "id": "h-tree-12",
       "kind": "tree",
-      "gx": 11,
-      "gy": 15,
+      "gx": 14,
+      "gy": 18,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -366,26 +369,164 @@
     {
       "id": "grill",
       "kind": "grill",
-      "gx": 7.5,
+      "gx": 9.5,
       "gy": 1.5
     },
     {
       "id": "h-bush-1",
       "kind": "bush",
-      "gx": 3.5,
+      "gx": 4.5,
       "gy": 1.5
     },
     {
       "id": "h-cone-1",
       "kind": "cone",
-      "gx": 6.8,
-      "gy": 4.5
+      "gx": 7.8,
+      "gy": 5.5
     },
     {
       "id": "h-light-1",
       "kind": "trafficLight",
-      "gx": 6.5,
-      "gy": 12.6
+      "gx": 7.5,
+      "gy": 14.6
+    },
+    {
+      "id": "heights-flowers-0",
+      "kind": "flowers",
+      "gx": 5.5,
+      "gy": 2.5
+    },
+    {
+      "id": "heights-flowers-1",
+      "kind": "flowers",
+      "gx": 14.5,
+      "gy": 3.5
+    },
+    {
+      "id": "heights-lamp-2",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 6.5
+    },
+    {
+      "id": "heights-planter-3",
+      "kind": "planter",
+      "gx": 5.5,
+      "gy": 6.5
+    },
+    {
+      "id": "heights-lamp-4",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 6.5
+    },
+    {
+      "id": "heights-lamp-5",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 6.5
+    },
+    {
+      "id": "heights-planter-6",
+      "kind": "planter",
+      "gx": 14.5,
+      "gy": 6.5
+    },
+    {
+      "id": "heights-lamp-7",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 6.5
+    },
+    {
+      "id": "heights-flowers-8",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 8.5
+    },
+    {
+      "id": "heights-flowers-9",
+      "kind": "flowers",
+      "gx": 19.5,
+      "gy": 9.5
+    },
+    {
+      "id": "heights-bench-10",
+      "kind": "bench",
+      "gx": 16.5,
+      "gy": 10.5
+    },
+    {
+      "id": "heights-flowers-11",
+      "kind": "flowers",
+      "gx": 19.5,
+      "gy": 11.5
+    },
+    {
+      "id": "heights-planter-12",
+      "kind": "planter",
+      "gx": 11.5,
+      "gy": 12.5
+    },
+    {
+      "id": "heights-flowers-13",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 12.5
+    },
+    {
+      "id": "heights-bench-14",
+      "kind": "bench",
+      "gx": 16.5,
+      "gy": 13.5
+    },
+    {
+      "id": "heights-flowers-15",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 14.5
+    },
+    {
+      "id": "heights-lamp-16",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 15.5
+    },
+    {
+      "id": "heights-lamp-17",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 15.5
+    },
+    {
+      "id": "heights-lamp-18",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 15.5
+    },
+    {
+      "id": "heights-bench-19",
+      "kind": "bench",
+      "gx": 13.5,
+      "gy": 15.5
+    },
+    {
+      "id": "heights-lamp-20",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 15.5
+    },
+    {
+      "id": "heights-flowers-21",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 18.5
+    },
+    {
+      "id": "heights-flowers-22",
+      "kind": "flowers",
+      "gx": 7.5,
+      "gy": 18.5
     }
   ],
   "walkers": [
@@ -393,12 +534,12 @@
       "id": "walker-h1",
       "look": "walkerGreen",
       "from": {
-        "gx": 9.5,
-        "gy": 5.5
+        "gx": 12.5,
+        "gy": 7.5
       },
       "to": {
-        "gx": 9.5,
-        "gy": 11.5
+        "gx": 12.5,
+        "gy": 13.5
       }
     }
   ]

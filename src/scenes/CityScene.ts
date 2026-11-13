@@ -502,7 +502,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.state.save.flush();
     if (this.mode === 'car') this.exitCar();
     this.player.cancelPath();
-    this.player.pos = { x: 24.5, y: 12.5 };
+    this.player.pos = { ...this.marker('parade-stand') };
     this.game.events.emit(EV.night, true);
     voice.say('parade', { interrupt: true });
     sfx.play('tada');
@@ -511,8 +511,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       (v): v is Vehicle => !!v && v.driver.graph === this.carGraph,
     );
     this.convoy = vs.map((v, i) => {
-      const node =
-        this.carGraph.get(26 - i * 2, 2) ?? this.nodeNear(this.carGraph, { x: 26 - i * 2, y: 2 });
+      const head = this.marker('parade-start');
+      const node = this.nodeNear(this.carGraph, { x: head.x - i * 2, y: head.y });
       v.placeAt(node, { x: 1, y: 0 });
       v.flash(30);
       return { v, corner: 0 };
@@ -521,7 +521,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       delay: 1000,
       loop: true,
       callback: () => {
-        const c = gridToScreen(24 + (Math.random() - 0.5) * 12, 8 + (Math.random() - 0.5) * 12);
+        const mid = this.marker('plaza-centre');
+        const c = gridToScreen(
+          mid.x + (Math.random() - 0.5) * 14,
+          mid.y + (Math.random() - 0.5) * 14,
+        );
         const fw = this.add
           .image(c.x, c.y - 120 - Math.random() * 80, iconKey('firework'))
           .setScale(0)
@@ -545,13 +549,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     });
   }
 
-  /** Corners of the Plaza ring road, in driving order. */
-  private static readonly RING = [
-    { x: 30, y: 2 },
-    { x: 30, y: 14 },
-    { x: 18, y: 14 },
-    { x: 18, y: 2 },
-  ];
+  /** Corners of the Plaza ring road, in driving order (map markers). */
+  private static readonly RING = ['ring-ne', 'ring-se', 'ring-sw', 'ring-nw'];
 
   private updateParade(dt: number): void {
     if (!this.paradeOn) return;
@@ -559,7 +558,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     for (const c of this.convoy) {
       const d = c.v.driver;
       if (d.path.length === 0 && Math.abs(d.speed) < 0.2) {
-        d.goToward(CityScene.RING[c.corner % 4]!);
+        d.goToward(this.marker(CityScene.RING[c.corner % 4]!));
         c.corner++;
       }
     }
@@ -771,6 +770,24 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
         addBakedImage(this, getBaked(MPROP.grill), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
       } else if (p.kind === 'board') {
         addBakedImage(this, getBaked(MPROP.board), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
+      } else if (p.kind === 'flowers') {
+        addBakedImage(this, getBaked(PROP.flowers), s.x, s.y).setDepth(-999_995);
+      } else if (p.kind === 'bench' || p.kind === 'lamp' || p.kind === 'planter') {
+        addBakedImage(this, getBaked(PROP[p.kind]), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20);
+      } else if (p.kind === 'buoy') {
+        // Buoys bob on the swell.
+        const img = addBakedImage(this, getBaked(PROP.buoy), s.x, s.y).setDepth(
+          depthOf(p.gx, p.gy) + 20,
+        );
+        this.tweens.add({
+          targets: img,
+          y: s.y - 4,
+          angle: { from: -5, to: 5 },
+          duration: 1100 + (p.gx % 3) * 150,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
       } else {
         const meta = getBaked(p.kind === 'cone' ? PROP.cone : PROP.trashcan);
         this.bumpables.push(new Bumpable(this, p.id, meta, { x: p.gx, y: p.gy }));
@@ -1353,6 +1370,10 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (r.changed) this.refreshLooks();
     if (r.bought === 'own-car') this.time.delayedCall(300, () => this.spawnOwnCar(true));
     if (r.bought === 'police-bike') this.time.delayedCall(300, () => this.spawnBike(true));
+    // The job upgrade was the objective: say so, and the arrow now points at the boss.
+    const item = this.state.content.shop.find((i) => i.id === r.bought);
+    if (item?.tab === 'job' && item.job === this.state.job && this.director.offer())
+      this.time.delayedCall(900, () => voice.say('upgrade-bought', { interrupt: true }));
     if (r.replay) {
       const id = r.replay;
       this.time.delayedCall(300, () => this.director.begin(id));

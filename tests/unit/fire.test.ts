@@ -261,7 +261,7 @@ describe('Skyscraper Heights map (AC3)', () => {
   it('is joined to the Plaza and to Downtown by road', () => {
     const car = buildRoadGraph(world, 'car');
     // Breadth-first from the police car's spot reaches the fire truck's spot and the Plaza.
-    const start = car.get(5, 8)!;
+    const start = car.get(6, 10)!;
     const seen = new Set([start.id]);
     const q = [start];
     while (q.length) {
@@ -279,7 +279,7 @@ describe('Skyscraper Heights map (AC3)', () => {
     const dtLinks = [...car.nodes.values()].filter((n) => n.x === 16 && n.y > 16).length;
     expect(plazaLinks).toBeGreaterThanOrEqual(2);
     expect(dtLinks).toBeGreaterThanOrEqual(2);
-    expect(tileAt(world, 17, 15)).toBe('road');
+    expect(tileAt(world, 22, 20)).toBe('road');
   });
 
   it('the fire chief, pads and the kitchen door can be walked to from the spawn', () => {

@@ -1,7 +1,7 @@
 {
   "id": "downtown",
-  "width": 16,
-  "height": 32,
+  "width": 21,
+  "height": 40,
   "legend": {
     "g": "grass",
     "r": "road",
@@ -11,171 +11,179 @@
     "w": "water"
   },
   "tiles": [
-    "gggggggggggggggg",
-    "grrrrrrrrrrrrrrr",
-    "grrrrrrrrrrrrrrr",
-    "grrssssrrssssrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrssssrrssssrrg",
-    "grrrrrrrrrrrrrrr",
-    "grrrrrrrrrrrrrrr",
-    "grrssssrrssssrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrssssrrssssrrg",
-    "grrrrrrrrrrrrrrr",
-    "grrrrrrrrrrrrrrr",
-    "grrssssrrssssrrg",
-    "grrsppsrrsppsrrg",
-    "grrsppsrrsppsrrg",
-    "grrssssrrssssrrg",
-    "grrrrrrrrrrrrrrr",
-    "grrrrrrrrrrrrrrr",
-    "grrsssskkssssrrg",
-    "grrsgggkkgggsrrg",
-    "grrsgggkkgggsrrg",
-    "grrkkkkkkkkkkrrg",
-    "grrkkkkkkkkkkrrg",
-    "grrsgggkkwwwsrrg",
-    "grrsgggkkwwwsrrg",
-    "grrsssskkssssrrg",
-    "grrrrrrrrrrrrrrr",
-    "grrrrrrrrrrrrrrr",
-    "gggggggggggggggg"
+    "ggggggggggggggggggggg",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssppssrrssppssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrssssssrrssssssrrgg",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrsssssskkssssssrrgg",
+    "grrsssssskkssssssrrgg",
+    "grrssggggkkggggssrrgg",
+    "grrssggggkkggggssrrgg",
+    "grrkkkkkkkkkkkkkkrrgg",
+    "grrkkkkkkkkkkkkkkrrgg",
+    "grrssggggkkwwwwssrrgg",
+    "grrssggggkkwwwwssrrgg",
+    "grrsssssskkssssssrrgg",
+    "grrsssssskkssssssrrgg",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "grrrrrrrrrrrrrrrrrrrr",
+    "ggggggggggggggggggggg"
   ],
   "spawn": {
-    "gx": 6.5,
-    "gy": 5.5
+    "gx": 7.5,
+    "gy": 6.5
   },
   "markers": {
     "police-car": {
-      "gx": 5,
-      "gy": 8
+      "gx": 6,
+      "gy": 10
     },
     "getaway-start": {
-      "gx": 11,
-      "gy": 8
+      "gx": 14,
+      "gy": 10
     },
     "donut-owner": {
-      "gx": 10.5,
-      "gy": 6.5
+      "gx": 13.5,
+      "gy": 7.5
     },
     "traffic-helper": {
-      "gx": 9.5,
-      "gy": 5.5
+      "gx": 11.5,
+      "gy": 6.5
     },
     "police-van": {
       "gx": 2,
-      "gy": 5
+      "gy": 6
     },
     "chief": {
-      "gx": 6.5,
-      "gy": 3.5
+      "gx": 7.5,
+      "gy": 4.5
     },
     "mission-board": {
-      "gx": 4.5,
-      "gy": 6.5
+      "gx": 5.5,
+      "gy": 8.5
     },
     "who-took-it": {
-      "gx": 4.5,
+      "gx": 5.5,
       "gy": 3.5
     },
     "police-bike": {
-      "gx": 3,
-      "gy": 8
+      "gx": 4,
+      "gy": 10
     },
     "flag-1": {
-      "gx": 11,
-      "gy": 8
+      "gx": 14,
+      "gy": 10
     },
     "flag-2": {
-      "gx": 14,
-      "gy": 11
-    },
-    "flag-3": {
-      "gx": 8,
+      "gx": 18,
       "gy": 14
     },
-    "ducks": {
-      "gx": 10.5,
-      "gy": 19.5
+    "flag-3": {
+      "gx": 10,
+      "gy": 18
     },
-    "pond": {
-      "gx": 10.5,
+    "ducks": {
+      "gx": 13.5,
       "gy": 25.5
     },
+    "pond": {
+      "gx": 13.5,
+      "gy": 32.5
+    },
     "spot-1": {
-      "gx": 6.5,
-      "gy": 22.5
+      "gx": 7.5,
+      "gy": 29.5
     },
     "spot-2": {
-      "gx": 9.5,
-      "gy": 23.5
+      "gx": 12.5,
+      "gy": 30.5
     },
     "spot-3": {
-      "gx": 4.5,
-      "gy": 26.5
+      "gx": 5.5,
+      "gy": 33.5
     },
     "puppy-owner": {
-      "gx": 12.5,
-      "gy": 15.5
+      "gx": 15.5,
+      "gy": 20.5
     },
     "smudge-start": {
-      "gx": 8,
-      "gy": 23
+      "gx": 10,
+      "gy": 30
     },
     "getaway-2": {
-      "gx": 5,
-      "gy": 20
+      "gx": 6,
+      "gy": 26
     },
     "traffic-1": {
-      "gx": 8,
+      "gx": 10,
       "gy": 2
     },
     "traffic-2": {
-      "gx": 14,
-      "gy": 20
+      "gx": 18,
+      "gy": 26
     },
     "traffic-3": {
       "gx": 2,
-      "gy": 26
+      "gy": 33
     },
     "mayor": {
-      "gx": 12.5,
-      "gy": 9.5
+      "gx": 15.5,
+      "gy": 12.5
     },
     "sock-owner": {
-      "gx": 3.5,
-      "gy": 15.5
+      "gx": 4.5,
+      "gy": 20.5
     },
     "rubber-duck-spot": {
-      "gx": 5.5,
-      "gy": 23.5
+      "gx": 6.5,
+      "gy": 30.5
     },
     "pour-3": {
-      "gx": 8,
-      "gy": 20
+      "gx": 10,
+      "gy": 26
     },
     "teacher": {
-      "gx": 9.5,
-      "gy": 15.5
+      "gx": 12.5,
+      "gy": 20.5
     },
     "teddy-spot": {
-      "gx": 6.5,
-      "gy": 23.5
+      "gx": 7.5,
+      "gy": 30.5
     },
     "apple-spot": {
-      "gx": 3.5,
-      "gy": 9.5
+      "gx": 4.5,
+      "gy": 12.5
     }
   },
   "buildings": [
     {
       "id": "police-station",
       "kind": "police",
-      "gx": 4,
-      "gy": 4,
+      "gx": 5,
+      "gy": 5,
       "w": 2,
       "d": 2,
       "h": 3,
@@ -184,8 +192,8 @@
     {
       "id": "donut-shop",
       "kind": "donutshop",
-      "gx": 10,
-      "gy": 4,
+      "gx": 13,
+      "gy": 5,
       "w": 2,
       "d": 2,
       "h": 2,
@@ -194,8 +202,8 @@
     {
       "id": "bank",
       "kind": "tower",
-      "gx": 10,
-      "gy": 10,
+      "gx": 13,
+      "gy": 13,
       "w": 2,
       "d": 2,
       "h": 3,
@@ -204,8 +212,8 @@
     {
       "id": "house-dt",
       "kind": "house",
-      "gx": 4,
-      "gy": 10,
+      "gx": 5,
+      "gy": 13,
       "w": 2,
       "d": 2,
       "h": 2,
@@ -224,7 +232,7 @@
     {
       "id": "dt-tree-2",
       "kind": "tree",
-      "gx": 5,
+      "gx": 6,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -234,7 +242,7 @@
     {
       "id": "dt-tree-3",
       "kind": "tree",
-      "gx": 10,
+      "gx": 13,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -244,7 +252,7 @@
     {
       "id": "dt-tree-4",
       "kind": "tree",
-      "gx": 15,
+      "gx": 19,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -255,7 +263,7 @@
       "id": "dt-tree-5",
       "kind": "tree",
       "gx": 0,
-      "gy": 5,
+      "gy": 6,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -265,7 +273,7 @@
       "id": "dt-tree-6",
       "kind": "tree",
       "gx": 0,
-      "gy": 10,
+      "gy": 13,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -275,7 +283,7 @@
       "id": "dt-tree-7",
       "kind": "tree",
       "gx": 0,
-      "gy": 15,
+      "gy": 20,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -284,8 +292,8 @@
     {
       "id": "dt-tree-8",
       "kind": "tree",
-      "gx": 5,
-      "gy": 15,
+      "gx": 6,
+      "gy": 20,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -294,8 +302,8 @@
     {
       "id": "dt-tree-9",
       "kind": "tree",
-      "gx": 10,
-      "gy": 15,
+      "gx": 13,
+      "gy": 20,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -304,8 +312,8 @@
     {
       "id": "dt-tree-10",
       "kind": "tree",
-      "gx": 15,
-      "gy": 12,
+      "gx": 19,
+      "gy": 15,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -314,8 +322,8 @@
     {
       "id": "timeout-tower",
       "kind": "timeout",
-      "gx": 4,
-      "gy": 16,
+      "gx": 5,
+      "gy": 21,
       "w": 2,
       "d": 2,
       "h": 4,
@@ -324,8 +332,8 @@
     {
       "id": "house-dt2",
       "kind": "house",
-      "gx": 10,
-      "gy": 16,
+      "gx": 13,
+      "gy": 21,
       "w": 2,
       "d": 2,
       "h": 2,
@@ -334,8 +342,8 @@
     {
       "id": "park-tree-1",
       "kind": "tree",
-      "gx": 4,
-      "gy": 22,
+      "gx": 5,
+      "gy": 29,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -344,8 +352,8 @@
     {
       "id": "park-tree-2",
       "kind": "tree",
-      "gx": 11,
-      "gy": 23,
+      "gx": 14,
+      "gy": 30,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -354,8 +362,8 @@
     {
       "id": "park-tree-3",
       "kind": "tree",
-      "gx": 5,
-      "gy": 27,
+      "gx": 6,
+      "gy": 34,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -365,7 +373,7 @@
       "id": "dt-tree-s1",
       "kind": "tree",
       "gx": 0,
-      "gy": 17,
+      "gy": 22,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -375,7 +383,7 @@
       "id": "dt-tree-s2",
       "kind": "tree",
       "gx": 0,
-      "gy": 23,
+      "gy": 30,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -385,7 +393,7 @@
       "id": "dt-tree-s3",
       "kind": "tree",
       "gx": 0,
-      "gy": 28,
+      "gy": 35,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -394,8 +402,8 @@
     {
       "id": "dt-tree-s4",
       "kind": "tree",
-      "gx": 15,
-      "gy": 18,
+      "gx": 19,
+      "gy": 23,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -404,8 +412,8 @@
     {
       "id": "dt-tree-s5",
       "kind": "tree",
-      "gx": 15,
-      "gy": 24,
+      "gx": 19,
+      "gy": 31,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -414,8 +422,8 @@
     {
       "id": "dt-tree-s7",
       "kind": "tree",
-      "gx": 4,
-      "gy": 31,
+      "gx": 5,
+      "gy": 39,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -424,8 +432,8 @@
     {
       "id": "dt-tree-s8",
       "kind": "tree",
-      "gx": 10,
-      "gy": 31,
+      "gx": 13,
+      "gy": 39,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -436,80 +444,422 @@
     {
       "id": "light-1",
       "kind": "trafficLight",
-      "gx": 9.5,
-      "gy": 6.5
+      "gx": 12.5,
+      "gy": 7.5
     },
     {
       "id": "cone-1",
       "kind": "cone",
-      "gx": 4.5,
-      "gy": 7.2
+      "gx": 5.5,
+      "gy": 9.2
     },
     {
       "id": "cone-2",
       "kind": "cone",
-      "gx": 7.2,
-      "gy": 11.5
+      "gx": 9.2,
+      "gy": 14.5
     },
     {
       "id": "cone-3",
       "kind": "cone",
       "gx": 2.3,
-      "gy": 11.5
+      "gy": 14.5
     },
     {
       "id": "can-1",
       "kind": "trashcan",
-      "gx": 11.5,
+      "gx": 14.5,
       "gy": 1.15
     },
     {
       "id": "can-2",
       "kind": "trashcan",
-      "gx": 13.15,
-      "gy": 4.5
+      "gx": 17.15,
+      "gy": 5.5
     },
     {
       "id": "light-2",
       "kind": "trafficLight",
-      "gx": 6.5,
-      "gy": 18.5
+      "gx": 7.5,
+      "gy": 23.5
     },
     {
       "id": "bush-1",
       "kind": "bush",
-      "gx": 6.5,
-      "gy": 22.5
+      "gx": 7.5,
+      "gy": 29.5
     },
     {
       "id": "bush-2",
       "kind": "bush",
-      "gx": 9.5,
-      "gy": 23.5
+      "gx": 12.5,
+      "gy": 30.5
     },
     {
       "id": "bush-3",
       "kind": "bush",
-      "gx": 4.5,
-      "gy": 26.5
+      "gx": 5.5,
+      "gy": 33.5
     },
     {
       "id": "bush-4",
       "kind": "bush",
-      "gx": 10.5,
-      "gy": 22.5
+      "gx": 13.5,
+      "gy": 29.5
     },
     {
       "id": "board",
       "kind": "board",
-      "gx": 4.5,
-      "gy": 6.5
+      "gx": 5.5,
+      "gy": 8.5
     },
     {
       "id": "cone-4",
       "kind": "cone",
-      "gx": 13.2,
+      "gx": 17.2,
+      "gy": 31.5
+    },
+    {
+      "id": "downtown-lamp-0",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 3.5
+    },
+    {
+      "id": "downtown-lamp-1",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 3.5
+    },
+    {
+      "id": "downtown-lamp-2",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 3.5
+    },
+    {
+      "id": "downtown-lamp-3",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 3.5
+    },
+    {
+      "id": "downtown-lamp-4",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 8.5
+    },
+    {
+      "id": "downtown-planter-5",
+      "kind": "planter",
+      "gx": 7.5,
+      "gy": 8.5
+    },
+    {
+      "id": "downtown-lamp-6",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 8.5
+    },
+    {
+      "id": "downtown-bench-7",
+      "kind": "bench",
+      "gx": 15.5,
+      "gy": 8.5
+    },
+    {
+      "id": "downtown-lamp-8",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 11.5
+    },
+    {
+      "id": "downtown-bench-9",
+      "kind": "bench",
+      "gx": 6.5,
+      "gy": 11.5
+    },
+    {
+      "id": "downtown-lamp-10",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 11.5
+    },
+    {
+      "id": "downtown-lamp-11",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 11.5
+    },
+    {
+      "id": "downtown-lamp-12",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 11.5
+    },
+    {
+      "id": "downtown-bench-13",
+      "kind": "bench",
+      "gx": 3.5,
+      "gy": 13.5
+    },
+    {
+      "id": "downtown-flowers-14",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 13.5
+    },
+    {
+      "id": "downtown-flowers-15",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 15.5
+    },
+    {
+      "id": "downtown-planter-16",
+      "kind": "planter",
+      "gx": 8.5,
+      "gy": 15.5
+    },
+    {
+      "id": "downtown-lamp-17",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 16.5
+    },
+    {
+      "id": "downtown-planter-18",
+      "kind": "planter",
+      "gx": 5.5,
+      "gy": 16.5
+    },
+    {
+      "id": "downtown-planter-19",
+      "kind": "planter",
+      "gx": 7.5,
+      "gy": 16.5
+    },
+    {
+      "id": "downtown-lamp-20",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 16.5
+    },
+    {
+      "id": "downtown-planter-21",
+      "kind": "planter",
+      "gx": 13.5,
+      "gy": 16.5
+    },
+    {
+      "id": "downtown-lamp-22",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 16.5
+    },
+    {
+      "id": "downtown-flowers-23",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 17.5
+    },
+    {
+      "id": "downtown-lamp-24",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 19.5
+    },
+    {
+      "id": "downtown-planter-25",
+      "kind": "planter",
+      "gx": 5.5,
+      "gy": 19.5
+    },
+    {
+      "id": "downtown-lamp-26",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 19.5
+    },
+    {
+      "id": "downtown-lamp-27",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 19.5
+    },
+    {
+      "id": "downtown-lamp-28",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 19.5
+    },
+    {
+      "id": "downtown-flowers-29",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 20.5
+    },
+    {
+      "id": "downtown-planter-30",
+      "kind": "planter",
+      "gx": 3.5,
+      "gy": 21.5
+    },
+    {
+      "id": "downtown-planter-31",
+      "kind": "planter",
+      "gx": 8.5,
+      "gy": 21.5
+    },
+    {
+      "id": "downtown-planter-32",
+      "kind": "planter",
+      "gx": 16.5,
+      "gy": 21.5
+    },
+    {
+      "id": "downtown-lamp-33",
+      "kind": "lamp",
+      "gx": 3.5,
       "gy": 24.5
+    },
+    {
+      "id": "downtown-lamp-34",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 24.5
+    },
+    {
+      "id": "downtown-lamp-35",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 24.5
+    },
+    {
+      "id": "downtown-bench-36",
+      "kind": "bench",
+      "gx": 15.5,
+      "gy": 24.5
+    },
+    {
+      "id": "downtown-lamp-37",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 27.5
+    },
+    {
+      "id": "downtown-bench-38",
+      "kind": "bench",
+      "gx": 6.5,
+      "gy": 27.5
+    },
+    {
+      "id": "downtown-lamp-39",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 27.5
+    },
+    {
+      "id": "downtown-lamp-40",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 27.5
+    },
+    {
+      "id": "downtown-lamp-41",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 27.5
+    },
+    {
+      "id": "downtown-flowers-42",
+      "kind": "flowers",
+      "gx": 19.5,
+      "gy": 27.5
+    },
+    {
+      "id": "downtown-flowers-43",
+      "kind": "flowers",
+      "gx": 19.5,
+      "gy": 29.5
+    },
+    {
+      "id": "downtown-flowers-44",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 31.5
+    },
+    {
+      "id": "downtown-flowers-45",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 33.5
+    },
+    {
+      "id": "downtown-bench-46",
+      "kind": "bench",
+      "gx": 16.5,
+      "gy": 34.5
+    },
+    {
+      "id": "downtown-lamp-47",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 36.5
+    },
+    {
+      "id": "downtown-lamp-48",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 36.5
+    },
+    {
+      "id": "downtown-lamp-49",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 36.5
+    },
+    {
+      "id": "downtown-bench-50",
+      "kind": "bench",
+      "gx": 14.5,
+      "gy": 36.5
+    },
+    {
+      "id": "downtown-lamp-51",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 36.5
+    },
+    {
+      "id": "downtown-flowers-52",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 37.5
+    },
+    {
+      "id": "downtown-flowers-53",
+      "kind": "flowers",
+      "gx": 8.5,
+      "gy": 39.5
+    },
+    {
+      "id": "downtown-flowers-54",
+      "kind": "flowers",
+      "gx": 10.5,
+      "gy": 39.5
+    },
+    {
+      "id": "downtown-flowers-55",
+      "kind": "flowers",
+      "gx": 16.5,
+      "gy": 39.5
+    },
+    {
+      "id": "downtown-flowers-56",
+      "kind": "flowers",
+      "gx": 19.5,
+      "gy": 39.5
     }
   ],
   "walkers": [
@@ -517,37 +867,38 @@
       "id": "walker-1",
       "look": "walkerRed",
       "from": {
-        "gx": 3.5,
-        "gy": 4.5
+        "gx": 4.5,
+        "gy": 5.5
       },
       "to": {
-        "gx": 3.5,
-        "gy": 6.5
+        "gx": 4.5,
+        "gy": 7.5
       }
     },
     {
       "id": "walker-2",
       "look": "walkerGreen",
       "from": {
-        "gx": 9.5,
-        "gy": 12.5
+        "gx": 12.5,
+        "gy": 15.5
       },
       "to": {
-        "gx": 12.5,
-        "gy": 12.5
+        "gx": 15.5,
+        "gy": 15.5
       }
     },
     {
       "id": "walker-5",
       "look": "walkerBlue",
       "from": {
-        "gx": 3.5,
-        "gy": 21.5
+        "gx": 4.5,
+        "gy": 28.5
       },
       "to": {
-        "gx": 3.5,
-        "gy": 28.5
+        "gx": 4.5,
+        "gy": 35.5
       }
     }
-  ]
+  ],
+  "perches": []
 }
