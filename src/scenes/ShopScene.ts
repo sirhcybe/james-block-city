@@ -56,10 +56,16 @@ export class ShopScene extends Phaser.Scene {
     this.closed = false;
     this.add.rectangle(0, 0, GAME_W, GAME_H, 0xffe9b0, 0.95).setOrigin(0, 0);
     const g = this.add.graphics();
+    // The shop awning: stripes that each end in a round scallop, with the outline under it.
+    g.fillStyle(PALETTE.outline, 1);
+    for (let x = 0; x < GAME_W; x += 80) g.fillEllipse(x + 40, 30, 88, 44);
     for (let x = 0; x < GAME_W; x += 80) {
-      g.fillStyle((x / 80) % 2 ? 0xffffff : 0xe63946, 1);
-      g.fillRect(x, 0, 80, 40);
+      const c = (x / 80) % 2 ? 0xffffff : 0xe63946;
+      g.fillStyle(c, 1);
+      g.fillRect(x, 0, 80, 30);
+      g.fillEllipse(x + 40, 30, 80, 36);
     }
+    g.fillStyle(0x000000, 0.08).fillRect(0, 0, GAME_W, 10);
 
     // Picture tabs.
     TABS.forEach(({ tab, icon }, i) => {

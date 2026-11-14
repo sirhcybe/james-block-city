@@ -23,8 +23,13 @@ export class GalleryScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0).setBackgroundColor(0xe8ecf3);
-    if (new URLSearchParams(location.search).get('gallery') === 'vehicles') {
+    const which = new URLSearchParams(location.search).get('gallery');
+    if (which === 'vehicles') {
       this.vehicles();
+      return;
+    }
+    if (which === 'all') {
+      this.all();
       return;
     }
 
@@ -70,6 +75,40 @@ export class GalleryScene extends Phaser.Scene {
           .setScale(1 / WT);
       }
     });
+  }
+
+  /**
+   * `?gallery=all` (spec 009): every baked texture in a grid with its key, for checking the art by
+   * eye. Scroll with the wheel, the arrow keys or by dragging. `&find=<text>` filters by key.
+   */
+  private all(): void {
+    const find = new URLSearchParams(location.search).get('find') ?? '';
+    const keys = this.textures
+      .getTextureKeys()
+      .filter((k) => !k.startsWith('ground:') && k.includes(find))
+      .sort();
+    const cell = 160;
+    const cols = Math.floor(1280 / cell);
+    keys.forEach((key, i) => {
+      const x = (i % cols) * cell + cell / 2;
+      const y = Math.floor(i / cols) * (cell + 18) + cell / 2 + 6;
+      const src = this.textures.get(key).getSourceImage();
+      const k = Math.min(1, (cell - 20) / src.width, (cell - 20) / src.height);
+      this.add.image(x, y, key).setScale(k);
+      this.add
+        .text(x, y + cell / 2 - 2, key.slice(0, 26), { fontSize: '11px', color: '#2b2d42' })
+        .setOrigin(0.5, 0);
+    });
+    const cam = this.cameras.main;
+    const rows = Math.ceil(keys.length / cols);
+    const max = Math.max(0, rows * (cell + 18) - 720);
+    const scroll = (dy: number) => (cam.scrollY = Phaser.Math.Clamp(cam.scrollY + dy, 0, max));
+    this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => scroll(dy));
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+      if (p.isDown) scroll((p.prevPosition.y - p.y) / RS);
+    });
+    this.input.keyboard?.on('keydown-DOWN', () => scroll(240));
+    this.input.keyboard?.on('keydown-UP', () => scroll(-240));
   }
 
   /** `?gallery=vehicles`: every vehicle in all 8 headings (lights on for the police ones). */

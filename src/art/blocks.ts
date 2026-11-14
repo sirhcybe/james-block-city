@@ -12,7 +12,7 @@ import {
   type OrientedBox,
   type OrientedFace,
 } from './isoShapes';
-import { bakeGraphics, type Ctx } from './bake';
+import { softCanvas, type Ctx } from './bake';
 import { WT } from './renderScale';
 
 export interface BlockStyle {
@@ -328,13 +328,14 @@ export function bakeParts(scene: Phaser.Scene, key: string, parts: Part[], s = W
   const height = Math.ceil(bb.maxY - bb.minY + pad * 2);
 
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
-  const tex = bakeGraphics(scene, g, key, width, height);
+  const tex = softCanvas(scene, key, width, height);
   const ctx = tex.getContext();
   let pending = false;
   // Graphics commands are drawn when flushed, so flush before each canvas part to keep the order.
+  // Flushing draws into the canvas itself; the texture is uploaded once, at the end.
   const flush = () => {
     if (!pending) return;
-    g.generateTexture(key, width, height);
+    g.generateTexture(tex.canvas, width, height);
     g.clear();
     pending = false;
   };

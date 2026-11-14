@@ -3,6 +3,7 @@ import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
 import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
+import { addScenery, paneTexture, wallTexture } from '../art/scenery';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { WindowSplashModel, type WSEvent } from '../systems/fireMinigames';
 import { drawBackdrop, MinigameScene } from './minigameKit';
@@ -55,15 +56,14 @@ export class WindowSplashScene extends MinigameScene {
 
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
-    const g = this.add.graphics();
     drawBackdrop(this);
-    // The tower front.
-    g.fillStyle(0xf4f6fa, 1).fillRect(X0 - 140, 100, W * COLS + 100, GAME_H);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRect(X0 - 140, 100, W * COLS + 100, GAME_H);
+    // The tower front, then a framed window in every cell.
+    const wallW = W * COLS + 100;
+    addScenery(this, wallTexture(this, wallW, GAME_H, PALETTE.harborTeal), X0 - 140, 100);
+    const pane = paneTexture(this, 140, 110);
     for (let i = 0; i < 9; i++) {
       const c = this.cell(i);
-      g.fillStyle(PALETTE.windowBlue, 1).fillRect(c.x - 70, c.y - 55, 140, 110);
-      g.lineStyle(5, PALETTE.outline, 1).strokeRect(c.x - 70, c.y - 55, 140, 110);
+      addScenery(this, pane, c.x - 70, c.y - 55);
       this.soot.push(this.add.rectangle(c.x, c.y, 136, 106, 0x2b2d42, 0));
       const img = this.add.image(c.x, c.y + 10, iconKey('flame')).setScale(0);
       this.flames.push(img);

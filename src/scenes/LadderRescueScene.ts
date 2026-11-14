@@ -3,6 +3,7 @@ import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
 import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
+import { addScenery, fireTruckTexture, paneTexture, TRUCK_H, wallTexture } from '../art/scenery';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { LadderRescueModel, LR, type LREvent } from '../systems/fireMinigames';
 import { drawBackdrop, MinigameScene } from './minigameKit';
@@ -53,27 +54,38 @@ export class LadderRescueScene extends MinigameScene {
 
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
-    const g = this.add.graphics();
     drawBackdrop(this);
+    const g = this.add.graphics();
+    // Grass with a darker lip along the top, so the ground has an edge.
     g.fillStyle(PALETTE.grass, 1).fillRect(0, GROUND, GAME_W, GAME_H - GROUND);
+    g.fillStyle(0x5fb845, 1).fillRect(0, GROUND, GAME_W, 6);
     // The tower with a window per floor.
-    g.fillStyle(0xf4f6fa, 1).fillRect(TOWER_X - 40, this.floorY(LR.floors + 0.6), 300, GROUND);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRect(
+    const top = this.floorY(LR.floors + 0.55);
+    addScenery(
+      this,
+      wallTexture(this, 300, GROUND - top, PALETTE.policeBlue, 20),
       TOWER_X - 40,
-      this.floorY(LR.floors + 0.6),
-      300,
-      GROUND,
+      top,
     );
-    for (let f = 1; f <= LR.floors; f++) {
-      g.fillStyle(PALETTE.windowBlue, 1).fillRect(TOWER_X, this.floorY(f) - 22, 80, 44);
-      g.lineStyle(4, PALETTE.outline, 1).strokeRect(TOWER_X, this.floorY(f) - 22, 80, 44);
-    }
-    // The fire truck at the bottom.
-    g.fillStyle(PALETTE.fireRed, 1).fillRoundedRect(LADDER_X - 160, GROUND - 70, 260, 70, 14);
-    g.lineStyle(5, PALETTE.outline, 1).strokeRoundedRect(LADDER_X - 160, GROUND - 70, 260, 70, 14);
-    g.fillStyle(PALETTE.outline, 1)
-      .fillCircle(LADDER_X - 100, GROUND, 22)
-      .fillCircle(LADDER_X + 50, GROUND, 22);
+    const pane = paneTexture(this, 80, 44);
+    for (let f = 1; f <= LR.floors; f++) addScenery(this, pane, TOWER_X, this.floorY(f) - 22);
+    // A door at the foot of the tower.
+    const door = this.add.graphics();
+    door.fillStyle(PALETTE.policeBlue, 1).fillRoundedRect(TOWER_X + 150, GROUND - 74, 54, 74, {
+      tl: 10,
+      tr: 10,
+      bl: 0,
+      br: 0,
+    });
+    door.lineStyle(5, PALETTE.outline, 1).strokeRoundedRect(TOWER_X + 150, GROUND - 74, 54, 74, {
+      tl: 10,
+      tr: 10,
+      bl: 0,
+      br: 0,
+    });
+    door.fillStyle(PALETTE.coinGold, 1).fillCircle(TOWER_X + 192, GROUND - 36, 5);
+    // The fire truck at the bottom: its deck is where the ladder stands.
+    addScenery(this, fireTruckTexture(this), LADDER_X - 170, GROUND + 22 - TRUCK_H);
 
     this.ladder = this.add.graphics();
     this.cat = this.add.image(TOWER_X + 40, this.floorY(1), iconKey('kitten')).setScale(0.55 / RS);
@@ -105,7 +117,7 @@ export class LadderRescueScene extends MinigameScene {
       this.tweens.add({
         targets: this.cat,
         x: LADDER_X,
-        y: GROUND - 80,
+        y: GROUND - 70,
         duration: 600,
         ease: 'Quad.easeIn',
       });
@@ -135,7 +147,7 @@ export class LadderRescueScene extends MinigameScene {
    */
   private drawLadder(): void {
     const x0 = LADDER_X;
-    const y0 = GROUND - 70;
+    const y0 = GROUND - 56;
     const x1 = TOWER_X - 42;
     // Never lower than the truck deck, so even at rest it points up the wall.
     const y1 = Math.min(y0 - 20, this.floorY(this.model.height));
@@ -161,7 +173,8 @@ export class LadderRescueScene extends MinigameScene {
     rails(7, 0xe4e7ee);
     // A turntable on the truck that the ladder pivots on.
     g.fillStyle(PALETTE.outline, 1).fillCircle(x0, y0, 16);
-    g.fillStyle(0xe4e7ee, 1).fillCircle(x0, y0, 10);
+    g.fillStyle(0xe4e7ee, 1).fillCircle(x0, y0, 11);
+    g.fillStyle(PALETTE.outline, 1).fillCircle(x0, y0, 4);
   }
 
   /** Test hook: raise to the cat and let go. */

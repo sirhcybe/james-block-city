@@ -5,6 +5,7 @@ import { HUD } from '../art/hud';
 import type { IconName } from '../art/icons';
 import { iconKey, MENU } from '../art/menu';
 import { RS } from '../art/renderScale';
+import { addScenery, paneTexture } from '../art/scenery';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { ApartmentLayout, ROOM } from '../systems/apartment';
 import type { GameState } from '../systems/GameState';
@@ -51,16 +52,36 @@ export class ApartmentScene extends Phaser.Scene {
     const g = this.add.graphics();
     g.fillStyle(0xc98b5a, 1).fillRect(0, 0, GAME_W, GAME_H);
     g.fillStyle(0xfde8d0, 1).fillRect(0, 0, GAME_W, FLOOR.y);
-    // Wallpaper stripes and a window.
+    // Wallpaper stripes, a skirting board, and a window with curtains.
     for (let x = 0; x < GAME_W; x += 60) g.fillStyle(0xf9dcc0, 1).fillRect(x, 0, 30, FLOOR.y);
-    g.fillStyle(PALETTE.windowBlue, 1).fillRect(GAME_W / 2 + 140, 50, 220, 140);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRect(GAME_W / 2 + 140, 50, 220, 140);
-    g.lineBetween(GAME_W / 2 + 250, 50, GAME_W / 2 + 250, 190);
+    g.fillStyle(0xfff7ec, 1).fillRect(0, FLOOR.y - 16, GAME_W, 16);
+    g.lineStyle(4, PALETTE.outline, 1).lineBetween(0, FLOOR.y - 16, GAME_W, FLOOR.y - 16);
+    const wx = GAME_W / 2 + 140;
+    addScenery(this, paneTexture(this, 220, 140), wx, 50);
+    const drapes = this.add.graphics();
+    for (const dx of [wx - 34, wx + 220 - 16]) {
+      drapes.fillStyle(PALETTE.fireRed, 1).fillRoundedRect(dx, 40, 50, 170, 12);
+      drapes
+        .fillStyle(0xc22f3b, 1)
+        .fillRect(dx + 16, 46, 8, 158)
+        .fillRect(dx + 34, 46, 8, 158);
+      drapes.lineStyle(5, PALETTE.outline, 1).strokeRoundedRect(dx, 40, 50, 170, 12);
+    }
+    drapes.lineStyle(12, PALETTE.outline, 1).lineBetween(wx - 50, 38, wx + 270, 38);
+    drapes.lineStyle(6, PALETTE.coinGold, 1).lineBetween(wx - 48, 38, wx + 268, 38);
     // Floor squares (wood).
     for (let gy = 0; gy < ROOM.rows; gy++)
       for (let gx = 0; gx < ROOM.cols; gx++) {
         g.fillStyle((gx + gy) % 2 ? 0xd9a066 : 0xe2b07a, 1);
         g.fillRect(FLOOR.x + gx * CELL_W, FLOOR.y + gy * CELL_H, CELL_W, CELL_H);
+      }
+    // Plank seams, then the edge of the floor.
+    g.lineStyle(2, 0xc48d55, 1);
+    for (let gy = 0; gy < ROOM.rows; gy++)
+      for (let gx = 0; gx < ROOM.cols; gx++) {
+        const fx = FLOOR.x + gx * CELL_W;
+        const fy = FLOOR.y + gy * CELL_H;
+        g.lineBetween(fx + CELL_W / 2, fy + 4, fx + CELL_W / 2, fy + CELL_H - 4);
       }
     g.lineStyle(6, PALETTE.outline, 1).strokeRect(
       FLOOR.x,
@@ -72,8 +93,25 @@ export class ApartmentScene extends Phaser.Scene {
     g.fillStyle(0xffffff, 0.8).fillRoundedRect(200, TRAY_Y - 60, GAME_W - 260, 120, 20);
     g.lineStyle(5, PALETTE.outline, 1).strokeRoundedRect(200, TRAY_Y - 60, GAME_W - 260, 120, 20);
     // Hat stand (left).
-    g.lineStyle(10, PALETTE.trunk, 1).lineBetween(110, 140, 110, 560);
-    g.lineBetween(70, 560, 150, 560);
+    // Outline pass first, then the wood, so the stand is one outlined shape: pole, foot, hooks.
+    const stand: [number, number, number, number][] = [
+      [110, 140, 110, 560],
+      [66, 560, 154, 560],
+      [110, 170, 82, 148],
+      [110, 170, 138, 148],
+    ];
+    for (const [w, c] of [
+      [18, PALETTE.outline],
+      [10, PALETTE.trunk],
+    ] as const) {
+      g.lineStyle(w, c, 1);
+      for (const [x0, y0, x1, y1] of stand) g.lineBetween(x0, y0, x1, y1);
+      const r = w / 2;
+      g.fillStyle(c, 1);
+      for (const [x0, y0, x1, y1] of stand) g.fillCircle(x0, y0, r).fillCircle(x1, y1, r);
+    }
+    g.fillStyle(PALETTE.coinGold, 1).fillCircle(110, 134, 9);
+    g.lineStyle(4, PALETTE.outline, 1).strokeCircle(110, 134, 9);
 
     const back = this.add
       .image(90, GAME_H - 70, MENU.back)

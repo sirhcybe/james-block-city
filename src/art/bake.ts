@@ -7,7 +7,7 @@ export type Ctx = CanvasRenderingContext2D;
  * made here first so its lines get rounded joins and caps: corners never spike and line ends never
  * stop short of the shape they belong to.
  */
-function softCanvas(
+export function softCanvas(
   scene: Phaser.Scene,
   key: string,
   w: number,
@@ -35,7 +35,9 @@ export function bakeGraphics(
   h: number,
 ): Phaser.Textures.CanvasTexture {
   const tex = softCanvas(scene, key, w, h);
-  g.generateTexture(key, tex.width, tex.height);
+  // Drawing into the canvas itself (not by key) skips Phaser's upload; one upload at the end.
+  g.generateTexture(tex.canvas, tex.width, tex.height);
+  tex.refresh();
   return tex;
 }
 
