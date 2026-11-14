@@ -8,6 +8,7 @@ import { bakeGround } from '../art/ground';
 import { bakeHud } from '../art/hud';
 import { bakeMinigameArt } from '../art/minigame';
 import { bakeProps } from '../art/props';
+import { bakeSeaArt } from '../art/boats';
 import { bakeUi } from '../art/ui';
 import { bakeMenuArt } from '../art/menu';
 import { bakeMissionProps } from '../art/missionProps';
@@ -59,6 +60,7 @@ export class BootScene extends Phaser.Scene {
     for (const v of ALL_VEHICLES) bakeVehicle(this, v);
     bakeProps(this);
     bakeMissionProps(this);
+    bakeSeaArt(this);
     bakeMenuArt(this);
     bakeUi(this);
     bakeHud(this);

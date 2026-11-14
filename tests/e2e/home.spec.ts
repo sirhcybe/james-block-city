@@ -144,8 +144,11 @@ test('Own car: after a badge, buy it, paint it, and drive it as a firefighter', 
     };
     c.state.switchJob('fire');
   });
-  await page.evaluate(() => window.__jbc!.ride('own-car'));
-  await expect.poll(async () => (await st(page)).riding, LONG).toBe('own-car');
+  // The car appears a moment after the Shop closes: keep trying to hop in until it's there.
+  await until(
+    page,
+    `(() => { window.__jbc.ride('own-car'); return window.__jbc.player().riding === 'own-car'; })()`,
+  );
   const key = await page.evaluate(() => {
     const c = window.__jbc!.game.scene.getScene('City') as unknown as {
       ownCar: { img: { texture: { key: string } } };

@@ -1,15 +1,14 @@
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
-import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { BlockStackModel, type BSEvent } from '../systems/builderMinigames';
-import { BIG_TEXT, MinigameScene } from './minigameKit';
+import { drawBackdrop, MinigameScene } from './minigameKit';
 
 const GROUND = 660;
 const BLOCK_H = 46;
-const HOOK_Y = 150;
+const HOOK_Y = 176;
 const COLORS = [PALETTE.fireRed, PALETTE.builderYellow, PALETTE.harborTeal, PALETTE.policeBlue];
 
 /**
@@ -22,7 +21,6 @@ export class BlockStackScene extends MinigameScene {
   private hanging!: Phaser.GameObjects.Rectangle;
   private rope!: Phaser.GameObjects.Graphics;
   private stack!: Phaser.GameObjects.Container;
-  private scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('BlockStack');
@@ -43,7 +41,7 @@ export class BlockStackScene extends MinigameScene {
   override init(data: { id?: string; plays?: number; durationSec?: number }): void {
     super.init(data);
     this.model = new BlockStackModel(
-      data.durationSec ?? this.def.durationSec,
+      this.durationSec,
       this.plays,
       this.def.difficultyStepPerReplay,
     );
@@ -52,10 +50,10 @@ export class BlockStackScene extends MinigameScene {
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
     const g = this.add.graphics();
-    g.fillStyle(0x9fd8f5, 1).fillRect(0, 0, GAME_W, GAME_H);
+    drawBackdrop(this, 'site');
     // The crane jib across the top.
-    g.fillStyle(PALETTE.builderYellow, 1).fillRect(100, 60, GAME_W - 200, 30);
-    g.lineStyle(5, PALETTE.outline, 1).strokeRect(100, 60, GAME_W - 200, 30);
+    g.fillStyle(PALETTE.builderYellow, 1).fillRect(250, 92, GAME_W - 350, 24);
+    g.lineStyle(5, PALETTE.outline, 1).strokeRect(250, 92, GAME_W - 350, 24);
     this.stack = this.add.container(GAME_W / 2, 0);
     const ground = this.add
       .rectangle(0, GROUND, 360, 30, 0xb98a5a)
@@ -65,8 +63,7 @@ export class BlockStackScene extends MinigameScene {
     this.hanging = this.add
       .rectangle(GAME_W / 2, HOOK_Y, 150, BLOCK_H, COLORS[0]!)
       .setStrokeStyle(4, PALETTE.outline);
-    this.add.image(60, 50, iconKey('crane')).setScale(0.45 / RS);
-    this.scoreText = this.add.text(100, 50, '0', BIG_TEXT).setOrigin(0, 0.5);
+    this.addTopBar('crane');
     voice.say('bs-intro', { interrupt: true });
     this.input.on('pointerdown', () => this.handle(this.model.drop()));
     this.input.keyboard?.on('keydown-SPACE', () => this.handle(this.model.drop()));
@@ -97,7 +94,7 @@ export class BlockStackScene extends MinigameScene {
             .setStrokeStyle(4, PALETTE.outline);
           this.stack.add(b);
           sfx.play('thunk');
-          this.scoreText.setText(`${this.model.score}`);
+          this.good(x, y - 40);
           // Scroll the tower down so the top stays in view.
           const want = Math.max(0, (e.height - 6) * BLOCK_H);
           this.tweens.add({ targets: this.stack, y: want, duration: 300 });
@@ -116,6 +113,7 @@ export class BlockStackScene extends MinigameScene {
       });
       sfx.play('boing', 1.2, 0.6);
       voice.say('bs-bounce', { minGapMs: 4000 });
+      this.oops();
     }
   }
 
@@ -128,6 +126,7 @@ export class BlockStackScene extends MinigameScene {
     this.rope
       .clear()
       .lineStyle(4, PALETTE.outline, 1)
-      .lineBetween(x, 90, x, HOOK_Y - BLOCK_H / 2);
+      .lineBetween(x, 116, x, HOOK_Y - BLOCK_H / 2);
+    this.model.level = this.syncTopBar(this.model.elapsed, this.model.durationSec);
   }
 }

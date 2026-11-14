@@ -1,3 +1,4 @@
+import { isJobMission } from '../systems/missions';
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
@@ -130,7 +131,7 @@ export class GrownUpScene extends Phaser.Scene {
 
   unlockAll(): void {
     const state = this.registry.get(STATE_KEY) as GameState;
-    const ids = state.content.missions.filter((m) => m.tier !== 'finale').map((m) => m.id);
+    const ids = state.content.missions.filter(isJobMission).map((m) => m.id);
     const u = unlockEverything(ids);
     state.save.update((s) => {
       for (const b of u.badges) if (!s.badges.includes(b)) s.badges.push(b);

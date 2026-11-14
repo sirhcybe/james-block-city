@@ -33,7 +33,7 @@ const KEYS: Record<string, { x: number; y: number }> = {
 
 describe('LaneDriver road assist', () => {
   it('never leaves the road whatever the stick does (curves and spins included)', () => {
-    const car = new LaneDriver(graph, graph.get(5, 8)!, { x: 1, y: 0 });
+    const car = new LaneDriver(graph, graph.get(7, 10)!, { x: 1, y: 0 });
     let seed = 3;
     const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
     let stick = { x: 1, y: 0 };
@@ -45,13 +45,13 @@ describe('LaneDriver road assist', () => {
   });
 
   it('drives on the right-hand lane', () => {
-    const car = new LaneDriver(graph, graph.get(4, 8)!, { x: 1, y: 0 });
+    const car = new LaneDriver(graph, graph.get(6, 10)!, { x: 1, y: 0 });
     for (let i = 0; i < 30; i++) car.update(DT, { stick: along(1, 0) });
-    expect(car.pos.y).toBeCloseTo(8.5, 1); // heading +gx: lane is +gy of the centre line
+    expect(car.pos.y).toBeCloseTo(10.5, 1); // heading +gx: lane is +gy of the centre line
   });
 
   it('turns at the intersection toward the stick, on a curve', () => {
-    const car = new LaneDriver(graph, graph.get(7, 8)!, { x: 1, y: 0 });
+    const car = new LaneDriver(graph, graph.get(9, 10)!, { x: 1, y: 0 });
     const south = along(0, 1);
     let curved = false;
     for (let i = 0; i < 50; i++) {
@@ -59,14 +59,14 @@ describe('LaneDriver road assist', () => {
       const a = car.headingAngle;
       if (a > 0.2 && a < Math.PI / 2 - 0.2) curved = true; // between east and south
     }
-    // Came along y=8 eastwards, turned south at the (8,8) crossing.
-    expect(car.centre.x).toBeCloseTo(8, 5);
-    expect(car.centre.y).toBeGreaterThan(9);
+    // Came along y=10 eastwards, turned south at the (10,10) crossing.
+    expect(car.centre.x).toBeCloseTo(10, 5);
+    expect(car.centre.y).toBeGreaterThan(11);
     expect(curved).toBe(true);
   });
 
   it('stops without input and spins round when the stick points back', () => {
-    const car = new LaneDriver(graph, graph.get(4, 8)!, { x: 1, y: 0 });
+    const car = new LaneDriver(graph, graph.get(6, 10)!, { x: 1, y: 0 });
     for (let i = 0; i < 60; i++) car.update(DT, { stick: along(1, 0) });
     for (let i = 0; i < 60; i++) car.update(DT, { stick: null });
     expect(car.speed).toBe(0);
@@ -79,22 +79,22 @@ describe('LaneDriver road assist', () => {
   });
 
   it('tap-to-go follows the roads to the nearest node and stops there', () => {
-    const car = new LaneDriver(graph, graph.get(5, 8)!, { x: 1, y: 0 });
-    expect(car.goToward({ x: 24, y: 14 })).toBe(true);
+    const car = new LaneDriver(graph, graph.get(7, 10)!, { x: 1, y: 0 });
+    expect(car.goToward({ x: 31, y: 18 })).toBe(true);
     for (let i = 0; i < 60 * 20 && (car.following || car.speed > 0); i++) {
       car.update(DT, { stick: null });
       expect(isRoadAt(car.pos)).toBe(true);
     }
-    expect(Math.round(car.centre.x)).toBe(24);
-    expect(Math.round(car.centre.y)).toBe(14);
+    expect(Math.round(car.centre.x)).toBe(31);
+    expect(Math.round(car.centre.y)).toBe(18);
   });
 
   it('AC2: at a crossing an arrow key between two roads keeps going straight', () => {
-    // Heading +gx (down-right on screen) into the (8,8) crossing, holding Right: the options
+    // Heading +gx (down-right on screen) into the (10,10) crossing, holding Right: the options
     // down-right (straight) and up-right are equally close to Right on screen. Straight wins.
-    const car = new LaneDriver(graph, graph.get(6, 8)!, { x: 1, y: 0 });
+    const car = new LaneDriver(graph, graph.get(8, 10)!, { x: 1, y: 0 });
     for (let i = 0; i < 90; i++) car.update(DT, { stick: KEYS.right! });
-    expect(car.from.x).toBeGreaterThanOrEqual(8);
+    expect(car.from.x).toBeGreaterThanOrEqual(10);
     expect(car.dir).toEqual({ x: 1, y: 0 });
   });
 });

@@ -49,8 +49,10 @@ export class WhoTookItModel {
   elapsed = 0;
   round: Round | null = null;
   finished = false;
-  readonly clueScale: number;
-  readonly shuffleAfter: number;
+  private readonly baseClue: number;
+  private readonly baseShuffle: number;
+  /** Level inside the round (the scene sets it): smaller clues, and from level 3 they shuffle. */
+  level = 1;
   private betweenLeft = 0;
   private sinceRound = 0;
   private shuffled = false;
@@ -62,9 +64,20 @@ export class WhoTookItModel {
     private readonly rand: () => number = Math.random,
   ) {
     const d = Math.min(1, plays * step);
-    this.clueScale = WTI.clueScale - (WTI.clueScale - WTI.minClueScale) * d;
+    this.baseClue = WTI.clueScale - (WTI.clueScale - WTI.minClueScale) * d;
     // First plays: no shuffling. Later: they shuffle after a while, sooner each replay.
-    this.shuffleAfter = plays === 0 ? 0 : Math.max(WTI.minShuffleAfter, 9 - plays * 1.5);
+    this.baseShuffle = plays === 0 ? 0 : Math.max(WTI.minShuffleAfter, 9 - plays * 1.5);
+  }
+
+  get clueScale(): number {
+    return Math.max(WTI.minClueScale, this.baseClue * (1 - 0.07 * (this.level - 1)));
+  }
+
+  /** Seconds before the line-up shuffles (0 = never). */
+  get shuffleAfter(): number {
+    if (this.baseShuffle > 0)
+      return Math.max(WTI.minShuffleAfter, this.baseShuffle - (this.level - 1));
+    return this.level >= 3 ? Math.max(WTI.minShuffleAfter, 9 - this.level) : 0;
   }
 
   /** Start the next line-up. */

@@ -6,6 +6,7 @@ import { UI } from '../art/ui';
 import { GAME_H, GAME_W } from '../config';
 import type { InputMapper } from '../input/InputMapper';
 import type { GameState } from '../systems/GameState';
+import { arrowPlace } from '../systems/guide';
 import {
   EV,
   HUD_HIT_KEY,
@@ -19,6 +20,8 @@ import {
 const ACTION_POS = { x: GAME_W - 110, y: GAME_H - 110 };
 const SIREN_POS = { x: GAME_W - 110, y: GAME_H - 270 };
 const UNIFORM_POS = { x: GAME_W - 80, y: 70 };
+/** The objective arrow keeps clear of the coin counter and the buttons. */
+const ARROW_MARGIN = { left: 70, right: 230, top: 120, bottom: 70 };
 
 /**
  * Screen-space overlay: coin counter (icon + number), carried donuts, the big Action button,
@@ -40,6 +43,8 @@ export class HudScene extends Phaser.Scene {
   private state!: GameState;
   private shownCoins = 0;
   private lastAction: HudInfo['action'] | null = null;
+  private tracker!: Phaser.GameObjects.Graphics;
+  private trackerSig = '';
 
   constructor() {
     super('Hud');
@@ -73,6 +78,10 @@ export class HudScene extends Phaser.Scene {
       .text(54 + 34, 186, '0', { ...textStyle, fontSize: '36px' })
       .setOrigin(0, 0.5)
       .setVisible(false);
+
+    // Mission tracker (top middle): one dot per step, small dots for a step's parts.
+    this.tracker = this.add.graphics();
+    this.trackerSig = '';
 
     // Badges earned (under the coins).
     this.badges = [];
@@ -344,6 +353,53 @@ export class HudScene extends Phaser.Scene {
     );
   }
 
+  /**
+   * Mission progress (spec 008): a row of dots, one per step. Done steps are gold with a tick,
+   * the step you're on is a white ring, and under it small dots count its parts (flags passed,
+   * fires out, robbers caught). Redrawn only when something changes.
+   */
+  private drawTracker(m: HudInfo['mission']): void {
+    const sig = m ? `${m.goals}:${m.index}:${m.parts}:${m.partsDone}` : '';
+    if (sig === this.trackerSig) return;
+    this.trackerSig = sig;
+    const g = this.tracker;
+    g.clear();
+    if (!m) return;
+    const gap = 46;
+    const x0 = GAME_W / 2 - ((m.goals - 1) * gap) / 2;
+    const y = 40;
+    g.fillStyle(0x2b2d42, 0.3);
+    g.fillRoundedRect(x0 - 32, y - 26, (m.goals - 1) * gap + 64, 52, 26);
+    g.lineStyle(5, 0x2b2d42, 1);
+    if (m.goals > 1) g.lineBetween(x0, y, x0 + (m.goals - 1) * gap, y);
+    for (let i = 0; i < m.goals; i++) {
+      const x = x0 + i * gap;
+      const done = i < m.index;
+      const now = i === m.index;
+      g.fillStyle(done ? 0xffd23f : now ? 0xffffff : 0x9aa0b0, 1);
+      g.fillCircle(x, y, now ? 16 : 13);
+      g.lineStyle(4, 0x2b2d42, 1);
+      g.strokeCircle(x, y, now ? 16 : 13);
+      if (done) {
+        g.lineStyle(4, 0x2b2d42, 1);
+        g.beginPath();
+        g.moveTo(x - 6, y);
+        g.lineTo(x - 1, y + 5);
+        g.lineTo(x + 7, y - 5);
+        g.strokePath();
+      }
+    }
+    if (m.parts > 1) {
+      const px = x0 + m.index * gap - ((m.parts - 1) * 20) / 2;
+      for (let i = 0; i < m.parts; i++) {
+        g.fillStyle(i < m.partsDone ? 0x7bd35a : 0xffffff, 1);
+        g.fillCircle(px + i * 20, y + 38, 7);
+        g.lineStyle(3, 0x2b2d42, 1);
+        g.strokeCircle(px + i * 20, y + 38, 7);
+      }
+    }
+  }
+
   update(): void {
     const info = this.registry.get(HUD_INFO_KEY) as HudInfo | undefined;
     const js = this.mapper()?.joystick;
@@ -379,18 +435,23 @@ export class HudScene extends Phaser.Scene {
     this.uniform.setVisible(this.state.progress.badges.length >= 3);
     this.siren.setTexture(info.sirenOn ? HUD.sirenOn : HUD.siren);
 
+    this.drawTracker(info.mission);
+
     const donuts = info.donuts > 0;
     this.donutIcon.setVisible(donuts);
     this.donutText.setVisible(donuts).setText(`${info.donuts}`);
 
     if (info.hint) {
-      const x = Phaser.Math.Clamp(info.hint.x, 50, GAME_W - 50);
-      const y = Phaser.Math.Clamp(info.hint.y, 100, GAME_H - 20);
-      this.arrow.setVisible(true).setPosition(x, y);
-      // Off-screen targets: tip the arrow toward them.
-      const dx = info.hint.x - x;
-      const dy = info.hint.y - y;
-      this.arrow.setRotation(dx || dy ? Math.atan2(dy, dx) - Math.PI / 2 : 0);
+      // On screen: the arrow bounces above the target. Off screen: it sits on the edge of the
+      // screen (clear of the buttons) and points the way to go.
+      const a = arrowPlace(info.hint, GAME_W, GAME_H, ARROW_MARGIN);
+      const bob = Math.sin(this.time.now / 160) * 8;
+      if (a.onScreen) this.arrow.setPosition(a.x, a.y - 6 + bob).setRotation(0);
+      else
+        this.arrow
+          .setPosition(a.x + Math.cos(a.angle) * bob, a.y + Math.sin(a.angle) * bob)
+          .setRotation(a.angle - Math.PI / 2);
+      this.arrow.setVisible(true);
     } else this.arrow.setVisible(false);
   }
 }

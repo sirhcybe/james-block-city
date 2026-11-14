@@ -1,7 +1,7 @@
 {
   "id": "harbor",
-  "width": 16,
-  "height": 32,
+  "width": 18,
+  "height": 40,
   "legend": {
     "g": "grass",
     "r": "road",
@@ -11,139 +11,147 @@
     "w": "water"
   },
   "tiles": [
-    "ggggggggggpwwwww",
-    "rrrrrrrrrrpwwwww",
-    "rrrrrrrrrrpwwwww",
-    "grrsssssrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrsssssrrpwwwww",
-    "rrrrrrrrrrpwwwww",
-    "rrrrrrrrrrpwwwww",
-    "grrsssssrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrspppsrrpwwwww",
-    "grrsssssrrpwwwww",
-    "rrrrrrrrrrpwwwww",
-    "rrrrrrrrrrpwwwww",
-    "grrsssssrrpwwggg",
-    "grrspppsrrpwwggg",
-    "grrspppsrrpwwggg",
-    "grrspppsrrpwwggg",
-    "grrspppsrrpwwggg",
-    "grrspppsrrpwwggg",
-    "grrspppsrrpwwggg",
-    "grrsssssrrpwwggg",
-    "rrrrrrrrrrpwwwww",
-    "rrrrrrrrrrpwwwww",
-    "gggggggggggwwwww"
+    "ggggggggggggpwwwww",
+    "rrrrrrrrrrrrpwwwww",
+    "rrrrrrrrrrrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "rrrrrrrrrrrrpwwwww",
+    "rrrrrrrrrrrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsspppssrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "grrsssssssrrpwwwww",
+    "rrrrrrrrrrrrpwwwww",
+    "rrrrrrrrrrrrpwwwww",
+    "grrsssssssrrpwwggg",
+    "grrsssssssrrpwwggg",
+    "grrsspppssrrpwwggg",
+    "grrsspppssrrpwwggg",
+    "grrsspppssrrpwwggg",
+    "grrsspppssrrpwwggg",
+    "grrsspppssrrpwwggg",
+    "grrsspppssrrpwwggg",
+    "grrsssssssrrpwwggg",
+    "grrsssssssrrpwwggg",
+    "rrrrrrrrrrrrpwwwww",
+    "rrrrrrrrrrrrpwwwww",
+    "gggggggggggggwwwww"
   ],
   "spawn": {
-    "gx": 3.5,
-    "gy": 15.5
+    "gx": 4.5,
+    "gy": 20.5
   },
   "markers": {
     "foreman": {
-      "gx": 3.5,
-      "gy": 15.5
+      "gx": 4.5,
+      "gy": 20.5
     },
     "mixer-truck": {
       "gx": 2,
-      "gy": 8
+      "gy": 10
     },
     "builder-board": {
-      "gx": 4.5,
-      "gy": 18.5
+      "gx": 5.5,
+      "gy": 24.5
     },
     "block-stack": {
-      "gx": 6.5,
-      "gy": 15.5
+      "gx": 7.5,
+      "gy": 19.5
     },
     "copy-the-build": {
-      "gx": 7.5,
-      "gy": 17.5
+      "gx": 9.5,
+      "gy": 22.5
     },
     "cement-pour": {
       "gx": 3.5,
-      "gy": 17.5
+      "gy": 22.5
     },
     "bflag-1": {
-      "gx": 5,
+      "gx": 6,
       "gy": 2
     },
     "bflag-2": {
-      "gx": 9,
-      "gy": 8
+      "gx": 11,
+      "gy": 10
     },
     "bflag-3": {
-      "gx": 5,
-      "gy": 14
+      "gx": 6,
+      "gy": 18
     },
     "practice-wall-at": {
-      "gx": 5,
+      "gx": 6,
       "gy": 2
     },
     "dock-at": {
-      "gx": 9,
-      "gy": 6
+      "gx": 11,
+      "gy": 7
     },
     "lighthouse-at": {
-      "gx": 9,
-      "gy": 23
+      "gx": 11,
+      "gy": 30
     },
     "boat-shop-at": {
-      "gx": 5,
-      "gy": 20
+      "gx": 6,
+      "gy": 26
     },
     "bridge-at": {
-      "gx": 9,
-      "gy": 25
+      "gx": 11,
+      "gy": 32
     },
     "island": {
-      "gx": 14.5,
-      "gy": 25.5
+      "gx": 16.5,
+      "gy": 32.5
     },
     "boat-owner": {
-      "gx": 10.5,
-      "gy": 9.5
-    },
-    "keeper": {
-      "gx": 10.5,
-      "gy": 21.5
-    },
-    "wrench-spot": {
-      "gx": 5.5,
-      "gy": 10.5
-    },
-    "traffic-6": {
-      "gx": 9,
-      "gy": 20
-    },
-    "grandpa": {
-      "gx": 10.5,
-      "gy": 27.5
-    },
-    "fish-spot": {
-      "gx": 10.5,
+      "gx": 12.5,
       "gy": 12.5
     },
+    "keeper": {
+      "gx": 12.5,
+      "gy": 28.5
+    },
+    "wrench-spot": {
+      "gx": 6.5,
+      "gy": 13.5
+    },
+    "traffic-6": {
+      "gx": 11,
+      "gy": 26
+    },
+    "grandpa": {
+      "gx": 12.5,
+      "gy": 34.5
+    },
+    "fish-spot": {
+      "gx": 12.5,
+      "gy": 15.5
+    },
     "shell-spot": {
-      "gx": 14.5,
-      "gy": 27.5
+      "gx": 16.5,
+      "gy": 34.5
     }
   },
   "buildings": [
     {
       "id": "foreman-office",
       "kind": "office",
-      "gx": 4,
-      "gy": 16,
+      "gx": 5,
+      "gy": 21,
       "w": 3,
       "d": 2,
       "h": 1.6,
@@ -152,8 +160,8 @@
     {
       "id": "crane-1",
       "kind": "crane",
-      "gx": 6,
-      "gy": 4,
+      "gx": 7,
+      "gy": 5,
       "w": 1,
       "d": 1,
       "h": 5,
@@ -162,8 +170,8 @@
     {
       "id": "practice-wall",
       "kind": "wall",
-      "gx": 4,
-      "gy": 6,
+      "gx": 5,
+      "gy": 7,
       "w": 3,
       "d": 1,
       "h": 0.8,
@@ -173,8 +181,8 @@
     {
       "id": "dock",
       "kind": "dock",
-      "gx": 11,
-      "gy": 5,
+      "gx": 13,
+      "gy": 6,
       "w": 3,
       "d": 2,
       "h": 0.3,
@@ -184,8 +192,8 @@
     {
       "id": "lighthouse",
       "kind": "lighthouse",
-      "gx": 14,
-      "gy": 23,
+      "gx": 16,
+      "gy": 30,
       "w": 1,
       "d": 1,
       "h": 5,
@@ -195,8 +203,8 @@
     {
       "id": "boat-shop",
       "kind": "boatshop",
-      "gx": 4,
-      "gy": 23,
+      "gx": 5,
+      "gy": 30,
       "w": 3,
       "d": 2,
       "h": 2,
@@ -206,8 +214,8 @@
     {
       "id": "bridge",
       "kind": "bridge",
-      "gx": 11,
-      "gy": 24,
+      "gx": 13,
+      "gy": 31,
       "w": 2,
       "d": 2,
       "h": 0.3,
@@ -218,7 +226,7 @@
       "id": "hb-tree-1",
       "kind": "tree",
       "gx": 0,
-      "gy": 5,
+      "gy": 6,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -228,7 +236,7 @@
       "id": "hb-tree-2",
       "kind": "tree",
       "gx": 0,
-      "gy": 10,
+      "gy": 13,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -238,7 +246,7 @@
       "id": "hb-tree-3",
       "kind": "tree",
       "gx": 0,
-      "gy": 23,
+      "gy": 30,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -248,7 +256,7 @@
       "id": "hb-tree-4",
       "kind": "tree",
       "gx": 0,
-      "gy": 27,
+      "gy": 34,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -257,8 +265,8 @@
     {
       "id": "hb-tree-5",
       "kind": "tree",
-      "gx": 4,
-      "gy": 31,
+      "gx": 5,
+      "gy": 39,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -267,8 +275,8 @@
     {
       "id": "hb-tree-6",
       "kind": "tree",
-      "gx": 13,
-      "gy": 21,
+      "gx": 15,
+      "gy": 28,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -277,8 +285,8 @@
     {
       "id": "hb-tree-7",
       "kind": "tree",
-      "gx": 15,
-      "gy": 27,
+      "gx": 17,
+      "gy": 34,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -289,20 +297,218 @@
     {
       "id": "hb-cone-1",
       "kind": "cone",
-      "gx": 4.2,
-      "gy": 3.5
+      "gx": 5.2,
+      "gy": 4.5
     },
     {
       "id": "hb-cone-2",
       "kind": "cone",
-      "gx": 6.8,
-      "gy": 3.5
+      "gx": 7.8,
+      "gy": 4.5
     },
     {
       "id": "hb-can-1",
       "kind": "trashcan",
-      "gx": 10.5,
+      "gx": 12.5,
+      "gy": 18.5
+    },
+    {
+      "id": "harbor-flowers-0",
+      "kind": "flowers",
+      "gx": 11.5,
+      "gy": 0.5
+    },
+    {
+      "id": "harbor-lamp-1",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 3.5
+    },
+    {
+      "id": "harbor-planter-2",
+      "kind": "planter",
+      "gx": 6.5,
+      "gy": 3.5
+    },
+    {
+      "id": "harbor-planter-3",
+      "kind": "planter",
+      "gx": 8.5,
+      "gy": 3.5
+    },
+    {
+      "id": "harbor-planter-4",
+      "kind": "planter",
+      "gx": 12.5,
+      "gy": 3.5
+    },
+    {
+      "id": "harbor-bench-5",
+      "kind": "bench",
+      "gx": 3.5,
+      "gy": 7.5
+    },
+    {
+      "id": "harbor-planter-6",
+      "kind": "planter",
+      "gx": 8.5,
+      "gy": 8.5
+    },
+    {
+      "id": "harbor-lamp-7",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 11.5
+    },
+    {
+      "id": "harbor-bench-8",
+      "kind": "bench",
+      "gx": 5.5,
+      "gy": 11.5
+    },
+    {
+      "id": "harbor-bench-9",
+      "kind": "bench",
+      "gx": 7.5,
+      "gy": 11.5
+    },
+    {
+      "id": "harbor-lamp-10",
+      "kind": "lamp",
+      "gx": 9.5,
+      "gy": 11.5
+    },
+    {
+      "id": "harbor-planter-11",
+      "kind": "planter",
+      "gx": 3.5,
       "gy": 14.5
+    },
+    {
+      "id": "harbor-lamp-12",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 16.5
+    },
+    {
+      "id": "harbor-planter-13",
+      "kind": "planter",
+      "gx": 8.5,
+      "gy": 16.5
+    },
+    {
+      "id": "harbor-flowers-14",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 19.5
+    },
+    {
+      "id": "harbor-lamp-15",
+      "kind": "lamp",
+      "gx": 9.5,
+      "gy": 19.5
+    },
+    {
+      "id": "harbor-lamp-16",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 24.5
+    },
+    {
+      "id": "harbor-bench-17",
+      "kind": "bench",
+      "gx": 8.5,
+      "gy": 24.5
+    },
+    {
+      "id": "harbor-lamp-18",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 27.5
+    },
+    {
+      "id": "harbor-bench-19",
+      "kind": "bench",
+      "gx": 5.5,
+      "gy": 27.5
+    },
+    {
+      "id": "harbor-bench-20",
+      "kind": "bench",
+      "gx": 8.5,
+      "gy": 27.5
+    },
+    {
+      "id": "harbor-flowers-21",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 29.5
+    },
+    {
+      "id": "harbor-planter-22",
+      "kind": "planter",
+      "gx": 9.5,
+      "gy": 29.5
+    },
+    {
+      "id": "harbor-flowers-23",
+      "kind": "flowers",
+      "gx": 17.5,
+      "gy": 29.5
+    },
+    {
+      "id": "harbor-flowers-24",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 31.5
+    },
+    {
+      "id": "harbor-planter-25",
+      "kind": "planter",
+      "gx": 3.5,
+      "gy": 33.5
+    },
+    {
+      "id": "harbor-flowers-26",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 35.5
+    },
+    {
+      "id": "harbor-lamp-27",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 36.5
+    },
+    {
+      "id": "harbor-bench-28",
+      "kind": "bench",
+      "gx": 5.5,
+      "gy": 36.5
+    },
+    {
+      "id": "harbor-bench-29",
+      "kind": "bench",
+      "gx": 7.5,
+      "gy": 36.5
+    },
+    {
+      "id": "harbor-lamp-30",
+      "kind": "lamp",
+      "gx": 9.5,
+      "gy": 36.5
+    },
+    {
+      "id": "harbor-flowers-31",
+      "kind": "flowers",
+      "gx": 0.5,
+      "gy": 39.5
+    },
+    {
+      "id": "harbor-flowers-32",
+      "kind": "flowers",
+      "gx": 11.5,
+      "gy": 39.5
     }
   ],
   "walkers": [
@@ -310,12 +516,12 @@
       "id": "walker-hb1",
       "look": "walkerRed",
       "from": {
-        "gx": 10.5,
-        "gy": 3.5
+        "gx": 12.5,
+        "gy": 4.5
       },
       "to": {
-        "gx": 10.5,
-        "gy": 18.5
+        "gx": 12.5,
+        "gy": 23.5
       }
     }
   ],

@@ -6,7 +6,7 @@ import { iconKey } from '../art/menu';
 import { RS, WT } from '../art/renderScale';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { WhoTookItModel, type Clue, type Round, type WTIEvent } from '../systems/whoTookIt';
-import { BIG_TEXT, MinigameScene } from './minigameKit';
+import { MinigameScene } from './minigameKit';
 
 const FEET_Y = 600;
 const SPACING = 210;
@@ -25,8 +25,6 @@ export class WhoTookItScene extends MinigameScene {
   private model!: WhoTookItModel;
   private suspects: Phaser.GameObjects.Container[] = [];
   private clueCard!: Phaser.GameObjects.Image;
-  private scoreText!: Phaser.GameObjects.Text;
-  private timer!: Phaser.GameObjects.Image;
 
   constructor() {
     super('WhoTookIt');
@@ -46,11 +44,7 @@ export class WhoTookItScene extends MinigameScene {
 
   override init(data: { id?: string; plays?: number; durationSec?: number }): void {
     super.init(data);
-    this.model = new WhoTookItModel(
-      data.durationSec ?? this.def.durationSec,
-      this.plays,
-      this.def.difficultyStepPerReplay,
-    );
+    this.model = new WhoTookItModel(this.durationSec, this.plays, this.def.difficultyStepPerReplay);
     this.suspects = [];
   }
 
@@ -62,24 +56,21 @@ export class WhoTookItScene extends MinigameScene {
     g.fillRect(0, 0, GAME_W, GAME_H);
     g.lineStyle(4, 0xffffff, 0.6);
     for (let y = 300; y < FEET_Y; y += 60) g.lineBetween(0, y, GAME_W, y);
+    // A lighter band behind the top bar.
+    g.fillStyle(0xffffff, 0.25).fillRect(0, 0, GAME_W, 88);
     g.fillStyle(0xd9dce3, 1);
     g.fillRect(0, FEET_Y - 10, GAME_W, GAME_H - FEET_Y + 10);
     g.lineStyle(6, PALETTE.outline, 1);
     g.lineBetween(0, FEET_Y - 10, GAME_W, FEET_Y - 10);
     // The clue card ("who has this?").
     g.fillStyle(0xffffff, 1);
-    g.fillRoundedRect(GAME_W / 2 - 90, 20, 180, 150, 20);
+    g.fillRoundedRect(GAME_W / 2 - 90, 96, 180, 150, 20);
     g.lineStyle(6, PALETTE.outline, 1);
-    g.strokeRoundedRect(GAME_W / 2 - 90, 20, 180, 150, 20);
-    this.add.image(GAME_W / 2 - 52, 95, iconKey('magnifier')).setScale(0.6 / RS);
-    this.clueCard = this.add.image(GAME_W / 2 + 28, 95, iconKey('sock')).setScale(0.9 / RS);
+    g.strokeRoundedRect(GAME_W / 2 - 90, 96, 180, 150, 20);
+    this.add.image(GAME_W / 2 - 52, 171, iconKey('magnifier')).setScale(0.6 / RS);
+    this.clueCard = this.add.image(GAME_W / 2 + 28, 171, iconKey('sock')).setScale(0.9 / RS);
 
-    this.add.image(60, 50, iconKey('star')).setScale(0.6 / RS);
-    this.scoreText = this.add.text(104, 50, '0', BIG_TEXT).setOrigin(0, 0.5);
-    // Time: a little magnifier walking along the top-right.
-    g.lineStyle(6, 0xffffff, 0.8);
-    g.lineBetween(860, 60, 1220, 60);
-    this.timer = this.add.image(860, 60, iconKey('magnifier')).setScale(0.4 / RS);
+    this.addTopBar('magnifier');
 
     voice.say('wti-intro', { interrupt: true });
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
@@ -146,12 +137,12 @@ export class WhoTookItScene extends MinigameScene {
     if (e.type === 'right' && c) {
       sfx.play('tada', 1.1, 0.7);
       voice.say('wti-right', { interrupt: true });
-      this.scoreText.setText(`${this.model.score}`);
+      this.good(c.x, FEET_Y - 250);
       this.tweens.add({ targets: c, y: FEET_Y - 60, duration: 180, yoyo: true, repeat: 1 });
-      this.tweens.add({ targets: this.scoreText, scale: 1.3, duration: 120, yoyo: true });
     } else if (e.type === 'wrong' && c) {
       sfx.play('shrug');
       voice.say('wti-wrong', { minGapMs: 1500 });
+      this.oops();
       this.tweens.add({
         targets: c,
         angle: { from: -8, to: 8 },
@@ -182,8 +173,7 @@ export class WhoTookItScene extends MinigameScene {
         sfx.play('whoosh', 1.2, 0.6);
       } else if (e.type === 'finished') this.finish();
     }
-    const k = Math.min(1, this.model.elapsed / this.model.durationSec);
-    this.timer.x = 860 + (1220 - 860) * k;
+    this.model.level = this.syncTopBar(this.model.elapsed, this.model.durationSec);
   }
 
   /** Test hook: the culprit's index right now. */

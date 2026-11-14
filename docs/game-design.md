@@ -19,7 +19,8 @@ The whole story takes about 2–4 hours.
    and a siren button.
 2. **Pick your job, then switch it.** Three jobs, each with its own vehicle, tool and minigames.
 3. **Help people, earn coins.** Money comes only from minigames, errands and missions.
-4. **Never stuck, never scared.** No reading, no fail screens, no killing. Slapstick action only.
+4. **Never stuck, never scared.** No reading, no killing, slapstick action only. Missions and the
+   open city can't be failed; a minigame round can end in a friendly "Oops, try again".
 
 ## 2. Jobs and core loop
 
@@ -30,7 +31,7 @@ unlock the next mission or job.**
 | --- | --- | --- | --- | --- | --- |
 | Cop | Police car (later police bike, helicopter) | Net launcher | Chasing the Bandit Brothers, traffic safety | Traffic Helper, Who Took It? | Police station, Downtown |
 | Firefighter | Fire truck with ladder | Water hose | Cartoon fires on skyscrapers, pet rescues | Window Splash, Ladder Rescue | Fire station, Skyscraper Heights |
-| Builder | Cement mixer truck | Block blaster | Building dock, lighthouse, bridge | Block Stack, Copy the Build, Cement Pour | Construction site, Harbor |
+| Builder | Cement mixer truck | Block blaster (opens Build It!) | Building dock, lighthouse, bridge | Block Stack, Copy the Build, Cement Pour | Construction site, Harbor |
 
 ### Picking and switching jobs
 1. **Start:** three uniforms on a rack at City Hall. Tap one = first job.
@@ -41,7 +42,10 @@ unlock the next mission or job.**
 
 ### Ways to earn coins
 - **Minigames (2–3 min):** at the job's home base or when someone asks. Pay 5 / 15 / 30 by performance;
-  never fail. Each minigame belongs to one job.
+  a finished round always pays at least 5. Mistakes cost hearts; out of hearts = "Oops, try
+  again" (no coins lost, more hearts next try). Each minigame belongs to one job.
+- **Boat rescues (3–5 min):** once the dock is built, the lifeguard there has rescues for
+  firefighters and police officers. They pay like Pro missions and can be played again.
 - **Errands (1–3 min):** townspeople show a picture bubble (kitten, pizza, balloon). Types: Find,
   Deliver, Return (loot robbers dropped). ~20 across the city; new ones appear after each mission.
 - **Missions (5–8 min):** story missions pay the most and unlock places, vehicles, next missions.
@@ -53,7 +57,9 @@ which becomes Return errands. The player can never play as them.
 
 ## 3. World
 
-One isometric map, ~48 × 48 tiles, four districts around a central plaza. Everything open from start.
+One isometric map, 72 × 48 tiles (the city is 60 × 40; the rest is open sea with small islands),
+four districts around a central plaza. Everything open from start. Blocks are six tiles wide with
+room round every building (playtest 2026-11-12: the first map was cramped).
 
 | District | Where | Landmarks | Home of |
 | --- | --- | --- | --- |
@@ -66,6 +72,10 @@ One isometric map, ~48 × 48 tiles, four districts around a central plaza. Every
 - A bus stop in each district = one-tap fast travel.
 - Tall buildings fade see-through when the player is behind them.
 - Map edges are water/park with a fence. Nothing to fall off.
+- **The sea:** building the dock moors a rescue boat beside it. Any job can hop in from the dock
+  and sail anywhere on the water; you get out at a dock or a beach.
+- **Objective arrows:** during a mission, a few seconds without getting closer to the objective
+  shows an arrow (on the target, or on the screen edge pointing the way) until you get there.
 - Pedestrians hop out of the way with "whoa!" and are never hit. Ones with bubbles give errands.
 
 ## 4. Comic action rules
@@ -73,7 +83,8 @@ One isometric map, ~48 × 48 tiles, four districts around a central plaza. Every
 2. Catching is a comedy beat: netted robber wobbles, "Aw, nuts!", waddles into the police van.
    At Time-Out Tower they sit in the corner, then sneak out for the next mission.
 3. Bumps go boing: cars bounce/spin and right themselves; cones/cans tumble and reset. Pays nothing.
-4. Getting bonked costs nothing: 1 s dizzy stars. No lives, no lost coins, no game over, no failing timers.
+4. Getting bonked costs nothing: 1 s dizzy stars. No lost coins, no game over, no failing timers.
+   The only "lives" are a minigame's hearts, and running out just means another go.
 5. Fire is a friendly foe: grumpy-faced flames go "pfft". Nobody trapped in danger; rescues are pets, cake, a parrot.
 6. Robbers are funny, not scary. No threats, no kidnapping.
 - **Can't get stuck:** after 20 s idle/wandering, bouncing arrow + voice hint. After ~3 tries the robber's
@@ -103,7 +114,19 @@ decorating add 1–2 h. Pro missions open after the Rookie badge plus one ~90-co
 | Copy the Build | Builder | Copy a small picture by tapping colored blocks into a grid |
 | Cement Pour | Builder | Hold to pour; let go at the line |
 
-Every minigame: 2–3 min, gets slightly harder on replay, pays 5/15/30, can't be failed.
+| Build It! | Builder | At a build spot: drag planks, bricks and beams onto the picture, then pick the hammer, trowel or wrench. No timer, no hearts |
+
+Every minigame: 2–3 min, pays 5/15/30, gets slightly harder on replay **and** every few points
+inside a round (levels). One shared top bar shows the score, a star meter, the time left and the
+hearts. A streak of five wins a heart back.
+
+### Boat rescues (after Dock It)
+| Rescue | Job | What you do |
+| --- | --- | --- |
+| Barge Blaze | Firefighter | Sail to the smoking barge, spray both fires, sail home |
+| Castaway Cat | Firefighter | Fetch the kitten from the rock island |
+| Duckling Patrol | Cop | Pick up three ducklings on floaties |
+| Sailboat Tow | Cop | Tow the broken sailboat back to the dock |
 
 ### Shop (every item ≤ ~3 minigames of coins)
 - Job upgrades: police bike, extra-long ladder, giant mixer drum

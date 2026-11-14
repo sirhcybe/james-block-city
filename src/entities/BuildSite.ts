@@ -64,38 +64,38 @@ export class BuildSite {
     this.img.clearTint().setAlpha(1).setScale(this.img.scaleX, this.full).setVisible(wasBuilt);
   }
 
-  /** A block flies from `from` (world px) and lands; returns true when the building is done. */
-  addBlocks(n: number, from: Vec2): boolean {
+  /**
+   * Build It! was finished: blocks fly in from `from` (world px) and the building grows up out of
+   * the ground to its full size.
+   */
+  complete(from: Vec2): void {
     const to = gridToScreen(this.centre.x, this.centre.y);
-    const block = this.scene.add
-      .image(from.x, from.y, iconKey('brick'))
-      .setScale(0.35 / RS)
-      .setDepth(this.img.depth + 5);
-    this.scene.tweens.add({
-      targets: block,
-      x: to.x,
-      y: to.y - 20,
-      angle: 360,
-      duration: 380,
-      ease: 'Quad.easeIn',
-      onComplete: () => block.destroy(),
-    });
-    const done = this.state.add(n);
-    const k = this.state.progress;
+    for (let i = 0; i < 5; i++) {
+      const block = this.scene.add
+        .image(from.x, from.y, iconKey('brick'))
+        .setScale(0.35 / RS)
+        .setDepth(this.img.depth + 5);
+      this.scene.tweens.add({
+        targets: block,
+        x: to.x + (i - 2) * 10,
+        y: to.y - 20,
+        angle: 360,
+        delay: i * 90,
+        duration: 380,
+        ease: 'Quad.easeIn',
+        onComplete: () => block.destroy(),
+      });
+    }
+    this.state.add(this.state.needed);
+    this.active = false;
     this.scene.tweens.add({
       targets: this.img,
-      scaleY: this.full * (0.12 + 0.88 * k),
-      alpha: 0.35 + 0.65 * k,
-      delay: 300,
-      duration: 220,
+      scaleY: this.full,
+      alpha: 1,
+      delay: 250,
+      duration: 420,
       ease: 'Back.easeOut',
+      onComplete: () => this.img.clearTint().setAlpha(1).setScale(this.img.scaleX, this.full),
     });
-    if (done) {
-      this.active = false;
-      this.scene.time.delayedCall(560, () =>
-        this.img.clearTint().setAlpha(1).setScale(this.img.scaleX, this.full),
-      );
-    }
-    return done;
   }
 }

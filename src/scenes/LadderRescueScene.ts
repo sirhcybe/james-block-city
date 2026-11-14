@@ -5,7 +5,7 @@ import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { LadderRescueModel, LR, type LREvent } from '../systems/fireMinigames';
-import { BIG_TEXT, MinigameScene } from './minigameKit';
+import { drawBackdrop, MinigameScene } from './minigameKit';
 
 const GROUND = 640;
 const FLOOR_H = 66;
@@ -21,7 +21,6 @@ export class LadderRescueScene extends MinigameScene {
   private model!: LadderRescueModel;
   private ladder!: Phaser.GameObjects.Graphics;
   private cat!: Phaser.GameObjects.Image;
-  private scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('LadderRescue');
@@ -42,7 +41,7 @@ export class LadderRescueScene extends MinigameScene {
   override init(data: { id?: string; plays?: number; durationSec?: number }): void {
     super.init(data);
     this.model = new LadderRescueModel(
-      data.durationSec ?? this.def.durationSec,
+      this.durationSec,
       this.plays,
       this.def.difficultyStepPerReplay,
     );
@@ -55,7 +54,7 @@ export class LadderRescueScene extends MinigameScene {
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
     const g = this.add.graphics();
-    g.fillStyle(0x9fd8f5, 1).fillRect(0, 0, GAME_W, GAME_H);
+    drawBackdrop(this);
     g.fillStyle(PALETTE.grass, 1).fillRect(0, GROUND, GAME_W, GAME_H - GROUND);
     // The tower with a window per floor.
     g.fillStyle(0xf4f6fa, 1).fillRect(TOWER_X - 40, this.floorY(LR.floors + 0.6), 300, GROUND);
@@ -78,8 +77,7 @@ export class LadderRescueScene extends MinigameScene {
 
     this.ladder = this.add.graphics();
     this.cat = this.add.image(TOWER_X + 40, this.floorY(1), iconKey('kitten')).setScale(0.55 / RS);
-    this.add.image(60, 50, iconKey('kitten')).setScale(0.45 / RS);
-    this.scoreText = this.add.text(100, 50, '0', BIG_TEXT).setOrigin(0, 0.5);
+    this.addTopBar('kitten');
 
     voice.say('lr-intro', { interrupt: true });
     // Hold and let go at the cat, or tap to start and tap again to stop.
@@ -103,7 +101,7 @@ export class LadderRescueScene extends MinigameScene {
     } else if (e.type === 'saved') {
       sfx.play('tada', 1.2, 0.6);
       voice.say('lr-saved', { interrupt: true });
-      this.scoreText.setText(`${this.model.score}`);
+      this.good(this.cat.x, this.cat.y - 40);
       this.tweens.add({
         targets: this.cat,
         x: LADDER_X,
@@ -115,6 +113,7 @@ export class LadderRescueScene extends MinigameScene {
     } else if (e.type === 'miss') {
       sfx.play('shrug');
       voice.say('lr-miss', { minGapMs: 2500 });
+      this.oops();
     }
   }
 
@@ -125,6 +124,7 @@ export class LadderRescueScene extends MinigameScene {
       if (e.type === 'finished') this.finish();
       else this.handle(e);
     }
+    this.model.level = this.syncTopBar(this.model.elapsed, this.model.durationSec);
     this.drawLadder();
   }
 

@@ -83,6 +83,20 @@ Spec 007: **is the finale a satisfying ending, and does the game work as an inst
 | Grown-up: installed on the home screen; played with Wi-Fi off | | | | |
 | Grown-up: the corner's volume and reset worked | | | | |
 
+Spec 008: **do the arrows, the boat and the new minigames make it more fun and less stuck?**
+
+| Thing | Did it? | How long until? | Fun? (😀 / 😐 / 🙁) | Notes |
+| --- | --- | --- | --- | --- |
+| Followed an objective arrow to a flag | | | | |
+| Bought the job upgrade when the boss asked (arrow to the Shop) | | | | |
+| Build It!: dragged pieces to the right slots | | | | |
+| Build It!: picked the right tool (how many tries?) | | | | |
+| Found the boat at the dock and sailed | | | | |
+| Did a lifeguard rescue | | | | |
+| Lost a heart in a minigame: upset, or fine? | | | | |
+| Saw an "Oops" and pressed retry | | | | |
+| Noticed the star meter / tried for the next star | | | | |
+
 ## Watch for
 - **Stuck moments:** where, for how long, did the bouncing arrow / voice hint help?
 - **Needed reading or a grown-up to explain?** (should be never)

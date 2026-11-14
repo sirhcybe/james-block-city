@@ -91,7 +91,7 @@ if (SCENARIO === 'chase' || SCENARIO === 'double') {
     j.driveTo('boat-shop-at');
   });
 } else {
-  await p.evaluate(() => window.__jbc.teleport(24.5, 9.5));
+  await p.evaluate(() => window.__jbc.teleport(31.5, 11.5));
 }
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: RATE });
 const result = await p.evaluate(async (scenario) => {

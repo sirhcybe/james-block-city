@@ -32,8 +32,14 @@ test('walking onto a pad with a key held: no walking on your own after the minig
 }, info) => {
   test.skip(info.project.name !== 'desktop-chrome', 'keyboard');
   await boot(page);
-  // Two tiles up-left of the Traffic Helper pad (9.5, 5.5); down-right on screen walks onto it.
-  await page.evaluate(() => window.__jbc!.teleport(7, 5));
+  // Two tiles up-left of the Traffic Helper pad; down-right on screen walks onto it.
+  await page.evaluate(() => {
+    const city = window.__jbc!.game.scene.getScene('City') as unknown as {
+      marker(id: string): { x: number; y: number };
+    };
+    const pad = city.marker('traffic-helper');
+    window.__jbc!.teleport(pad.x - 2.5, pad.y - 0.3);
+  });
   await page.keyboard.down('ArrowRight');
   await page.keyboard.down('ArrowDown');
   await running(page, 'TrafficHelper');

@@ -20,7 +20,8 @@ export const FIRE = {
   footReach: 3,
   footMaxZ: 1.5,
   /** Reach from the fire truck: tiles across, and how high its ladder goes (block units). */
-  truckReach: 3.5,
+  // 5 since spec 008: buildings now stand two sidewalk tiles back from the road.
+  truckReach: 5,
   ladderZ: { standard: 10, long: 14 },
 };
 export type FireTuning = typeof FIRE;

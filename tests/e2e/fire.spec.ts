@@ -99,8 +99,13 @@ test('Siren School: helmet, 3 flags in the truck, siren, spray the practice fire
   expect((await st(page)).owned).toContain('helmet-fire');
   await page.evaluate(() => window.__jbc!.ride('fire-truck'));
   await expect.poll(async () => (await st(page)).mission?.goal, LONG).toBe('checkpoints');
-  for (const f of ['fflag-1', 'fflag-2', 'fflag-3'])
+  for (const f of ['fflag-1', 'fflag-2', 'fflag-3']) {
     await page.evaluate((m) => window.__jbc!.driveTo(m), f);
+    await until(
+      page,
+      `(() => { const m = window.__jbc.player().mission; return m.goal !== 'checkpoints' || m.parts.includes('${f}'); })()`,
+    );
+  }
   await expect.poll(async () => (await st(page)).mission?.goal, LONG).toBe('siren');
   await page.keyboard.press('KeyQ');
   await expect.poll(async () => (await st(page)).mission?.goal, LONG).toBe('spray');
@@ -108,7 +113,7 @@ test('Siren School: helmet, 3 flags in the truck, siren, spray the practice fire
   // On foot, next to the practice fire: the Action button becomes the hose.
   await page.evaluate(() => {
     window.__jbc!.exitCar();
-    window.__jbc!.teleport(21.5, 21.2);
+    window.__jbc!.teleport(27.5, 28.2);
   });
   await expect.poll(async () => (await st(page)).hoseAim, LONG).toBe('practice-fire');
   await hoseUntil(page, 'window.__jbc.player().mission === null');
@@ -168,9 +173,9 @@ test('Barbecue Blaze and Fireworks Fiasco: spray every fire from the truck', asy
   // Walk from fire to fire on foot (they are on the ground in the park strip).
   let left = 3;
   for (const at of [
-    [21.5, 17.8],
-    [24.5, 17.2],
-    [26.5, 17.8],
+    [27.5, 22.8],
+    [31.5, 22.2],
+    [34.5, 22.8],
   ]) {
     await page.evaluate(([x, y]) => {
       if (window.__jbc!.player()!.mode === 'car') window.__jbc!.exitCar();
@@ -241,7 +246,7 @@ test('Window Splash and Ladder Rescue run from their pads and pay by tier (AC10)
     await page.keyboard.press('Space');
     await until(page, "window.__jbc.scenes().includes('Hud')");
     expect((await st(page)).coins).toBe(before + coins);
-    await page.evaluate(() => window.__jbc!.teleport(19.5, 25.5));
+    await page.evaluate(() => window.__jbc!.teleport(25.5, 32.5));
     await page.waitForTimeout(300);
   }
   expect(errors).toEqual([]);

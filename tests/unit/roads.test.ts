@@ -59,14 +59,14 @@ describe('the city lane graph', () => {
   const g = buildLaneGraph((x, y) => tileAt(world, x, y) === 'road', world.width, world.height);
 
   it('connects downtown and the plaza into one network', () => {
-    const start = g.get(5, 8)!; // police car spot
+    const start = g.get(6, 10)!; // police car spot
     for (const n of g.nodes.values()) expect(g.path(start.id, n.id), n.id).not.toBeNull();
   });
 
   it('has the traffic-light crossing and T-junctions', () => {
-    expect(g.get(8, 8)!.links).toHaveLength(4);
-    expect(g.get(14, 8)!.links.length).toBeGreaterThanOrEqual(3);
-    expect(g.get(18, 8)!.links.length).toBeGreaterThanOrEqual(3);
+    expect(g.get(10, 10)!.links).toHaveLength(4);
+    expect(g.get(18, 10)!.links.length).toBeGreaterThanOrEqual(3);
+    expect(g.get(23, 10)!.links.length).toBeGreaterThanOrEqual(3);
   });
 
   it('markers for vehicles sit on lane nodes', () => {

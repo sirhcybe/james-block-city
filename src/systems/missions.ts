@@ -23,13 +23,23 @@ const legacyCatch = (raw: unknown) => {
 };
 
 export const Goal = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('goTo'), target: z.string() }),
+  z.object({
+    type: z.literal('goTo'),
+    target: z.string(),
+    /** Something that waits there and follows you afterwards (a kitten, a sailboat to tow). */
+    carry: z.enum(['kitten', 'sailboat']).optional(),
+  }),
   z.object({
     type: z.literal('catch'),
     robbers: z.array(RobberSpec).min(1),
     bumps: z.number().int().positive().default(3),
   }),
-  z.object({ type: z.literal('checkpoints'), flags: z.array(z.string()).min(1) }),
+  z.object({
+    type: z.literal('checkpoints'),
+    flags: z.array(z.string()).min(1),
+    /** What stands at each point: a flag to drive through, or a duckling on a floaty to fetch. */
+    look: z.enum(['flag', 'floaty']).default('flag'),
+  }),
   z.object({ type: z.literal('siren') }),
   z.object({ type: z.literal('escort'), group: z.string(), from: z.string(), to: z.string() }),
   z.object({ type: z.literal('find'), item: z.string(), spots: z.array(z.string()).min(1) }),
@@ -59,7 +69,7 @@ export type StarBonus = z.infer<typeof StarBonus>;
 export const Mission = z.object({
   id: z.string(),
   job: JobId,
-  tier: z.enum(['rookie', 'pro', 'finale']),
+  tier: z.enum(['rookie', 'pro', 'finale', 'rescue']),
   /** Picture for the chief's bubble and the mission board card. */
   icon: z.string().default('star'),
   voiceIntro: z.string(),
@@ -98,6 +108,11 @@ export function requirementMet(req: string, p: Progress): boolean {
   return (p.missionsDone[req] ?? 0) > 0;
 }
 
+/** A job's own story missions (the boss offers them, the board lists them, badges count them). */
+export function isJobMission(m: Pick<Mission, 'tier'>): boolean {
+  return m.tier === 'rookie' || m.tier === 'pro';
+}
+
 export function isUnlocked(m: Mission, p: Progress): boolean {
   return (m.requires ?? []).every((r) => requirementMet(r, p));
 }
@@ -107,10 +122,7 @@ export function nextMission(list: readonly Mission[], job: JobId, p: Progress): 
   return (
     list.find(
       (m) =>
-        m.job === job &&
-        m.tier !== 'finale' &&
-        !((p.missionsDone[m.id] ?? 0) > 0) &&
-        isUnlocked(m, p),
+        m.job === job && isJobMission(m) && !((p.missionsDone[m.id] ?? 0) > 0) && isUnlocked(m, p),
     ) ?? null
   );
 }
@@ -122,6 +134,26 @@ export function finaleOffer(list: readonly Mission[], p: Progress): Mission | nu
       (m) => m.tier === 'finale' && !((p.missionsDone[m.id] ?? 0) > 0) && isUnlocked(m, p),
     ) ?? null
   );
+}
+
+/**
+ * The boat rescue the lifeguard offers a job right now (spec 008): the first unlocked one not
+ * done yet; once all are done they come round again (`turn` counts rescues finished this session).
+ */
+export function rescueOffer(
+  list: readonly Mission[],
+  job: JobId,
+  p: Progress,
+  turn = 0,
+): Mission | null {
+  const mine = list.filter((m) => m.tier === 'rescue' && m.job === job && isUnlocked(m, p));
+  if (mine.length === 0) return null;
+  return mine.find((m) => !((p.missionsDone[m.id] ?? 0) > 0)) ?? mine[turn % mine.length]!;
+}
+
+/** Whether any rescue is open at all (so the lifeguard can send a builder to change uniform). */
+export function rescuesOpen(list: readonly Mission[], p: Progress): boolean {
+  return list.some((m) => m.tier === 'rescue' && isUnlocked(m, p));
 }
 
 /**

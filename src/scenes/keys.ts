@@ -20,6 +20,8 @@ export const EV = {
   interiorDone: 'interior:done',
   /** The finale is won: night-time parade (spec 007). */
   parade: 'finale:parade',
+  /** Build It! was finished for a build spot (spec 008). */
+  buildDone: 'build:done',
   /** Night tint on/off (the HUD draws it). */
   night: 'finale:night',
 } as const;
@@ -33,6 +35,11 @@ export interface HudInfo {
   sirenOn: boolean;
   /** Logical screen point to point the hint arrow at, or null. */
   hint: Vec2 | null;
+  /**
+   * The running mission's steps (spec 008): how many, which one is on, and for a step with parts
+   * (flags, fires, robbers) how many parts there are and how many are done.
+   */
+  mission: { goals: number; index: number; parts: number; partsDone: number } | null;
 }
 
 export interface MinigameResult {

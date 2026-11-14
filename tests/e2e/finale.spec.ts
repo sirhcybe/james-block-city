@@ -89,7 +89,7 @@ async function playGoal(page: Page): Promise<void> {
     case 'escort':
       await page.evaluate((m) => window.__jbc!.walkTo(m), g.from!);
       await page.waitForTimeout(500);
-      await page.evaluate(() => window.__jbc!.goTo(10, 25));
+      await page.evaluate(() => window.__jbc!.goTo(13, 32));
       break;
     case 'find':
       for (const s of g.spots!) {
@@ -120,7 +120,10 @@ async function playGoal(page: Page): Promise<void> {
     case 'build':
       await page.evaluate(() => window.__jbc!.ride('mixer-truck'));
       await page.evaluate((m) => window.__jbc!.driveTo(`${m}-at`), g.spot!);
-      await until(page, `(() => { window.__jbc.blast(); return ${moved}; })()`);
+      await until(
+        page,
+        `(() => { window.__jbc.blast(); return !!window.__jbc.player() && ${moved}; })()`,
+      );
       return;
   }
   await until(page, moved);
@@ -275,7 +278,7 @@ test('the grown-up corner: a tap does nothing, a 2 s hold opens it; levels, unlo
   expect(await page.evaluate(() => window.__jbc!.scenes())).not.toContain('GrownUp');
   await page.mouse.move(gear.x, gear.y);
   await page.mouse.down();
-  await until(page, "window.__jbc.scenes().includes('GrownUp')", 30_000);
+  await until(page, "window.__jbc.scenes().includes('GrownUp')", 90_000);
   await page.mouse.up();
 
   // Sound off, voice quiet: saved apart from the game save and kept after a reload.

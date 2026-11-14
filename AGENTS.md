@@ -28,7 +28,10 @@ before doing anything, then read the spec you were asked to implement.
   (Web Speech API placeholder until real recordings exist). Numbers (coin count) are fine.
 - **No killing, no weapons that hurt, nothing scary.** Slapstick only. See "Comic action rules" in the GDD.
 - **You can play the Cop but never the robber.** Cops chase robbers.
-- **No fail states.** No lives, no game over, no failing timers. Getting bonked = 1s dizzy, no coin loss.
+- **No fail states in missions or the open city.** No game over, no failing timers. Getting bonked =
+  1s dizzy, no coin loss. The one exception (playtest 2026-11-12, spec 008): a **minigame round** has
+  hearts, and running out ends it with a friendly "Oops, try again": no coins lost, more hearts on
+  the next try. Never add a fail state anywhere else without asking.
 - **Coins come only from minigames, errands, and missions.** Never from smashing/bumping things.
 - **Art: isometric 2D, smooth flat-topped blocks, NO studs/pegs.** It must not look like a toy-brick brand.
   Don't use LEGO/DUPLO names, logos, or likenesses anywhere in code, assets, or text.

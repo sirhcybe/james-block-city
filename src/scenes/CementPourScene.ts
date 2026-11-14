@@ -5,9 +5,9 @@ import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { CementPourModel, type CPEvent } from '../systems/builderMinigames';
-import { BIG_TEXT, MinigameScene } from './minigameKit';
+import { drawBackdrop, MinigameScene } from './minigameKit';
 
-const MOULD = { x: GAME_W / 2 - 120, y: 220, w: 240, h: 380 };
+const MOULD = { x: GAME_W / 2 - 120, y: 240, w: 240, h: 360 };
 
 /**
  * Cement Pour (Builder minigame): hold anywhere (or Space) to pour cement into the mould; let go at
@@ -17,7 +17,6 @@ const MOULD = { x: GAME_W / 2 - 120, y: 220, w: 240, h: 380 };
 export class CementPourScene extends MinigameScene {
   private model!: CementPourModel;
   private fill!: Phaser.GameObjects.Graphics;
-  private scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('CementPour');
@@ -37,18 +36,17 @@ export class CementPourScene extends MinigameScene {
 
   override init(data: { id?: string; plays?: number; durationSec?: number }): void {
     super.init(data);
-    this.model = new CementPourModel(data.durationSec ?? this.def.durationSec, this.plays);
+    this.model = new CementPourModel(this.durationSec, this.plays);
   }
 
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
-    this.add.rectangle(0, 0, GAME_W, GAME_H, 0x9fd8f5).setOrigin(0, 0);
+    drawBackdrop(this, 'site');
     this.add.rectangle(0, 620, GAME_W, GAME_H - 620, 0xb98a5a).setOrigin(0, 0);
     // The mixer's chute above the mould.
-    this.add.image(MOULD.x + MOULD.w / 2, 130, iconKey('mixer')).setScale(1 / RS);
+    this.add.image(MOULD.x + MOULD.w / 2, 160, iconKey('mixer')).setScale(1 / RS);
     this.fill = this.add.graphics();
-    this.add.image(60, 50, iconKey('bucket')).setScale(0.45 / RS);
-    this.scoreText = this.add.text(100, 50, '0', BIG_TEXT).setOrigin(0, 0.5);
+    this.addTopBar('bucket');
     voice.say('cp-intro', { interrupt: true });
     this.input.on('pointerdown', () => this.model.press());
     this.input.on('pointerup', () => this.handle(this.model.release()));
@@ -58,8 +56,12 @@ export class CementPourScene extends MinigameScene {
 
   private handle(e: CPEvent | null): void {
     if (!e || e.type !== 'poured') return;
-    this.scoreText.setText(`${this.model.score}`);
-    if (e.points === 3) {
+    this.good(MOULD.x + MOULD.w + 90, MOULD.y + MOULD.h * (1 - this.model.line), e.points);
+    if (e.spilled) {
+      sfx.play('splash');
+      voice.say('cp-spill', { minGapMs: 6000 });
+      this.oops();
+    } else if (e.points === 3) {
       sfx.play('tada', 1.2, 0.6);
       voice.say('cp-great', { interrupt: true });
     } else if (e.points === 2) {
@@ -72,6 +74,7 @@ export class CementPourScene extends MinigameScene {
     if (this.done) return;
     const dt = Math.min(deltaMs, 50) / 1000;
     for (const e of this.model.update(dt)) if (e.type === 'finished') this.finish();
+    this.model.stage = this.syncTopBar(this.model.elapsed, this.model.durationSec);
     const g = this.fill;
     g.clear();
     // Mould, cement, and the line to stop at.

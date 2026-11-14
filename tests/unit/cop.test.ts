@@ -34,7 +34,9 @@ const progress = (p: Partial<Progress> = {}): Progress => ({
   missionsDone: {},
   ...p,
 });
-const cop = content.missions.filter((m) => m.job === 'cop' && m.tier !== 'finale');
+const cop = content.missions.filter(
+  (m) => m.job === 'cop' && m.tier !== 'finale' && m.tier !== 'rescue',
+);
 
 describe('Cop missions content (spec 003)', () => {
   it('has the 6 Cop missions in order: 3 Rookie then 3 Pro', () => {
@@ -439,8 +441,8 @@ describe('Downtown map (AC10)', () => {
   it('water is not walkable; the duck pond and Time-Out Tower are there', () => {
     const grid = buildWalkGrid(world);
     const pond = world.markers.pond!;
-    expect(tileAt(world, 10, 26)).toBe('water');
-    expect(grid.isWalkable(10, 26)).toBe(false);
+    expect(tileAt(world, 13, 33)).toBe('water');
+    expect(grid.isWalkable(13, 33)).toBe(false);
     expect(grid.isWalkable(Math.floor(pond.gx), Math.floor(pond.gy))).toBe(true);
     expect(world.buildings.some((b) => b.kind === 'timeout')).toBe(true);
     expect(world.buildings.some((b) => b.kind === 'shop')).toBe(true);

@@ -96,6 +96,9 @@ const ALL_ICONS: IconName[] = [
   'heart',
   'home',
   'gear',
+  'hammer',
+  'trowel',
+  'retry',
 ];
 
 function roundButton(

@@ -5,7 +5,7 @@ import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { WindowSplashModel, type WSEvent } from '../systems/fireMinigames';
-import { BIG_TEXT, MinigameScene } from './minigameKit';
+import { drawBackdrop, MinigameScene } from './minigameKit';
 
 const COLS = 3;
 const W = 190;
@@ -20,8 +20,7 @@ const Y0 = 210;
 export class WindowSplashScene extends MinigameScene {
   private model!: WindowSplashModel;
   private flames: Phaser.GameObjects.Image[] = [];
-  private scoreText!: Phaser.GameObjects.Text;
-  private timer!: Phaser.GameObjects.Image;
+  private soot: Phaser.GameObjects.Rectangle[] = [];
 
   constructor() {
     super('WindowSplash');
@@ -42,11 +41,12 @@ export class WindowSplashScene extends MinigameScene {
   override init(data: { id?: string; plays?: number; durationSec?: number }): void {
     super.init(data);
     this.model = new WindowSplashModel(
-      data.durationSec ?? this.def.durationSec,
+      this.durationSec,
       this.plays,
       this.def.difficultyStepPerReplay,
     );
     this.flames = [];
+    this.soot = [];
   }
 
   private cell(i: number): { x: number; y: number } {
@@ -56,7 +56,7 @@ export class WindowSplashScene extends MinigameScene {
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
     const g = this.add.graphics();
-    g.fillStyle(0x9fd8f5, 1).fillRect(0, 0, GAME_W, GAME_H);
+    drawBackdrop(this);
     // The tower front.
     g.fillStyle(0xf4f6fa, 1).fillRect(X0 - 140, 100, W * COLS + 100, GAME_H);
     g.lineStyle(6, PALETTE.outline, 1).strokeRect(X0 - 140, 100, W * COLS + 100, GAME_H);
@@ -64,6 +64,7 @@ export class WindowSplashScene extends MinigameScene {
       const c = this.cell(i);
       g.fillStyle(PALETTE.windowBlue, 1).fillRect(c.x - 70, c.y - 55, 140, 110);
       g.lineStyle(5, PALETTE.outline, 1).strokeRect(c.x - 70, c.y - 55, 140, 110);
+      this.soot.push(this.add.rectangle(c.x, c.y, 136, 106, 0x2b2d42, 0));
       const img = this.add.image(c.x, c.y + 10, iconKey('flame')).setScale(0);
       this.flames.push(img);
       // Tap target: the whole window cell (gaps included), not the flame sprite. The sprite
@@ -74,10 +75,7 @@ export class WindowSplashScene extends MinigameScene {
         .setInteractive()
         .on('pointerdown', () => this.handle(this.model.tap(i)));
     }
-    this.add.image(60, 50, iconKey('flame')).setScale(0.45 / RS);
-    this.scoreText = this.add.text(100, 50, '0', BIG_TEXT).setOrigin(0, 0.5);
-    g.lineStyle(6, 0xffffff, 0.8).lineBetween(900, 60, 1220, 60);
-    this.timer = this.add.image(900, 60, iconKey('hose')).setScale(0.35 / RS);
+    this.addTopBar('flame');
     voice.say('ws-intro', { interrupt: true });
     this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
       const n = Number(e.key);
@@ -94,7 +92,19 @@ export class WindowSplashScene extends MinigameScene {
       this.tweens.add({ targets: img, scale: 0.85 / RS, duration: 180, ease: 'Back.easeOut' });
     } else if (e.type === 'splash') {
       sfx.play('splash');
-      this.scoreText.setText(`${this.model.score}`);
+      this.good(img.x, img.y - 30);
+      // A splash of drops where the flame was.
+      for (let k = 0; k < 5; k++) {
+        const d = this.add.circle(img.x, img.y, 7, 0x7ec8f2).setStrokeStyle(2, PALETTE.outline);
+        this.tweens.add({
+          targets: d,
+          x: img.x + (k - 2) * 26,
+          y: img.y + 46 + Math.abs(k - 2) * -14,
+          alpha: 0,
+          duration: 420,
+          onComplete: () => d.destroy(),
+        });
+      }
       this.tweens.killTweensOf(img);
       this.tweens.add({
         targets: img,
@@ -106,6 +116,16 @@ export class WindowSplashScene extends MinigameScene {
     } else if (e.type === 'fizzle') {
       this.tweens.killTweensOf(img);
       this.tweens.add({ targets: img, scale: 0, duration: 250 });
+      // It burned all the way down: the window goes sooty for a moment. Every second one costs
+      // a heart (one a time was too quick an Oops for small fingers).
+      const soot = this.soot[(e as { window: number }).window];
+      if (soot) {
+        soot.setFillStyle(0x2b2d42, 0.55);
+        this.tweens.add({ targets: soot, fillAlpha: 0, delay: 500, duration: 900 });
+      }
+      sfx.play('shrug', 1.1, 0.7);
+      voice.say('ws-sooty', { minGapMs: 9000 });
+      if (this.model.fizzled % 2 === 0) this.oops();
     }
   }
 
@@ -116,7 +136,6 @@ export class WindowSplashScene extends MinigameScene {
       if (e.type === 'finished') this.finish();
       else this.handle(e);
     }
-    const k = Math.min(1, this.model.elapsed / this.model.durationSec);
-    this.timer.x = 900 + 320 * k;
+    this.model.level = this.syncTopBar(this.model.elapsed, this.model.durationSec);
   }
 }

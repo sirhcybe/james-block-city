@@ -12,6 +12,7 @@ const TILE_COLOR: Record<TileKind, number> = {
   plaza: PALETTE.plaza,
   path: PALETTE.parkPath,
   water: PALETTE.water,
+  sand: PALETTE.sand,
 };
 
 const EARTH = 0xb98a5a;
@@ -139,6 +140,8 @@ export function bakeGround(scene: Phaser.Scene, m: MapDef): BakedMeta[] {
                     g.lineStyle(Math.max(1, 1.5 * s), lighten(PALETTE.water, 0.4), 1);
                     const r = P(x + 0.3 + hash(x, y, 1) * 0.4, y + 0.3 + hash(y, x, 1) * 0.4);
                     g.lineBetween(r.x - 6 * s, r.y, r.x + 6 * s, r.y);
+                  } else if (kind === 'sand') {
+                    // no grid lines on a beach
                   } else if (kind !== 'grass') {
                     g.lineStyle(Math.max(1, s), darken(c, 0.08), 1);
                     g.strokePoints(pts, true);
@@ -148,6 +151,19 @@ export function bakeGround(scene: Phaser.Scene, m: MapDef): BakedMeta[] {
                       const t = P(x + 0.15 + hash(x, y, k) * 0.7, y + 0.15 + hash(y, x, k) * 0.7);
                       g.lineBetween(t.x - 3 * s, t.y - 4 * s, t.x, t.y);
                       g.lineBetween(t.x + 3 * s, t.y - 4 * s, t.x, t.y);
+                    }
+                  }
+                  if (kind === 'sand') {
+                    // Speckles and a little shell-pink dot so beaches don't look like paving.
+                    g.fillStyle(darken(c, 0.14), 1);
+                    for (let k = 0; k < 5; k++) {
+                      const t = P(x + 0.12 + hash(x, y, k) * 0.76, y + 0.12 + hash(y, x, k) * 0.76);
+                      g.fillCircle(t.x, t.y, 1.3 * s);
+                    }
+                    if (hash(x, y, 9) < 0.3) {
+                      const t = P(x + 0.3 + hash(x, y, 7) * 0.4, y + 0.3 + hash(y, x, 7) * 0.4);
+                      g.fillStyle(0xffb3c7, 1);
+                      g.fillCircle(t.x, t.y, 2.4 * s);
                     }
                   }
                   if (kind === 'sidewalk') {

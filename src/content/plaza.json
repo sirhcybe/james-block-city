@@ -1,7 +1,7 @@
 {
   "id": "plaza",
-  "width": 16,
-  "height": 16,
+  "width": 21,
+  "height": 21,
   "legend": {
     "g": "grass",
     "r": "road",
@@ -11,33 +11,38 @@
     "w": "water"
   },
   "tiles": [
-    "gggggggggggggggg",
-    "rrrrrrrrrrrrrrrr",
-    "rrrrrrrrrrrrrrrr",
-    "grrssssssssssrrg",
-    "grrsppppppppsrrg",
-    "grrsppppppppsrrg",
-    "grrspppppppgsrrg",
-    "rrrsppppppppsrrg",
-    "rrrsgpppppppsrrg",
-    "grrspppppppgsrrg",
-    "grrsppppppppsrrg",
-    "grrsppppppppsrrg",
-    "grrssssssssssrrg",
-    "rrrrrrrrrrrrrrrr",
-    "rrrrrrrrrrrrrrrr",
-    "grrggggggggggrrg"
+    "ggggggggggggggggggggg",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "grrssssssssssssssrrgg",
+    "grrssssssssssssssrrgg",
+    "grrssppppppppppssrrgg",
+    "grrssppppppppppssrrgg",
+    "grrsspppppppppgssrrgg",
+    "grrsspppppppppgssrrgg",
+    "rrrssppppppppppssrrgg",
+    "rrrssgpppppppppssrrgg",
+    "grrsspppppppppgssrrgg",
+    "grrsspppppppppgssrrgg",
+    "grrssppppppppppssrrgg",
+    "grrssppppppppppssrrgg",
+    "grrssssssssssssssrrgg",
+    "grrssssssssssssssrrgg",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "rrrrrrrrrrrrrrrrrrrrr",
+    "grrggggggggggggggrrgg",
+    "grrggggggggggggggrrgg"
   ],
   "spawn": {
-    "gx": 9.5,
-    "gy": 9.5
+    "gx": 12.5,
+    "gy": 12.5
   },
   "buildings": [
     {
       "id": "city-hall",
       "kind": "cityhall",
-      "gx": 4,
-      "gy": 4,
+      "gx": 5,
+      "gy": 5,
       "w": 3,
       "d": 3,
       "h": 3,
@@ -46,8 +51,8 @@
     {
       "id": "tower-east",
       "kind": "tower",
-      "gx": 10,
-      "gy": 4,
+      "gx": 13,
+      "gy": 5,
       "w": 2,
       "d": 2,
       "h": 7,
@@ -56,8 +61,8 @@
     {
       "id": "tower-west",
       "kind": "tower",
-      "gx": 4,
-      "gy": 10,
+      "gx": 5,
+      "gy": 13,
       "w": 2,
       "d": 2,
       "h": 8,
@@ -66,8 +71,8 @@
     {
       "id": "shop-north",
       "kind": "shop",
-      "gx": 7,
-      "gy": 4,
+      "gx": 9,
+      "gy": 5,
       "w": 2,
       "d": 1,
       "h": 2,
@@ -76,8 +81,8 @@
     {
       "id": "house-east",
       "kind": "apartment",
-      "gx": 10,
-      "gy": 7,
+      "gx": 13,
+      "gy": 9,
       "w": 2,
       "d": 2,
       "h": 2,
@@ -86,8 +91,8 @@
     {
       "id": "house-south",
       "kind": "house",
-      "gx": 7,
-      "gy": 10,
+      "gx": 9,
+      "gy": 13,
       "w": 2,
       "d": 2,
       "h": 2,
@@ -96,8 +101,8 @@
     {
       "id": "fountain",
       "kind": "fountain",
-      "gx": 7,
-      "gy": 7,
+      "gx": 9,
+      "gy": 9,
       "w": 2,
       "d": 2,
       "h": 0.5,
@@ -106,8 +111,8 @@
     {
       "id": "tree-1",
       "kind": "tree",
-      "gx": 11,
-      "gy": 6,
+      "gx": 14,
+      "gy": 7,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -116,8 +121,8 @@
     {
       "id": "tree-2",
       "kind": "tree",
-      "gx": 4,
-      "gy": 8,
+      "gx": 5,
+      "gy": 10,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -126,8 +131,8 @@
     {
       "id": "tree-3",
       "kind": "tree",
-      "gx": 11,
-      "gy": 9,
+      "gx": 14,
+      "gy": 12,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -146,7 +151,7 @@
     {
       "id": "tree-5",
       "kind": "tree",
-      "gx": 4,
+      "gx": 5,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -156,7 +161,7 @@
     {
       "id": "tree-6",
       "kind": "tree",
-      "gx": 8,
+      "gx": 10,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -166,7 +171,7 @@
     {
       "id": "tree-7",
       "kind": "tree",
-      "gx": 12,
+      "gx": 15,
       "gy": 0,
       "w": 1,
       "d": 1,
@@ -177,7 +182,7 @@
       "id": "tree-8",
       "kind": "tree",
       "gx": 0,
-      "gy": 4,
+      "gy": 5,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -187,7 +192,7 @@
       "id": "tree-9",
       "kind": "tree",
       "gx": 0,
-      "gy": 10,
+      "gy": 13,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -197,7 +202,7 @@
       "id": "tree-10",
       "kind": "tree",
       "gx": 0,
-      "gy": 12,
+      "gy": 15,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -206,8 +211,8 @@
     {
       "id": "tree-11",
       "kind": "tree",
-      "gx": 15,
-      "gy": 3,
+      "gx": 19,
+      "gy": 4,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -216,8 +221,8 @@
     {
       "id": "tree-12",
       "kind": "tree",
-      "gx": 15,
-      "gy": 7,
+      "gx": 19,
+      "gy": 9,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -226,8 +231,8 @@
     {
       "id": "tree-13",
       "kind": "tree",
-      "gx": 15,
-      "gy": 11,
+      "gx": 19,
+      "gy": 14,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -236,8 +241,8 @@
     {
       "id": "tree-14",
       "kind": "tree",
-      "gx": 15,
-      "gy": 15,
+      "gx": 19,
+      "gy": 20,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -246,8 +251,8 @@
     {
       "id": "tree-15",
       "kind": "tree",
-      "gx": 3,
-      "gy": 15,
+      "gx": 4,
+      "gy": 20,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -256,8 +261,8 @@
     {
       "id": "tree-16",
       "kind": "tree",
-      "gx": 7,
-      "gy": 15,
+      "gx": 9,
+      "gy": 20,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -266,8 +271,8 @@
     {
       "id": "tree-17",
       "kind": "tree",
-      "gx": 11,
-      "gy": 15,
+      "gx": 14,
+      "gy": 20,
       "w": 1,
       "d": 1,
       "h": 2,
@@ -276,8 +281,8 @@
     {
       "id": "golden-tower",
       "kind": "goldentower",
-      "gx": 10,
-      "gy": 10,
+      "gx": 13,
+      "gy": 13,
       "w": 2,
       "d": 2,
       "h": 6,
@@ -287,74 +292,300 @@
   ],
   "markers": {
     "shop": {
-      "gx": 8,
-      "gy": 5.5
-    },
-    "job-center": {
-      "gx": 5.5,
-      "gy": 7.5
-    },
-    "toaster-door": {
-      "gx": 8,
-      "gy": 12.5
-    },
-    "pour-1": {
-      "gx": 8,
-      "gy": 14
-    },
-    "florist": {
-      "gx": 12.5,
-      "gy": 4.5
-    },
-    "painter": {
-      "gx": 3.5,
-      "gy": 11.5
-    },
-    "home-door": {
-      "gx": 10.5,
-      "gy": 9.5
-    },
-    "own-car": {
-      "gx": 14,
-      "gy": 8
-    },
-    "kitten-spot": {
-      "gx": 12.5,
+      "gx": 10,
       "gy": 6.5
     },
+    "job-center": {
+      "gx": 6.5,
+      "gy": 9.5
+    },
+    "toaster-door": {
+      "gx": 10,
+      "gy": 15.5
+    },
+    "pour-1": {
+      "gx": 10,
+      "gy": 18
+    },
+    "florist": {
+      "gx": 15.5,
+      "gy": 5.5
+    },
+    "painter": {
+      "gx": 4.5,
+      "gy": 14.5
+    },
+    "home-door": {
+      "gx": 13.5,
+      "gy": 12.5
+    },
+    "own-car": {
+      "gx": 18,
+      "gy": 10
+    },
+    "kitten-spot": {
+      "gx": 15.5,
+      "gy": 7.5
+    },
     "golden-tower-at": {
-      "gx": 14,
-      "gy": 11
+      "gx": 18,
+      "gy": 14
     },
     "heli-start": {
       "gx": 2,
-      "gy": 14
+      "gy": 18
     },
     "station-cop": {
-      "gx": 4.5,
-      "gy": 3.5
+      "gx": 5.5,
+      "gy": 4.5
     },
     "station-fire": {
-      "gx": 5.5,
-      "gy": 3.5
+      "gx": 6.5,
+      "gy": 4.5
     },
     "station-builder": {
-      "gx": 6.5,
-      "gy": 3.5
+      "gx": 7.5,
+      "gy": 4.5
+    },
+    "parade-stand": {
+      "gx": 10.5,
+      "gy": 15.5
+    },
+    "parade-start": {
+      "gx": 13,
+      "gy": 2
+    },
+    "plaza-centre": {
+      "gx": 10,
+      "gy": 10
+    },
+    "ring-ne": {
+      "gx": 18,
+      "gy": 2
+    },
+    "ring-se": {
+      "gx": 18,
+      "gy": 18
+    },
+    "ring-sw": {
+      "gx": 2,
+      "gy": 18
+    },
+    "ring-nw": {
+      "gx": 2,
+      "gy": 2
     }
   },
   "props": [
     {
       "id": "cone-p1",
       "kind": "cone",
-      "gx": 6.5,
-      "gy": 13.7
+      "gx": 7.5,
+      "gy": 17.7
     },
     {
       "id": "can-p1",
       "kind": "trashcan",
-      "gx": 14.85,
-      "gy": 9.5
+      "gx": 18.85,
+      "gy": 12.5
+    },
+    {
+      "id": "plaza-flowers-0",
+      "kind": "flowers",
+      "gx": 2.5,
+      "gy": 0.5
+    },
+    {
+      "id": "plaza-lamp-1",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 3.5
+    },
+    {
+      "id": "plaza-lamp-2",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 3.5
+    },
+    {
+      "id": "plaza-planter-3",
+      "kind": "planter",
+      "gx": 10.5,
+      "gy": 3.5
+    },
+    {
+      "id": "plaza-bench-4",
+      "kind": "bench",
+      "gx": 14.5,
+      "gy": 3.5
+    },
+    {
+      "id": "plaza-lamp-5",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 3.5
+    },
+    {
+      "id": "plaza-planter-6",
+      "kind": "planter",
+      "gx": 11.5,
+      "gy": 4.5
+    },
+    {
+      "id": "plaza-bench-7",
+      "kind": "bench",
+      "gx": 3.5,
+      "gy": 5.5
+    },
+    {
+      "id": "plaza-bench-8",
+      "kind": "bench",
+      "gx": 8.5,
+      "gy": 5.5
+    },
+    {
+      "id": "plaza-flowers-9",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 6.5
+    },
+    {
+      "id": "plaza-flowers-10",
+      "kind": "flowers",
+      "gx": 19.5,
+      "gy": 7.5
+    },
+    {
+      "id": "plaza-lamp-11",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 8.5
+    },
+    {
+      "id": "plaza-planter-12",
+      "kind": "planter",
+      "gx": 7.5,
+      "gy": 8.5
+    },
+    {
+      "id": "plaza-planter-13",
+      "kind": "planter",
+      "gx": 9.5,
+      "gy": 8.5
+    },
+    {
+      "id": "plaza-lamp-14",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 8.5
+    },
+    {
+      "id": "plaza-lamp-15",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 8.5
+    },
+    {
+      "id": "plaza-bench-16",
+      "kind": "bench",
+      "gx": 8.5,
+      "gy": 10.5
+    },
+    {
+      "id": "plaza-lamp-17",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 11.5
+    },
+    {
+      "id": "plaza-bench-18",
+      "kind": "bench",
+      "gx": 10.5,
+      "gy": 11.5
+    },
+    {
+      "id": "plaza-bench-19",
+      "kind": "bench",
+      "gx": 15.5,
+      "gy": 11.5
+    },
+    {
+      "id": "plaza-flowers-20",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 11.5
+    },
+    {
+      "id": "plaza-planter-21",
+      "kind": "planter",
+      "gx": 11.5,
+      "gy": 14.5
+    },
+    {
+      "id": "plaza-planter-22",
+      "kind": "planter",
+      "gx": 16.5,
+      "gy": 14.5
+    },
+    {
+      "id": "plaza-flowers-23",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 14.5
+    },
+    {
+      "id": "plaza-bench-24",
+      "kind": "bench",
+      "gx": 3.5,
+      "gy": 15.5
+    },
+    {
+      "id": "plaza-planter-25",
+      "kind": "planter",
+      "gx": 5.5,
+      "gy": 16.5
+    },
+    {
+      "id": "plaza-lamp-26",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 16.5
+    },
+    {
+      "id": "plaza-lamp-27",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 16.5
+    },
+    {
+      "id": "plaza-planter-28",
+      "kind": "planter",
+      "gx": 13.5,
+      "gy": 16.5
+    },
+    {
+      "id": "plaza-lamp-29",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 16.5
+    },
+    {
+      "id": "plaza-flowers-30",
+      "kind": "flowers",
+      "gx": 13.5,
+      "gy": 19.5
+    },
+    {
+      "id": "plaza-flowers-31",
+      "kind": "flowers",
+      "gx": 20.5,
+      "gy": 19.5
+    },
+    {
+      "id": "plaza-flowers-32",
+      "kind": "flowers",
+      "gx": 7.5,
+      "gy": 20.5
     }
   ],
   "walkers": [
@@ -362,25 +593,26 @@
       "id": "walker-3",
       "look": "walkerBlue",
       "from": {
-        "gx": 3.5,
-        "gy": 4
+        "gx": 4.5,
+        "gy": 5
       },
       "to": {
-        "gx": 3.5,
-        "gy": 11.5
+        "gx": 4.5,
+        "gy": 14.5
       }
     },
     {
       "id": "walker-4",
       "look": "walkerPurple",
       "from": {
-        "gx": 4,
-        "gy": 12.5
+        "gx": 5,
+        "gy": 15.5
       },
       "to": {
-        "gx": 11.5,
-        "gy": 12.5
+        "gx": 14.5,
+        "gy": 15.5
       }
     }
-  ]
+  ],
+  "perches": []
 }

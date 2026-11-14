@@ -171,7 +171,7 @@ describe('SaveV2 (AC7)', () => {
 describe('Golden Block Heist finale (spec 007 AC1)', () => {
   it('locked until all 18 job missions are done; then the parts come one after another', async () => {
     const { finaleOffer, nextMission } = await import('../../src/systems/missions');
-    const jobMissions = content.missions.filter((m) => m.tier !== 'finale');
+    const jobMissions = content.missions.filter((m) => m.tier !== 'finale' && m.tier !== 'rescue');
     expect(jobMissions).toHaveLength(18);
     const done: Record<string, number> = {};
     const p = { badges: ['cop', 'fire', 'builder'], owned: [], missionsDone: done };

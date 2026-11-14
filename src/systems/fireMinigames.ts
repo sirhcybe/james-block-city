@@ -34,8 +34,12 @@ export class WindowSplashModel {
   /** Seconds left for the flame in each window (0 = no flame). */
   readonly up: number[] = Array<number>(WS.windows).fill(0);
   readonly upSec: number;
-  readonly everySec: number;
-  readonly maxUp: number;
+  private readonly baseEvery: number;
+  private readonly baseMaxUp: number;
+  /** Level inside the round (the scene sets it): flames come faster, then more at once. */
+  level = 1;
+  /** Flames that burned all the way down (each costs a heart in the scene). */
+  fizzled = 0;
   private next = 0.6;
 
   constructor(
@@ -46,8 +50,18 @@ export class WindowSplashModel {
   ) {
     const d = Math.min(1, plays * step);
     this.upSec = WS.upSec - (WS.upSec - WS.minUpSec) * d;
-    this.everySec = WS.everySec - (WS.everySec - WS.minEverySec) * d;
-    this.maxUp = Math.round(WS.maxUp + (WS.maxMaxUp - WS.maxUp) * d);
+    this.baseEvery = WS.everySec - (WS.everySec - WS.minEverySec) * d;
+    this.baseMaxUp = Math.round(WS.maxUp + (WS.maxMaxUp - WS.maxUp) * d);
+  }
+
+  /** Seconds between new flames: a little shorter every level. */
+  get everySec(): number {
+    return Math.max(WS.minEverySec, this.baseEvery * Math.pow(0.93, this.level - 1));
+  }
+
+  /** Most flames up at once: one more from level 4. */
+  get maxUp(): number {
+    return Math.min(WS.maxMaxUp, this.baseMaxUp + (this.level >= 4 ? 1 : 0));
   }
 
   get flames(): number {
@@ -71,6 +85,7 @@ export class WindowSplashModel {
       this.up[i]! -= dt;
       if (this.up[i]! <= 0) {
         this.up[i] = 0;
+        this.fizzled++;
         out.push({ type: 'fizzle', window: i });
       }
     }
@@ -128,7 +143,9 @@ export class LadderRescueModel {
   height = 0;
   cat = 1;
   missesOnCat = 0;
-  readonly speed: number;
+  private readonly baseSpeed: number;
+  /** Level inside the round (the scene sets it): the ladder climbs a little faster. */
+  level = 1;
   private holding = false;
   /** Held this long (s) in the current press. */
   private heldFor = 0;
@@ -146,7 +163,11 @@ export class LadderRescueModel {
     private readonly rand: () => number = Math.random,
   ) {
     const d = Math.min(1, plays * step);
-    this.speed = LR.speed + (LR.maxSpeed - LR.speed) * d;
+    this.baseSpeed = LR.speed + (LR.maxSpeed - LR.speed) * d;
+  }
+
+  get speed(): number {
+    return Math.min(LR.maxSpeed * 1.15, this.baseSpeed * (1 + 0.05 * (this.level - 1)));
   }
 
   get tolerance(): number {

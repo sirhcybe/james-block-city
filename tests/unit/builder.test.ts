@@ -14,7 +14,9 @@ import { earnedBadges, isUnlocked, type Progress } from '../../src/systems/missi
 
 const content = loadContent();
 const world = loadWorld();
-const builder = content.missions.filter((m) => m.job === 'builder' && m.tier !== 'finale');
+const builder = content.missions.filter(
+  (m) => m.job === 'builder' && m.tier !== 'finale' && m.tier !== 'rescue',
+);
 const progress = (p: Partial<Progress> = {}): Progress => ({
   badges: [],
   owned: [],
@@ -25,7 +27,7 @@ const progress = (p: Partial<Progress> = {}): Progress => ({
 describe('Harbor map (AC1, AC6)', () => {
   it('is joined by road to the Plaza and to Skyscraper Heights', () => {
     const car = buildRoadGraph(world, 'car');
-    const start = car.get(5, 8)!;
+    const start = car.get(6, 10)!;
     const seen = new Set([start.id]);
     const q = [start];
     while (q.length) {
@@ -38,9 +40,9 @@ describe('Harbor map (AC1, AC6)', () => {
     }
     const mixer = world.markers['mixer-truck']!;
     expect(seen.has(`${mixer.gx},${mixer.gy}`)).toBe(true);
-    const links = [...car.nodes.values()].filter((n) => n.x === 32);
-    expect(links.filter((n) => n.y < 16).length).toBeGreaterThanOrEqual(2);
-    expect(links.filter((n) => n.y > 16).length).toBeGreaterThanOrEqual(2);
+    const links = [...car.nodes.values()].filter((n) => n.x === 42);
+    expect(links.filter((n) => n.y < 21).length).toBeGreaterThanOrEqual(2);
+    expect(links.filter((n) => n.y > 21).length).toBeGreaterThanOrEqual(2);
   });
 
   it('has five build spots, and the island can only be walked to once the bridge is built', () => {

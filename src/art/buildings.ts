@@ -772,6 +772,140 @@ function apartmentParts(b: BuildingDef): Part[] {
   ];
 }
 
+/** Palm tree: a leaning trunk of stacked blocks and a star of fronds (spec 008 islands). */
+function palmParts(b: BuildingDef): Part[] {
+  const leaf = PALETTE[b.color];
+  const parts: Part[] = [];
+  for (let i = 0; i < 4; i++)
+    parts.push({
+      type: 'block',
+      gx: 0.4 + i * 0.03,
+      gy: 0.4 - i * 0.03,
+      gz: i * 0.38,
+      w: 0.2,
+      d: 0.2,
+      h: 0.4,
+      color: i % 2 ? PALETTE.trunk : darken(PALETTE.trunk, 0.12),
+      bevel: 1,
+    });
+  parts.push({
+    type: 'custom',
+    bounds: [
+      { x: -40, y: -92 },
+      { x: 44, y: -30 },
+    ],
+    draw: (g, ox, oy, s) => {
+      const c = project(0.6, 0.4, 1.6, s);
+      const x = c.x + ox;
+      const y = c.y + oy;
+      const frond = (dx: number, dy: number, color: number) => {
+        const pts = [
+          { x, y },
+          { x: x + dx * 0.45 * s, y: y + (dy - 12) * s },
+          { x: x + dx * s, y: y + dy * s },
+          { x: x + dx * 0.5 * s, y: y + (dy * 0.5 + 5) * s },
+        ];
+        g.fillStyle(color, 1);
+        g.fillPoints(pts, true);
+        g.lineStyle(2 * s, PALETTE.outline, 1);
+        g.strokePoints(pts, true);
+      };
+      frond(-34, 4, darken(leaf, 0.12));
+      frond(36, 6, darken(leaf, 0.12));
+      frond(-24, -14, leaf);
+      frond(26, -12, leaf);
+      frond(0, -22, lighten(leaf, 0.12));
+      frond(4, 16, lighten(leaf, 0.06));
+      g.fillStyle(0x8a5a2b, 1);
+      g.fillCircle(x - 4 * s, y + 3 * s, 4 * s);
+      g.fillCircle(x + 4 * s, y + 4 * s, 4 * s);
+      g.lineStyle(1.5 * s, PALETTE.outline, 1);
+      g.strokeCircle(x - 4 * s, y + 3 * s, 4 * s);
+      g.strokeCircle(x + 4 * s, y + 4 * s, 4 * s);
+    },
+  });
+  return parts;
+}
+
+/** A smooth sea rock: three stacked grey blocks. */
+function rockParts(b: BuildingDef): Part[] {
+  const c = darken(PALETTE[b.color], 0.25);
+  return [
+    { type: 'block', gx: 0.08, gy: 0.12, w: 0.84, d: 0.76, h: b.h * 0.5, color: c, bevel: 6 },
+    {
+      type: 'block',
+      gx: 0.2,
+      gy: 0.22,
+      gz: b.h * 0.5,
+      w: 0.55,
+      d: 0.5,
+      h: b.h * 0.35,
+      color: lighten(c, 0.08),
+      bevel: 5,
+    },
+    {
+      type: 'block',
+      gx: 0.32,
+      gy: 0.3,
+      gz: b.h * 0.85,
+      w: 0.28,
+      d: 0.28,
+      h: b.h * 0.2,
+      color: lighten(c, 0.16),
+      bevel: 3,
+    },
+  ];
+}
+
+/** A cargo barge: a low rusty hull with crates on deck (Barge Blaze). */
+function bargeParts(b: BuildingDef): Part[] {
+  const hull = 0x8d5a4a;
+  return [
+    {
+      type: 'block',
+      gx: 0.05,
+      gy: 0.08,
+      gz: -0.2,
+      w: b.w - 0.1,
+      d: b.d - 0.16,
+      h: 0.5,
+      color: hull,
+    },
+    {
+      type: 'block',
+      gx: 0.12,
+      gy: 0.14,
+      gz: 0.3,
+      w: b.w - 0.24,
+      d: b.d - 0.28,
+      h: 0.08,
+      color: lighten(hull, 0.25),
+      bevel: 1,
+    },
+    {
+      type: 'block',
+      gx: 0.25,
+      gy: 0.25,
+      gz: 0.38,
+      w: 0.5,
+      d: 0.45,
+      h: 0.4,
+      color: PALETTE[b.color],
+    },
+    {
+      type: 'block',
+      gx: 0.9,
+      gy: 0.28,
+      gz: 0.38,
+      w: 0.45,
+      d: 0.4,
+      h: 0.3,
+      color: PALETTE.harborTeal,
+    },
+    { type: 'block', gx: 1.45, gy: 0.3, gz: 0.38, w: 0.35, d: 0.35, h: 0.55, color: 0xd9dce3 },
+  ];
+}
+
 export function buildingParts(b: BuildingDef): Part[] {
   switch (b.kind) {
     case 'house':
@@ -814,6 +948,12 @@ export function buildingParts(b: BuildingDef): Part[] {
       return apartmentParts(b);
     case 'goldentower':
       return goldenTowerParts(b);
+    case 'palm':
+      return palmParts(b);
+    case 'rock':
+      return rockParts(b);
+    case 'barge':
+      return bargeParts(b);
   }
 }
 

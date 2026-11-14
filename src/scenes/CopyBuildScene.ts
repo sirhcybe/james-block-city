@@ -5,7 +5,7 @@ import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { CopyBuildModel, type CBEvent } from '../systems/builderMinigames';
-import { BIG_TEXT, MinigameScene } from './minigameKit';
+import { MinigameScene } from './minigameKit';
 
 /** Square colours: 0 = empty, then red, yellow, teal. */
 const FILL = [0xeeeeee, PALETTE.fireRed, PALETTE.builderYellow, PALETTE.harborTeal];
@@ -19,7 +19,6 @@ export class CopyBuildScene extends MinigameScene {
   private model!: CopyBuildModel;
   private targetCells: Phaser.GameObjects.Rectangle[] = [];
   private cells: Phaser.GameObjects.Rectangle[] = [];
-  private scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('CopyBuild');
@@ -39,7 +38,7 @@ export class CopyBuildScene extends MinigameScene {
 
   override init(data: { id?: string; plays?: number; durationSec?: number }): void {
     super.init(data);
-    this.model = new CopyBuildModel(data.durationSec ?? this.def.durationSec, this.plays);
+    this.model = new CopyBuildModel(this.durationSec, this.plays);
     this.cells = [];
     this.targetCells = [];
   }
@@ -47,16 +46,49 @@ export class CopyBuildScene extends MinigameScene {
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
     this.add.rectangle(0, 0, GAME_W, GAME_H, 0xf3e3c0).setOrigin(0, 0);
+    // A drawing board for the picture, a workbench for your squares, an arrow between them.
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff, 0.35).fillRect(0, 0, GAME_W, 88);
+    g.fillStyle(0x2f6fde, 1).fillRoundedRect(90, 190, 320, 340, 20);
+    g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(90, 190, 320, 340, 20);
+    g.fillStyle(0xe2c98f, 1).fillRoundedRect(560, 130, 520, 500, 24);
+    g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(560, 130, 520, 500, 24);
+    const arrow = [
+      { x: 440, y: 340 },
+      { x: 500, y: 340 },
+      { x: 500, y: 315 },
+      { x: 540, y: 360 },
+      { x: 500, y: 405 },
+      { x: 500, y: 380 },
+      { x: 440, y: 380 },
+    ];
+    g.fillStyle(0xffffff, 1).fillPoints(arrow, true);
+    g.lineStyle(5, PALETTE.outline, 1).strokePoints(arrow, true);
+    this.add.image(250, 160, iconKey('magnifier')).setScale(0.45 / RS);
+    this.buildGrids();
+    this.addTopBar('grid');
+    this.draw();
+    voice.say('cb-intro', { interrupt: true });
+    this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
+      const k = Number(e.key);
+      if (k >= 1 && k <= this.model.size * this.model.size) this.tap(k - 1);
+    });
+  }
+
+  /** (Re)build both grids for the model's picture size (pictures grow to 3×3 at level 3). */
+  private buildGrids(): void {
+    for (const c of [...this.targetCells, ...this.cells]) c.destroy();
+    this.targetCells = [];
+    this.cells = [];
     const n = this.model.size;
-    const small = 70;
-    const big = n === 2 ? 170 : 130;
-    // The picture to copy (left), with a magnifier.
-    this.add.image(250, 170, iconKey('magnifier')).setScale(0.5 / RS);
+    this.builtSize = n;
+    const small = n === 2 ? 110 : 84;
+    const big = n === 2 ? 190 : 140;
     for (let i = 0; i < n * n; i++) {
       const x = 250 + ((i % n) - (n - 1) / 2) * small;
       const y = 360 + (Math.floor(i / n) - (n - 1) / 2) * small;
       this.targetCells.push(
-        this.add.rectangle(x, y, small - 6, small - 6, FILL[0]!).setStrokeStyle(4, PALETTE.outline),
+        this.add.rectangle(x, y, small - 8, small - 8, FILL[0]!).setStrokeStyle(4, PALETTE.outline),
       );
     }
     // Your squares (right): tap to change colour.
@@ -64,21 +96,15 @@ export class CopyBuildScene extends MinigameScene {
       const x = 820 + ((i % n) - (n - 1) / 2) * big;
       const y = 380 + (Math.floor(i / n) - (n - 1) / 2) * big;
       const r = this.add
-        .rectangle(x, y, big - 10, big - 10, FILL[0]!)
+        .rectangle(x, y, big - 12, big - 12, FILL[0]!)
         .setStrokeStyle(6, PALETTE.outline)
         .setInteractive({ useHandCursor: true });
       r.on('pointerdown', () => this.tap(i));
       this.cells.push(r);
     }
-    this.add.image(60, 50, iconKey('grid')).setScale(0.45 / RS);
-    this.scoreText = this.add.text(100, 50, '0', BIG_TEXT).setOrigin(0, 0.5);
-    this.draw();
-    voice.say('cb-intro', { interrupt: true });
-    this.input.keyboard?.on('keydown', (e: KeyboardEvent) => {
-      const k = Number(e.key);
-      if (k >= 1 && k <= n * n) this.tap(k - 1);
-    });
   }
+
+  private builtSize = 0;
 
   private draw(): void {
     this.model.target.forEach((c, i) => this.targetCells[i]?.setFillStyle(FILL[c]!));
@@ -93,7 +119,11 @@ export class CopyBuildScene extends MinigameScene {
     if (e?.type === 'matched') {
       sfx.play('tada', 1.2, 0.6);
       voice.say('cb-match', { interrupt: true });
-      this.scoreText.setText(`${this.model.score}`);
+      this.good(820, 150);
+      // The finished picture flashes, then the next one comes (maybe a bigger one).
+      for (const c of this.cells)
+        this.tweens.add({ targets: c, scale: 1.08, duration: 90, yoyo: true });
+      if (this.model.size !== this.builtSize) this.buildGrids();
     }
     this.draw();
   }
@@ -102,6 +132,7 @@ export class CopyBuildScene extends MinigameScene {
     if (this.done) return;
     const dt = Math.min(deltaMs, 50) / 1000;
     for (const e of this.model.update(dt)) if (e.type === 'finished') this.finish();
+    this.model.level = this.syncTopBar(this.model.elapsed, this.model.durationSec);
   }
 
   /** Test hook: solve the current picture. */

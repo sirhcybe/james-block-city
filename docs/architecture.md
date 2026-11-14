@@ -27,6 +27,10 @@ src/
     errands.ts            # errand lifecycle
     save.ts               # versioned localStorage save
     hints.ts              # idle detection -> arrow + voice hint
+    guide.ts              # objective arrow: stuck detection + where to draw it (spec 008)
+    boat.ts               # free-steering boat model (spec 008)
+    buildJob.ts           # Build It! model + blueprint schema (spec 008)
+    round.ts              # minigame hearts, levels, streaks, star meter (spec 008)
   content/                # JSON: map, missions, errands, minigames, shop, voice lines
 tests/
   unit/                   # Vitest
@@ -59,11 +63,19 @@ interface GameActions {
 `screenDirToGrid(move)` rotates the screen vector by the iso transform so "up" moves up the screen.
 Touch: floating joystick on the left half (appears where the thumb lands); buttons ≥ 64 CSS px.
 
+### World map (spec 008)
+Five JSON pieces merged by `content/world.ts`: `sea.json` (72 × 48 background: open water, islands,
+sea markers) with the four districts laid over it. The district files were widened by
+`scripts/stretch-map.mjs` (a one-off migration; it documents the rule). Tile kind `sand` is
+walkable beach.
+
 ### Movement
 - On foot: free movement on walkable tiles, collision with buildings.
 - Vehicles: **road assist** — the vehicle snaps to the nearest lane centerline and only chooses
   direction at intersections; joystick picks the branch closest to the input direction *as seen on
   screen*, rounding corners with short curves (ADR-003, ADR-004).
+- The boat (spec 008) is the exception: free steering on water tiles (`systems/boat.ts`), sliding
+  along shores; `entities/Boat.ts` exposes the same surface as `Vehicle` so `riding()` users work.
 - `goTo`: A* (EasyStar.js) over the walk/road grid; follow the path; any manual input cancels it.
 
 ### Content-driven systems
@@ -72,20 +84,21 @@ Missions, errands, minigame tuning and shop items are JSON, validated at load (z
 ```ts
 // content/missions.json  (zod: src/systems/missions.ts; ADR-005)
 type Goal =
-  | { type: 'goTo'; target: string }                 // named map marker, or a vehicle id
+  | { type: 'goTo'; target: string; carry?: 'kitten' | 'sailboat' } // named map marker or a vehicle id; `carry` follows you after
   | { type: 'catch'; robbers: { id: string; vehicle: 'car' | 'scooter'; start: string; drops?: string }[]; bumps: number }
-  | { type: 'checkpoints'; flags: string[] }         // drive through every flag (any order)
+  | { type: 'checkpoints'; flags: string[]; look?: 'flag' | 'floaty' } // reach every point (any order)
   | { type: 'siren' }                                // press the siren while driving
   | { type: 'escort'; group: string; from: string; to: string } // lead the ducks
   | { type: 'find'; item: string; spots: string[] }  // follow barks; it's in the last spot
   | { type: 'minigame'; id: string }
   | { type: 'errand'; id: string }
-  | { type: 'build'; spot: string }                 // blast blocks at a build spot (ADR-007)
+  | { type: 'build'; spot: string }                 // Build It! at a build spot (ADR-007, ADR-011)
   | { type: 'spray'; fires: string[] }
   | { type: 'rescue'; pet: string; at: string; perch: string } // ladder up to a perch
   | { type: 'inside'; at: string; room: string };   // walk in through a door to a room scene
 interface Mission {
-  id: string; job: 'cop' | 'fire' | 'builder'; tier: 'rookie' | 'pro' | 'finale';
+  id: string; job: 'cop' | 'fire' | 'builder';
+  tier: 'rookie' | 'pro' | 'finale' | 'rescue';      // rescue = lifeguard's boat missions (spec 008)
   icon: string;                  // picture on the boss's bubble and the mission board
   voiceIntro: string; voiceDone: string; // voice line ids
   goals: Goal[];                 // in order
@@ -119,7 +132,12 @@ interface MinigameDef {
   id: string; job: 'cop' | 'fire' | 'builder';
   durationSec: number; tiers: [number, number, number]; // score thresholds -> 5/15/30 coins
   difficultyStepPerReplay: number;
+  hearts: number;                // spec 008: 0 = can't be lost
+  levelEvery: number;            // points per level inside a round
 }
+
+// content/blueprints.json (spec 008)
+interface Blueprint { id: string /* build spot */; pieces: { material: 'wood'|'brick'|'steel'; x; y; w; h }[] }
 ```
 
 ### Save (`src/systems/save.ts`)
