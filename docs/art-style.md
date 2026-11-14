@@ -25,6 +25,29 @@ when available. **The images guide mood and palette only; all game art is drawn 
   with the boat, and the name in bouncing blocks. Play stays in the middle.
 - The sea moves: one wave tile slides slowly under the whole world.
 
+## Drawing rules (spec 009)
+These keep the art tight. Check new art against them in the gallery (`?gallery=all`).
+- **Parts stay inside the shape they belong to.** Face parts are laid out by `faceLayout` and
+  drawn clipped to the head; hair, masks and shirt details are clipped to the head or the body.
+  If a part can stick out, clip it or inset it; never rely on it "just fitting".
+- **Every shape has the outline,** inner details included. Things made of several blobs (clouds,
+  bushes, hearts, a chef's hat) get one outline round the clump, not one per blob.
+- **Outline width follows size.** World art uses 2 px at 1×. An icon's outline is 11% of its
+  half-size, so the same picture looks the same in a bubble, on a card and on a button.
+- **Rounded joins and caps** on every baked texture (`art/bake.ts`). No spiky corners, no line
+  that stops short.
+- **One light.** It comes from the upper left, as on the blocks: the right side of a body, a hat,
+  a wall or a box is the shaded side, whichever way the thing faces.
+- **Nothing is cut off.** A texture leaves room for the tallest thing it can show (the character
+  frame has head room for the chef's hat).
+- **Wheels lie in the side of the vehicle:** a disc in the plane of travel, with a hub and spokes
+  that turn. Far-side wheels are drawn first so the body hides them.
+- **Characters:** stand frame + two step frames (left leg, right leg). `walkFrame(t)` gives the
+  frame for a walk. Hats sit on a rim line above the eyes; nothing sticks up like a peg.
+- **Motion:** hops rise with `Quad.easeOut` and squash a little on landing (`landSquash`); pulses
+  and wobbles use `Sine.easeInOut`; things pop in with `Back.easeOut` and out with `Back.easeIn`.
+  A move with no easing looks mechanical: only fades, drifting clouds and fast shakes are linear.
+
 ## Geometry
 - Tile: 64 × 32 px (2:1). One block unit = one tile footprint; block height unit = 32 px on screen.
 - Render at device pixel ratio up to 2. Game logical size 1280 × 720, `Scale.FIT`, landscape.

@@ -19,7 +19,7 @@ review. Development is spec-driven; see `specs/README.md`.
 
 ```sh
 npm install
-npm run dev      # http://localhost:5173  (?gallery = art gallery, ?play = skip the title)
+npm run dev      # http://localhost:5173  (?gallery = art gallery, ?gallery=all = every texture, ?play = skip the title)
 npm test         # unit tests (Vitest)
 npm run e2e      # Playwright smoke: desktop Chrome + Pixel 7 (run `npx playwright install chromium` once)
 npm run lint

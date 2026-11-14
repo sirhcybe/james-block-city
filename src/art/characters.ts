@@ -422,7 +422,7 @@ function drawOutfitDetail(ctx: Ctx, look: CharacterLook, p: Pose, top: number, h
   }
 }
 
-/** Hair that hangs behind the head (drawn before the head on front views). */
+/** Hair that hangs behind the head and shoulders on front views (drawn before the body). */
 function drawHairBehind(ctx: Ctx, look: CharacterLook, p: Pose, hx: number, hy: number): void {
   if (look.hairStyle === 'long' && p.front) {
     roundRectPath(ctx, hx - HEAD_R - 1.5, hy - 5, HEAD_R * 2 + 3, 21, 7);
@@ -437,8 +437,6 @@ function drawHairBehind(ctx: Ctx, look: CharacterLook, p: Pose, hx: number, hy: 
 function drawHead(ctx: Ctx, look: CharacterLook, p: Pose, hx: number, hy: number): void {
   const face = faceLayout(p.side, look.mask, look.mask || look.moustache);
   const bald = look.hairStyle === 'bald';
-
-  drawHairBehind(ctx, look, p, hx, hy);
 
   // Ears: half hidden by the head, and by long hair.
   if (look.hairStyle !== 'long') {
@@ -760,6 +758,8 @@ function drawFigure(ctx: Ctx, look: CharacterLook, facing: Facing, frame: CharFr
   paint(ctx, 0x000000, null, 0, 0.18);
 
   drawLegs(ctx, look, p);
+  // Long hair hangs down the back: behind the shoulders, so it goes on before the arms and body.
+  drawHairBehind(ctx, look, p, hx, hy);
   drawArms(ctx, look, p, bodyTop);
   drawBody(ctx, look, p, bodyTop);
   drawHead(ctx, look, p, hx, hy);
@@ -817,6 +817,7 @@ export function drawRiderBust(
       paint(ctx, null, OL, LW);
     }
   }
+  drawHairBehind(ctx, look, p, side, bodyTop - HEAD_R + 4);
   // Arms reach forward to the wheel or handlebars: short sleeves at the sides.
   for (const i of [-1, 1] as const) {
     const ax = i < 0 ? -BODY_W / 2 - 4 : BODY_W / 2 - 3;
