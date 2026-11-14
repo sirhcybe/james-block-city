@@ -4,7 +4,7 @@ import { voice } from '../audio/voice';
 import { maskFor, solidAt } from '../art/alphaMask';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
-import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook } from '../art/characters';
+import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook, walkFrame } from '../art/characters';
 import { groundChunkKey } from '../art/ground';
 import type { IconName } from '../art/icons';
 import { iconKey } from '../art/menu';
@@ -244,8 +244,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private playerImg!: Phaser.GameObjects.Image;
   private props: Prop[] = [];
   private target!: Phaser.GameObjects.Image;
-  private bobTimer = 0;
-  private bobFrame: 0 | 1 = 0;
+  /** Seconds the player has been walking without a stop (drives the walk cycle). */
+  private walkT = 0;
   private autoEnter: VehicleId | null = null;
   /** Where you stand to play / open things, and whether you're on one now. */
   private spots: {
@@ -418,6 +418,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const full = img.scaleX;
     img.setScale(full * 0.3);
     this.tweens.add({
+      ease: 'Quad.easeOut',
       targets: img,
       scale: full * 1.2,
       alpha: 0,
@@ -713,7 +714,13 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     if (splash) {
       this.puff(this.boat.pos);
       sfx.play('splash');
-      this.tweens.add({ targets: this.boat, hop: 16, duration: 200, yoyo: true });
+      this.tweens.add({
+        ease: 'Quad.easeOut',
+        targets: this.boat,
+        hop: 16,
+        duration: 200,
+        yoyo: true,
+      });
     }
   }
 
@@ -734,6 +741,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
         depthOf(at.x, at.y) + 90,
       );
       this.tweens.add({
+        ease: 'Quad.easeOut',
         targets: img,
         x: s.x + Math.cos(a) * 46,
         y: s.y - 40 + Math.sin(a) * 30,
@@ -896,6 +904,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       const s = gridToScreen(at.x, at.y);
       const padImg = addBakedImage(this, getBaked(padKey(mg.icon)), s.x, s.y).setDepth(-999_990);
       const pulse = this.tweens.add({
+        ease: 'Sine.easeInOut',
         targets: padImg,
         scaleY: padImg.scaleY * 1.08,
         duration: 700,
@@ -1078,6 +1087,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const look = this.playerLook();
     this.playerImg.setTexture(characterFrameKey(look, this.player.facing, 0));
     this.tweens.add({
+      ease: 'Cubic.easeOut',
       targets: this.playerImg,
       angle: 360,
       duration: 600,
@@ -1290,12 +1300,13 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     sfx.play('pop');
     if (v === this.bike) this.bike.setLook(POLICE_BIKE_RIDDEN);
     this.tweens.add({
+      ease: 'Back.easeIn',
       targets: this.playerImg,
       scale: 0,
       duration: 160,
       onComplete: () => this.playerImg.setVisible(false).setScale(1 / WT),
     });
-    this.tweens.add({ targets: v, hop: 10, duration: 120, yoyo: true });
+    this.tweens.add({ ease: 'Quad.easeOut', targets: v, hop: 10, duration: 120, yoyo: true });
     this.cameras.main.startFollow(v.img, false, CAMERA_LERP, CAMERA_LERP);
     this.notifyMission({ type: 'reached', target: id });
   }
@@ -1325,7 +1336,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       // Out at sea there is nowhere to stand: stay aboard.
       sfx.play('boing', 0.9, 0.5);
       voice.say('boat-no-land', { minGapMs: 6000 });
-      this.tweens.add({ targets: v, hop: 8, duration: 110, yoyo: true });
+      this.tweens.add({ ease: 'Quad.easeOut', targets: v, hop: 8, duration: 110, yoyo: true });
       return;
     }
     this.mode = 'foot';
@@ -1601,6 +1612,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
           f.img.depth + 1,
         );
         this.tweens.add({
+          ease: 'Quad.easeOut',
           targets: img,
           x: to.x + (Math.random() - 0.5) * 12,
           y: to.y - 10,
@@ -1825,7 +1837,13 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       ) {
         r.vehicle.driver.speed = 0;
         sfx.play('boing', 1.2, 0.6);
-        this.tweens.add({ targets: t.vehicle, hop: 14, duration: 140, yoyo: true });
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: t.vehicle,
+          hop: 14,
+          duration: 140,
+          yoyo: true,
+        });
       }
     }
   }
@@ -1875,18 +1893,14 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
 
     const p = gridToScreen(this.player.pos.x, this.player.pos.y);
     this.playerImg.setPosition(p.x, p.y);
-    if (this.player.moving) {
-      this.bobTimer += dt;
-      if (this.bobTimer > 0.14) {
-        this.bobTimer = 0;
-        this.bobFrame = this.bobFrame === 0 ? 1 : 0;
-      }
-    } else {
-      this.bobFrame = 0;
-      this.bobTimer = 0;
-    }
+    // Walk cycle: step, stand, other step, stand, for as long as the player keeps moving.
+    this.walkT = this.player.moving ? this.walkT + dt : 0;
     this.playerImg.setTexture(
-      characterFrameKey(this.playerLook(), this.player.facing, this.bobFrame),
+      characterFrameKey(
+        this.playerLook(),
+        this.player.facing,
+        this.player.moving ? walkFrame(this.walkT) : 0,
+      ),
     );
   }
 

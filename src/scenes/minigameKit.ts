@@ -271,7 +271,14 @@ export abstract class MinigameScene extends Phaser.Scene {
       const up = score > this.shownScore;
       this.shownScore = score;
       this.scoreLabel.setText(`${score}`);
-      if (up) this.tweens.add({ targets: this.scoreLabel, scale: 1.35, duration: 90, yoyo: true });
+      if (up)
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: this.scoreLabel,
+          scale: 1.35,
+          duration: 90,
+          yoyo: true,
+        });
       const meter = starMeter(score, this.def.tiers);
       if (this.meterFill)
         this.tweens.add({
@@ -285,7 +292,14 @@ export abstract class MinigameScene extends Phaser.Scene {
           const st = this.meterStars[i];
           if (!st) continue;
           st.setTexture(HUD.star);
-          this.tweens.add({ targets: st, scale: 0.8 / RS, angle: 360, duration: 380, yoyo: true });
+          this.tweens.add({
+            ease: 'Sine.easeInOut',
+            targets: st,
+            scale: 0.8 / RS,
+            angle: 360,
+            duration: 380,
+            yoyo: true,
+          });
         }
         this.shownStars = meter.stars;
         sfx.play('sparkle', 1.2);
@@ -385,7 +399,13 @@ export abstract class MinigameScene extends Phaser.Scene {
       const img = this.heartImgs[this.hearts.left - 1];
       if (img) {
         img.setAlpha(1).clearTint();
-        this.tweens.add({ targets: img, scale: 0.5 / RS, duration: 160, yoyo: true });
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: img,
+          scale: 0.5 / RS,
+          duration: 160,
+          yoyo: true,
+        });
       }
       sfx.play('sparkle', 0.9);
       voice.say('heart-back', { minGapMs: 15000 });
@@ -400,7 +420,13 @@ export abstract class MinigameScene extends Phaser.Scene {
     const last = this.hearts.lose();
     const img = this.heartImgs[this.hearts.left];
     if (img) {
-      this.tweens.add({ targets: img, scale: 0.46 / RS, duration: 90, yoyo: true });
+      this.tweens.add({
+        ease: 'Quad.easeOut',
+        targets: img,
+        scale: 0.46 / RS,
+        duration: 90,
+        yoyo: true,
+      });
       img.setTint(0x555a6b).setAlpha(0.55);
     }
     this.cameras.main.shake(140, 0.004);
@@ -447,7 +473,14 @@ export abstract class MinigameScene extends Phaser.Scene {
     plate.fillStyle(PALETTE.grass, 1).fillCircle(GAME_W / 2 + 80, 440, 92);
     plate.lineStyle(7, PALETTE.outline, 1).strokeCircle(GAME_W / 2 + 80, 440, 92);
     const again = button(GAME_W / 2 + 80, iconKey('retry'), 1.15, () => this.retry());
-    this.tweens.add({ targets: again, angle: -18, duration: 500, yoyo: true, repeat: -1 });
+    this.tweens.add({
+      ease: 'Sine.easeInOut',
+      targets: again,
+      angle: -18,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
     button(GAME_W / 2 - 150, MENU.back, 0.95, () => {
       sfx.play('pop');
       this.quit();
@@ -523,7 +556,14 @@ export abstract class MinigameScene extends Phaser.Scene {
         new Phaser.Geom.Circle(79 * RS, 79 * RS, 75 * RS),
         Phaser.Geom.Circle.Contains,
       );
-    this.tweens.add({ targets: back, scale: 1.08 / RS, duration: 500, yoyo: true, repeat: -1 });
+    this.tweens.add({
+      ease: 'Sine.easeInOut',
+      targets: back,
+      scale: 1.08 / RS,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
     const close = () => this.close({ id: this.id, score: this.score, coins });
     back.once('pointerup', close);
     this.input.keyboard?.once('keydown-SPACE', close);

@@ -41,8 +41,12 @@ export class Fire {
     const out = this.state.update(dt, spraying);
     if (!this.state.out && this.img.scaleX > 0) {
       this.img.setTexture(Math.floor(this.t * 6) % 2 ? MPROP.fire2 : MPROP.fire);
-      if (!this.scene.tweens.isTweening(this.img))
-        this.img.setScale(this.full * (0.35 + 0.65 * this.state.hp));
+      if (!this.scene.tweens.isTweening(this.img)) {
+        // Sway: a little taller and thinner, then shorter and wider, about once a second.
+        const k = this.full * (0.35 + 0.65 * this.state.hp);
+        const w = Math.sin(this.t * 7);
+        this.img.setScale(k * (1 - 0.04 * w), k * (1 + 0.06 * w));
+      }
     }
     if (out) this.pfft();
     return out;

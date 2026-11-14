@@ -11,6 +11,11 @@ src/
   iso/                    # pure TS: projection, depth, grid, pathfinding wrapper  (unit-tested)
   input/                  # InputMapper: keyboard/mouse/touch -> GameActions          (unit-tested)
   art/                    # drawIsoBlock, character/vehicle builders, texture cache
+    bake.ts               # canvas baking with rounded joins; bakeCanvas for curves + clipping (ADR-012)
+    characters.ts         # people: faceLayout, 3 frames per facing, walkFrame (spec 009)
+    icons.ts              # every picture icon, one pen and one outline rule (spec 009)
+    scenery.ts            # baked side-on scenery for minigames (spec 009)
+    anim.ts               # landSquash: squash on landing (spec 009)
   audio/                  # sfx presets, Voice (speechSynthesis wrapper), music
   scenes/
     BootScene.ts          # generate textures, load content JSON

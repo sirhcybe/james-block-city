@@ -114,7 +114,11 @@ function roundButton(
   g.fillStyle(color, 1);
   g.fillCircle(c, c, r);
   g.fillStyle(lighten(color, 0.2), 1);
-  g.fillCircle(c, c, r * 0.8);
+  g.fillCircle(c, c - r * 0.06, r * 0.82);
+  g.lineStyle(Math.max(2 * s, r * 0.05), 0xffffff, 0.55);
+  g.beginPath();
+  g.arc(c, c - r * 0.06, r * 0.68, Math.PI * 1.12, Math.PI * 1.42, false);
+  g.strokePath();
   g.lineStyle(5 * s, PALETTE.outline, 1);
   g.strokeCircle(c, c, r);
   return c;
@@ -125,6 +129,8 @@ function card(g: Phaser.GameObjects.Graphics, s: number, fill: number): void {
   g.fillRoundedRect(4 * s, 10 * s, CARD_W * s, CARD_H * s, 22 * s);
   g.fillStyle(fill, 1);
   g.fillRoundedRect(4 * s, 4 * s, CARD_W * s, CARD_H * s, 22 * s);
+  g.lineStyle(3 * s, lighten(fill, 0.6), 0.9);
+  g.strokeRoundedRect(11 * s, 11 * s, (CARD_W - 14) * s, (CARD_H - 14) * s, 16 * s);
   g.lineStyle(5 * s, PALETTE.outline, 1);
   g.strokeRoundedRect(4 * s, 4 * s, CARD_W * s, CARD_H * s, 22 * s);
 }

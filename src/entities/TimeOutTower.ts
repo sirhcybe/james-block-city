@@ -1,6 +1,12 @@
 import type Phaser from 'phaser';
 import { timeoutWindowPoint } from '../art/buildings';
-import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
+import {
+  CHAR_FOOT_Y,
+  CHAR_H,
+  characterFrameKey,
+  WALK_STEP_SEC,
+  walkFrame,
+} from '../art/characters';
 import { WT } from '../art/renderScale';
 import type { BuildingDef } from '../content/schema';
 import { footprintDepth, gridToScreen } from '../iso/projection';
@@ -81,12 +87,15 @@ export class TimeOutTower {
         duration: 1300,
         ease: 'Linear',
         onUpdate: (tw) => {
-          const k = tw.progress * 8;
-          img.setTexture(characterFrameKey(name, 'SE', Math.floor(k) % 2 ? 1 : 0));
+          // Eight careful steps, left foot then right foot.
+          img.setTexture(
+            characterFrameKey(name, 'SE', walkFrame(tw.progress * 16 * WALK_STEP_SEC)),
+          );
           img.setScale((0.8 + 0.2 * tw.progress) / WT);
         },
         onComplete: () => {
           this.scene.tweens.add({
+            ease: 'Quad.easeIn',
             targets: img,
             x: img.x + 60,
             y: img.y + 30,

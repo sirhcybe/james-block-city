@@ -112,7 +112,14 @@ export class TitleScene extends Phaser.Scene {
           v.setTexture(vehicleFrameKey(car.name, 0, frame));
         },
       });
-      this.tweens.add({ targets: v, y: v.y - 4, duration: 240 + i * 30, yoyo: true, repeat: -1 });
+      this.tweens.add({
+        ease: 'Sine.easeInOut',
+        targets: v,
+        y: v.y - 4,
+        duration: 240 + i * 30,
+        yoyo: true,
+        repeat: -1,
+      });
       const hero = this.add
         .image(x - 70, 690, characterFrameKey(look, 'SE', 0))
         .setOrigin(0.5, CHAR_FOOT_Y / CHAR_H)
@@ -136,6 +143,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(boatMeta.originX, boatMeta.originY)
       .setScale(1.3 / WT);
     this.tweens.add({
+      ease: 'Sine.easeInOut',
       targets: boat,
       y: 480,
       angle: { from: -3, to: 3 },
@@ -153,6 +161,7 @@ export class TitleScene extends Phaser.Scene {
     });
     const buoy = addBakedImage(this, getBaked(PROP.buoy), 50, 540).setScale(1.4 / WT);
     this.tweens.add({
+      ease: 'Sine.easeInOut',
       targets: buoy,
       y: 534,
       angle: { from: -6, to: 6 },
@@ -211,6 +220,7 @@ export class TitleScene extends Phaser.Scene {
           ease: 'Bounce.easeOut',
         });
         this.tweens.add({
+          ease: 'Quad.easeOut',
           targets: c,
           y: 56,
           delay: 1600 + n * 90,
@@ -287,6 +297,7 @@ export class TitleScene extends Phaser.Scene {
       sfx.play('pop');
       this.tweens.killTweensOf(play);
       this.tweens.add({
+        ease: 'Quad.easeOut',
         targets: play,
         scale: 0.6 / RS,
         duration: 120,

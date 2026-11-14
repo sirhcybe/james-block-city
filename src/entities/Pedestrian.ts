@@ -1,5 +1,12 @@
 import type Phaser from 'phaser';
-import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
+import {
+  CHAR_FOOT_Y,
+  CHAR_H,
+  characterFrameKey,
+  walkFrame,
+  type CharFrame,
+} from '../art/characters';
+import { landSquash } from '../art/anim';
 import { WT } from '../art/renderScale';
 import type { WalkerDef } from '../content/schema';
 import { gridToScreen, type Vec2 } from '../iso/projection';
@@ -17,8 +24,9 @@ export class Pedestrian {
   readonly img: Phaser.GameObjects.Image;
   private target: Vec2;
   private facing: Facing = 'SE';
-  private bobT = 0;
-  private frame: 0 | 1 = 0;
+  /** Walking time, slowed to a stroll (drives the walk cycle). */
+  private walkT = 0;
+  private frame: CharFrame = 0;
   private hopCooldown = 0;
   hopping = false;
   hop = 0;
@@ -51,7 +59,10 @@ export class Pedestrian {
         duration: 220,
         yoyo: true,
         ease: 'Quad.easeOut',
-        onComplete: () => (this.hopping = false),
+        onComplete: () => {
+          this.hopping = false;
+          landSquash(this.scene, this.img);
+        },
       });
     }
 
@@ -68,11 +79,8 @@ export class Pedestrian {
         const step = Math.min(d, WALK_SPEED * dt);
         this.pos = { x: this.pos.x + (dx / d) * step, y: this.pos.y + (dy / d) * step };
         this.facing = facingForGridDir({ x: dx, y: dy }, this.facing);
-        this.bobT += dt;
-        if (this.bobT > 0.2) {
-          this.bobT = 0;
-          this.frame = this.frame === 0 ? 1 : 0;
-        }
+        this.walkT += dt * 0.6;
+        this.frame = walkFrame(this.walkT);
       }
     }
     const s = gridToScreen(this.pos.x, this.pos.y);

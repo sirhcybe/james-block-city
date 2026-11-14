@@ -75,6 +75,7 @@ export class MissionBoardScene extends Phaser.Scene {
     if (c.locked) {
       sfx.play('shrug');
       this.tweens.add({
+        ease: 'Sine.easeInOut',
         targets: c.img,
         angle: { from: -5, to: 5 },
         duration: 80,

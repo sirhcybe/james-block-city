@@ -24,56 +24,97 @@ export const ROAD = { top: 300, bottom: 470, laneY: 410 } as const;
 
 function duck(g: Phaser.GameObjects.Graphics, s: number, sad: boolean): void {
   const ol = PALETTE.outline;
+  const yellow = 0xffd23f;
   g.fillStyle(0x000000, 0.15);
-  g.fillEllipse(40 * s, 74 * s, 50 * s, 10 * s);
+  g.fillEllipse(40 * s, 75 * s, 52 * s, 9 * s);
   g.lineStyle(3 * s, ol, 1);
-  g.fillStyle(0xffd23f, 1);
+  // Feet and tail first, behind the body.
+  for (const fx of [32, 45]) {
+    g.fillStyle(PALETTE.coneOrange, 1);
+    g.fillRoundedRect(fx * s, 66 * s, 8 * s, 9 * s, 2 * s);
+    g.strokeRoundedRect(fx * s, 66 * s, 8 * s, 9 * s, 2 * s);
+  }
+  const tail = [
+    { x: 16 * s, y: 46 * s },
+    { x: 7 * s, y: 34 * s },
+    { x: 24 * s, y: 38 * s },
+  ];
+  g.fillStyle(yellow, 1);
+  g.fillPoints(tail, true);
+  g.strokePoints(tail, true);
+  const beak = [
+    { x: 63 * s, y: 22 * s },
+    { x: 79 * s, y: 28 * s },
+    { x: 63 * s, y: 34 * s },
+  ];
+  g.fillStyle(PALETTE.coneOrange, 1);
+  g.fillPoints(beak, true);
+  g.strokePoints(beak, true);
+  g.fillStyle(yellow, 1);
   g.fillEllipse(40 * s, 52 * s, 56 * s, 38 * s); // body
   g.strokeEllipse(40 * s, 52 * s, 56 * s, 38 * s);
   g.fillCircle(52 * s, 26 * s, 16 * s); // head
   g.strokeCircle(52 * s, 26 * s, 16 * s);
-  g.fillStyle(PALETTE.coneOrange, 1);
-  const beak = [
-    { x: 64 * s, y: 26 * s },
-    { x: 78 * s, y: 30 * s },
-    { x: 64 * s, y: 34 * s },
-  ];
-  g.fillPoints(beak, true);
-  g.strokePoints(beak, true);
+  // Wing: a darker smile-shaped line on the side.
+  g.lineStyle(3 * s, darken(yellow, 0.25), 1);
+  g.beginPath();
+  g.arc(35 * s, 47 * s, 13 * s, Math.PI * 0.1, Math.PI * 0.9, false);
+  g.strokePath();
   g.fillStyle(ol, 1);
-  g.fillCircle(56 * s, 22 * s, 3 * s);
-  g.fillStyle(darken(0xffd23f, 0.15), 1);
-  g.fillEllipse(34 * s, 50 * s, 26 * s, 14 * s); // wing
-  g.fillStyle(PALETTE.coneOrange, 1);
-  g.fillRect(32 * s, 68 * s, 6 * s, 8 * s);
-  g.fillRect(44 * s, 68 * s, 6 * s, 8 * s);
+  g.fillCircle(57 * s, 22 * s, 3.2 * s);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(56 * s, 21 * s, 1.1 * s);
   if (sad) {
     g.lineStyle(2.5 * s, ol, 1);
-    g.lineBetween(50 * s, 15 * s, 60 * s, 18 * s); // worried brow
+    g.lineBetween(50 * s, 14 * s, 61 * s, 17 * s); // worried brow
   }
 }
 
 function car(g: Phaser.GameObjects.Graphics, s: number, color: number): void {
   const ol = PALETTE.outline;
   g.fillStyle(0x000000, 0.15);
-  g.fillEllipse(70 * s, 92 * s, 130 * s, 12 * s);
+  g.fillEllipse(70 * s, 93 * s, 130 * s, 11 * s);
   g.lineStyle(4 * s, ol, 1);
+  // Cabin behind the body so their outlines join cleanly.
+  g.fillStyle(lighten(color, 0.15), 1);
+  g.fillRoundedRect(30 * s, 12 * s, 70 * s, 40 * s, 12 * s);
+  g.strokeRoundedRect(30 * s, 12 * s, 70 * s, 40 * s, 12 * s);
   g.fillStyle(color, 1);
   g.fillRoundedRect(6 * s, 40 * s, 128 * s, 40 * s, 14 * s);
+  g.fillStyle(darken(color, 0.14), 1);
+  g.fillRoundedRect(10 * s, 64 * s, 120 * s, 14 * s, 7 * s);
+  g.lineStyle(4 * s, ol, 1);
   g.strokeRoundedRect(6 * s, 40 * s, 128 * s, 40 * s, 14 * s);
-  g.fillStyle(lighten(color, 0.15), 1);
-  g.fillRoundedRect(30 * s, 12 * s, 70 * s, 34 * s, 12 * s);
-  g.strokeRoundedRect(30 * s, 12 * s, 70 * s, 34 * s, 12 * s);
-  g.fillStyle(PALETTE.windowBlue, 1);
-  g.fillRoundedRect(38 * s, 18 * s, 24 * s, 20 * s, 5 * s);
-  g.fillRoundedRect(68 * s, 18 * s, 26 * s, 20 * s, 5 * s);
+  // Windows, a door seam and handle, bumpers and lights.
+  g.lineStyle(2.5 * s, ol, 1);
+  for (const [wx, ww] of [
+    [38, 25],
+    [68, 25],
+  ] as const) {
+    g.fillStyle(PALETTE.windowBlue, 1);
+    g.fillRoundedRect(wx * s, 19 * s, ww * s, 19 * s, 5 * s);
+    g.strokeRoundedRect(wx * s, 19 * s, ww * s, 19 * s, 5 * s);
+    g.lineStyle(2 * s, 0xffffff, 0.8);
+    g.lineBetween((wx + 5) * s, 31 * s, (wx + 11) * s, 24 * s);
+    g.lineStyle(2.5 * s, ol, 1);
+  }
+  g.lineBetween(65.5 * s, 44 * s, 65.5 * s, 74 * s);
+  g.lineBetween(72 * s, 52 * s, 80 * s, 52 * s);
   g.fillStyle(0xfff1a8, 1);
-  g.fillCircle(128 * s, 56 * s, 6 * s); // headlight (cars drive right)
+  g.fillCircle(127 * s, 56 * s, 6 * s); // headlight (cars drive right)
+  g.strokeCircle(127 * s, 56 * s, 6 * s);
+  g.fillStyle(PALETTE.fireRed, 1);
+  g.fillRoundedRect(7 * s, 51 * s, 6 * s, 10 * s, 2 * s);
+  g.strokeRoundedRect(7 * s, 51 * s, 6 * s, 10 * s, 2 * s);
   for (const wx of [34, 106]) {
-    g.fillStyle(ol, 1);
+    g.fillStyle(0x3a3d4a, 1);
     g.fillCircle(wx * s, 82 * s, 15 * s);
+    g.lineStyle(3.5 * s, ol, 1);
+    g.strokeCircle(wx * s, 82 * s, 15 * s);
     g.fillStyle(0xc9ced8, 1);
-    g.fillCircle(wx * s, 82 * s, 6 * s);
+    g.fillCircle(wx * s, 82 * s, 6.5 * s);
+    g.lineStyle(2 * s, ol, 1);
+    g.strokeCircle(wx * s, 82 * s, 6.5 * s);
   }
 }
 
@@ -136,9 +177,28 @@ export function bakeMinigameArt(scene: Phaser.Scene): void {
       g.lineStyle(3 * s, PALETTE.outline, 1);
       g.strokeRect(x * s, (260 - h) * s, 140 * s, h * s);
       g.strokeRect((x - 6) * s, (260 - h - 18) * s, 152 * s, 22 * s);
-      g.fillStyle(PALETTE.windowBlue, 1);
-      g.fillRect((x + 20) * s, (260 - h + 30) * s, 36 * s, 30 * s);
-      g.fillRect((x + 84) * s, (260 - h + 30) * s, 36 * s, 30 * s);
+      for (const wx of [20, 84]) {
+        g.fillStyle(PALETTE.windowBlue, 1);
+        g.fillRoundedRect((x + wx) * s, (260 - h + 30) * s, 36 * s, 30 * s, 4 * s);
+        g.strokeRoundedRect((x + wx) * s, (260 - h + 30) * s, 36 * s, 30 * s, 4 * s);
+        g.lineStyle(3 * s, 0xffffff, 0.8);
+        g.lineBetween((x + wx + 8) * s, (260 - h + 50) * s, (x + wx + 18) * s, (260 - h + 38) * s);
+        g.lineStyle(3 * s, PALETTE.outline, 1);
+      }
+      // A door between the windows.
+      g.fillStyle(darken(c, 0.2), 1);
+      g.fillRoundedRect((x + 60) * s, (260 - 44) * s, 20 * s, 44 * s, {
+        tl: 5 * s,
+        tr: 5 * s,
+        bl: 0,
+        br: 0,
+      });
+      g.strokeRoundedRect((x + 60) * s, (260 - 44) * s, 20 * s, 44 * s, {
+        tl: 5 * s,
+        tr: 5 * s,
+        bl: 0,
+        br: 0,
+      });
     }
   });
   bakeIcon(scene, MG.duck, 82, 80, (g, s) => duck(g, s, false));
@@ -147,10 +207,11 @@ export function bakeMinigameArt(scene: Phaser.Scene): void {
   bakeIcon(scene, MG.light, 130, 324, (g, s) => trafficLight(g, s, false));
   bakeIcon(scene, MG.lightRed, 130, 324, (g, s) => trafficLight(g, s, true));
   bakeIcon(scene, MG.flag, 40, 60, (g, s) => {
-    g.lineStyle(4 * s, PALETTE.outline, 1);
-    g.lineBetween(6 * s, 4 * s, 6 * s, 58 * s);
     g.fillStyle(PALETTE.grass, 1);
-    g.fillTriangle(8 * s, 6 * s, 38 * s, 16 * s, 8 * s, 28 * s);
-    g.strokeTriangle(8 * s, 6 * s, 38 * s, 16 * s, 8 * s, 28 * s);
+    g.fillTriangle(6 * s, 6 * s, 37 * s, 17 * s, 6 * s, 28 * s);
+    g.lineStyle(3 * s, PALETTE.outline, 1);
+    g.strokeTriangle(6 * s, 6 * s, 37 * s, 17 * s, 6 * s, 28 * s);
+    g.lineStyle(5 * s, PALETTE.outline, 1);
+    g.lineBetween(6 * s, 5 * s, 6 * s, 56 * s);
   });
 }

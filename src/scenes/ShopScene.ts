@@ -56,10 +56,16 @@ export class ShopScene extends Phaser.Scene {
     this.closed = false;
     this.add.rectangle(0, 0, GAME_W, GAME_H, 0xffe9b0, 0.95).setOrigin(0, 0);
     const g = this.add.graphics();
+    // The shop awning: stripes that each end in a round scallop, with the outline under it.
+    g.fillStyle(PALETTE.outline, 1);
+    for (let x = 0; x < GAME_W; x += 80) g.fillEllipse(x + 40, 30, 88, 44);
     for (let x = 0; x < GAME_W; x += 80) {
-      g.fillStyle((x / 80) % 2 ? 0xffffff : 0xe63946, 1);
-      g.fillRect(x, 0, 80, 40);
+      const c = (x / 80) % 2 ? 0xffffff : 0xe63946;
+      g.fillStyle(c, 1);
+      g.fillRect(x, 0, 80, 30);
+      g.fillEllipse(x + 40, 30, 80, 36);
     }
+    g.fillStyle(0x000000, 0.08).fillRect(0, 0, GAME_W, 10);
 
     // Picture tabs.
     TABS.forEach(({ tab, icon }, i) => {
@@ -179,6 +185,7 @@ export class ShopScene extends Phaser.Scene {
       sfx.play('sparkle');
       voice.say(id === 'own-car' ? 'car-yours' : 'shop-bought', { interrupt: true });
       this.tweens.add({
+        ease: 'Quad.easeOut',
         targets: card,
         scale: (CARD_SCALE * 1.12) / RS,
         duration: 200,
@@ -191,6 +198,7 @@ export class ShopScene extends Phaser.Scene {
     }
     if (this.state.owns(id)) return false;
     this.tweens.add({
+      ease: 'Sine.easeInOut',
       targets: card,
       angle: { from: -4, to: 4 },
       duration: 90,

@@ -193,6 +193,7 @@ export class MissionDirector {
       ease: 'Quad.easeOut',
     });
     this.w.stage.tweens.add({
+      ease: 'Quad.easeOut',
       targets: c.img,
       y: s.y - 18,
       delay: 500,

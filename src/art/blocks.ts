@@ -12,6 +12,7 @@ import {
   type OrientedBox,
   type OrientedFace,
 } from './isoShapes';
+import { softCanvas, type Ctx } from './bake';
 import { WT } from './renderScale';
 
 export interface BlockStyle {
@@ -212,7 +213,10 @@ export function drawOrientedWindow(
   strokePoly(g, pts, ox, oy, Math.max(1, 1.5 * s));
 }
 
-/** A window (flat parallelogram) on a block's vertical face. */
+/**
+ * A window (flat parallelogram) on a block's vertical face: glass with a soft reflection, an
+ * outline, and a sill under the bigger ones. With `door` it is a door: a panel, a knob, a step.
+ */
 export function drawWindow(
   g: Phaser.GameObjects.Graphics,
   b: BlockGeom,
@@ -225,24 +229,53 @@ export function drawWindow(
   oy: number,
   color: number = PALETTE.windowBlue,
   s = WT,
+  door = false,
 ): void {
-  const pts = [
-    facePoint(b, face, u0, z0, s),
-    facePoint(b, face, u1, z0, s),
-    facePoint(b, face, u1, z1, s),
-    facePoint(b, face, u0, z1, s),
-  ];
-  fillPoly(g, pts, ox, oy, face === 'right' ? darken(color, 0.12) : color);
-  // Glint.
-  g.lineStyle(Math.max(1, 1.5 * s), 0xffffff, 0.75);
-  strokeLine(
+  const at = (u: number, z: number) => facePoint(b, face, u, z, s);
+  const pts = [at(u0, z0), at(u1, z0), at(u1, z1), at(u0, z1)];
+  const base = face === 'right' ? darken(color, 0.12) : color;
+  const du = u1 - u0;
+  const dz = z1 - z0;
+  fillPoly(g, pts, ox, oy, base);
+  if (door) {
+    // Inset panel, a knob on the opening side, and a step at the foot.
+    fillPoly(
+      g,
+      [
+        at(u0 + du * 0.18, z0 + dz * 0.12),
+        at(u1 - du * 0.18, z0 + dz * 0.12),
+        at(u1 - du * 0.18, z1 - dz * 0.14),
+        at(u0 + du * 0.18, z1 - dz * 0.14),
+      ],
+      ox,
+      oy,
+      lighten(base, 0.22),
+    );
+    strokePoly(g, pts, ox, oy, Math.max(1, 1.5 * s));
+    const k = at(u1 - du * 0.28, z0 + dz * 0.45);
+    g.fillStyle(PALETTE.outline, 1);
+    g.fillCircle(k.x + ox, k.y + oy, Math.max(1, 1.3 * s));
+    const step = [at(u0 - du * 0.12, z0), at(u1 + du * 0.12, z0)];
+    g.lineStyle(Math.max(1, 2.4 * s), 0xb9bfcb, 1);
+    strokeLine(g, step[0]!, step[1]!, ox, oy);
+    return;
+  }
+  // Reflection: a lighter band across the upper corner of the glass.
+  fillPoly(
     g,
-    facePoint(b, face, u0 + (u1 - u0) * 0.2, z1 - (z1 - z0) * 0.25, s),
-    facePoint(b, face, u0 + (u1 - u0) * 0.45, z1 - (z1 - z0) * 0.15, s),
+    [at(u0, z1), at(u0 + du * 0.55, z1), at(u0, z1 - dz * 0.55)],
     ox,
     oy,
+    lighten(base, 0.28),
   );
+  g.lineStyle(Math.max(1, 1.5 * s), 0xffffff, 0.8);
+  strokeLine(g, at(u0 + du * 0.2, z1 - dz * 0.25), at(u0 + du * 0.45, z1 - dz * 0.15), ox, oy);
   strokePoly(g, pts, ox, oy, Math.max(1, 1.5 * s));
+  if (du >= 0.45 && dz >= 0.4) {
+    // Sill: a pale ledge just under the window, a touch wider than it.
+    g.lineStyle(Math.max(1, 2.2 * s), 0xb9bfcb, 1);
+    strokeLine(g, at(u0 - 0.04, z0 - 0.045), at(u1 + 0.04, z0 - 0.045), ox, oy);
+  }
 }
 
 /** One drawable part of a composite object. */
@@ -257,11 +290,19 @@ export type Part =
       z0: number;
       z1: number;
       color?: number;
+      /** A door (panel, knob, step) instead of glass. */
+      door?: boolean;
     }
   | {
       type: 'custom';
       bounds: Vec2[];
       draw: (g: Phaser.GameObjects.Graphics, ox: number, oy: number, s: number) => void;
+    }
+  | {
+      /** Drawn straight onto the 2D context (curves, clipping), in order with the other parts. */
+      type: 'canvas';
+      bounds: Vec2[];
+      draw: (ctx: Ctx, ox: number, oy: number, s: number) => void;
     };
 
 function partBounds(p: Part, s: number): Vec2[] {
@@ -287,14 +328,33 @@ export function bakeParts(scene: Phaser.Scene, key: string, parts: Part[], s = W
   const height = Math.ceil(bb.maxY - bb.minY + pad * 2);
 
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  const tex = softCanvas(scene, key, width, height);
+  const ctx = tex.getContext();
+  let pending = false;
+  // Graphics commands are drawn when flushed, so flush before each canvas part to keep the order.
+  // Flushing draws into the canvas itself; the texture is uploaded once, at the end.
+  const flush = () => {
+    if (!pending) return;
+    g.generateTexture(tex.canvas, width, height);
+    g.clear();
+    pending = false;
+  };
   for (const p of parts) {
+    if (p.type === 'canvas') {
+      flush();
+      ctx.save();
+      p.draw(ctx, ox, oy, s);
+      ctx.restore();
+      continue;
+    }
+    pending = true;
     if (p.type === 'block') drawIsoBlock(g, p, ox, oy, s);
     else if (p.type === 'window')
-      drawWindow(g, p.block, p.face, p.u0, p.u1, p.z0, p.z1, ox, oy, p.color, s);
+      drawWindow(g, p.block, p.face, p.u0, p.u1, p.z0, p.z1, ox, oy, p.color, s, p.door);
     else p.draw(g, ox, oy, s);
   }
-  if (scene.textures.exists(key)) scene.textures.remove(key);
-  g.generateTexture(key, width, height);
+  flush();
+  tex.refresh();
   g.destroy();
 
   const meta: BakedMeta = { key, originX: ox / width, originY: oy / height, width, height };

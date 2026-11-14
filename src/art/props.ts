@@ -3,7 +3,8 @@ import { PALETTE } from '../config';
 import { darken, lighten } from './color';
 import { bakeParts, type BakedMeta } from './blocks';
 import { project } from './isoShapes';
-import { drawDonut } from './shapes2d';
+import { drawIcon } from './icons';
+import { drawBubble, drawPadBase } from './missionProps';
 
 /** World props. Every texture's grid origin is the prop's ground point. */
 export const PROP = {
@@ -49,10 +50,29 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
           { x: x + 2 * s, y: y - 26 * s },
           { x: x + 8 * s, y },
         ];
+        // Half-width of the cone at a height above its base.
+        const hw = (up: number) => 8 - (6 * up) / 26;
+        const bandAt = (u0: number, u1: number) => [
+          { x: x - hw(u0) * s, y: y - u0 * s },
+          { x: x + hw(u0) * s, y: y - u0 * s },
+          { x: x + hw(u1) * s, y: y - u1 * s },
+          { x: x - hw(u1) * s, y: y - u1 * s },
+        ];
         g.fillStyle(PALETTE.coneOrange, 1);
         g.fillPoints(pts, true);
+        g.fillStyle(darken(PALETTE.coneOrange, 0.16), 1);
+        g.fillPoints(
+          [
+            { x: x + 2 * s, y },
+            { x: x + 0.5 * s, y: y - 26 * s },
+            { x: x + 2 * s, y: y - 26 * s },
+            { x: x + 8 * s, y },
+          ],
+          true,
+        );
         g.fillStyle(0xffffff, 1);
-        g.fillRect(x - 5.5 * s, y - 15 * s, 11 * s, 4 * s);
+        g.fillPoints(bandAt(9, 14), true);
+        g.fillPoints(bandAt(18, 21), true);
         g.lineStyle(2 * s, PALETTE.outline, 1);
         g.strokePoints(pts, true);
       },
@@ -92,10 +112,13 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
       bounds: [],
       draw: (g, ox, oy, s) => {
         const colors = [PALETTE.fireRed, PALETTE.coinGold, PALETTE.grass];
+        // Lamps on the left face, squashed a little so they lie in the face. Green is lit.
         colors.forEach((c, i) => {
-          const p = project(-0.13, 0.13, 2.25 - i * 0.24, s);
+          const p = project(0, 0.13, 2.22 - i * 0.22, s);
           g.fillStyle(i === 2 ? lighten(c, 0.2) : darken(c, 0.3), 1);
-          g.fillCircle(p.x + ox + 5 * s, p.y + oy + 3 * s, 3.2 * s);
+          g.fillEllipse(p.x + ox, p.y + oy, 5.6 * s, 6.2 * s);
+          g.lineStyle(1.2 * s, PALETTE.outline, 1);
+          g.strokeEllipse(p.x + ox, p.y + oy, 5.6 * s, 6.2 * s);
         });
       },
     },
@@ -110,23 +133,8 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
         { x: 34, y: 18 },
       ],
       draw: (g, ox, oy, s) => {
-        const x = ox;
-        const y = oy;
-        g.fillStyle(PALETTE.coinGold, 1);
-        g.fillEllipse(x, y, 60 * s, 30 * s);
-        g.lineStyle(3 * s, PALETTE.outline, 1);
-        g.strokeEllipse(x, y, 60 * s, 30 * s);
-        g.fillStyle(lighten(PALETTE.coinGold, 0.4), 1);
-        g.fillEllipse(x, y - 2 * s, 44 * s, 20 * s);
-        // Little standing traffic light icon.
-        g.fillStyle(0x3a3d4a, 1);
-        g.fillRoundedRect(x - 8 * s, y - 36 * s, 16 * s, 32 * s, 4 * s);
-        g.lineStyle(2 * s, PALETTE.outline, 1);
-        g.strokeRoundedRect(x - 8 * s, y - 36 * s, 16 * s, 32 * s, 4 * s);
-        [PALETTE.fireRed, PALETTE.coinGold, PALETTE.grass].forEach((c, i) => {
-          g.fillStyle(c, 1);
-          g.fillCircle(x, y - 29 * s + i * 9 * s, 3.3 * s);
-        });
+        drawPadBase(g, ox, oy, s);
+        drawIcon(g, 'trafficLight', ox, oy - 24 * s, 17 * s, s);
       },
     },
   ]);
@@ -141,7 +149,7 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
       draw: (g, ox, oy, s) => {
         g.fillStyle(0x000000, 0.18);
         g.fillEllipse(ox, oy, 24 * s, 9 * s);
-        drawDonut(g, ox, oy - 16 * s, 13 * s, s);
+        drawIcon(g, 'donut', ox, oy - 16 * s, 15 * s, s);
       },
     },
   ]);
@@ -157,19 +165,8 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
       draw: (g, ox, oy, s) => {
         const x = ox;
         const y = oy - 34 * s;
-        g.fillStyle(0xffffff, 1);
-        g.lineStyle(3 * s, PALETTE.outline, 1);
-        g.fillCircle(x, y, 25 * s);
-        g.strokeCircle(x, y, 25 * s);
-        const tail = [
-          { x: x - 8 * s, y: y + 20 * s },
-          { x: x + 4 * s, y: y + 22 * s },
-          { x: x - 6 * s, y: oy },
-        ];
-        g.fillPoints(tail, true);
-        g.lineBetween(tail[0]!.x, tail[0]!.y + 2 * s, tail[2]!.x, tail[2]!.y);
-        g.lineBetween(tail[1]!.x, tail[1]!.y + 1 * s, tail[2]!.x, tail[2]!.y);
-        drawDonut(g, x, y, 16 * s, s);
+        drawBubble(g, x, y, oy, s);
+        drawIcon(g, 'donut', x, y, 16 * s, s);
       },
     },
   ]);
@@ -182,17 +179,19 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
         { x: 26, y: 26 },
       ],
       draw: (g, ox, oy, s) => {
-        g.fillStyle(0xffffff, 0.95);
-        g.lineStyle(2 * s, 0xc9ced8, 1);
-        for (const [dx, dy, r] of [
+        // One soft cloud: the outline is drawn round the whole clump, not round each ball.
+        const balls = [
           [-10, 4, 11],
           [10, 4, 11],
           [0, -8, 13],
           [0, 8, 10],
-        ] as const) {
-          g.fillCircle(ox + dx * s, oy + dy * s, r * s);
-          g.strokeCircle(ox + dx * s, oy + dy * s, r * s);
-        }
+        ] as const;
+        g.fillStyle(0xb9c0cc, 1);
+        for (const [dx, dy, r] of balls) g.fillCircle(ox + dx * s, oy + dy * s, (r + 1.6) * s);
+        g.fillStyle(0xffffff, 1);
+        for (const [dx, dy, r] of balls) g.fillCircle(ox + dx * s, oy + dy * s, r * s);
+        g.fillStyle(0xe6e9f0, 1);
+        g.fillEllipse(ox + 4 * s, oy + 11 * s, 22 * s, 7 * s);
       },
     },
   ]);
@@ -270,18 +269,28 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
     spread: number,
   ) => {
     const cols = [PALETTE.fireRed, PALETTE.coinGold, 0xffffff, PALETTE.donutPink, 0xb48cf0];
-    for (let i = 0; i < 7; i++) {
+    // Back row first, so nearer flowers overlap the ones behind them.
+    const spots = Array.from({ length: 7 }, (_, i) => {
       const a = i * 2.4;
       const r = (0.08 + (i % 3) * 0.07) * spread;
-      const p = project(Math.cos(a) * r, Math.sin(a) * r, z, s);
-      g.lineStyle(1.5 * s, darken(PALETTE.leaf, 0.2), 1);
-      g.lineBetween(p.x + ox, p.y + oy, p.x + ox, p.y + oy - 6 * s);
-      g.fillStyle(cols[i % cols.length]!, 1);
-      g.fillCircle(p.x + ox, p.y + oy - 7 * s, 3.2 * s);
-      g.lineStyle(1.2 * s, PALETTE.outline, 1);
-      g.strokeCircle(p.x + ox, p.y + oy - 7 * s, 3.2 * s);
-      g.fillStyle(PALETTE.coinGold, 1);
-      g.fillCircle(p.x + ox, p.y + oy - 7 * s, 1.1 * s);
+      return { i, x: Math.cos(a) * r, y: Math.sin(a) * r };
+    }).sort((p, q) => p.x + p.y - (q.x + q.y));
+    for (const sp of spots) {
+      const p = project(sp.x, sp.y, z, s);
+      const x = p.x + ox;
+      const y = p.y + oy;
+      const top = y - (7 + (sp.i % 2) * 2) * s;
+      // Stem with a leaf, then five petals round a middle.
+      g.lineStyle(3.2 * s, PALETTE.outline, 1);
+      g.lineBetween(x, y, x, top);
+      g.lineStyle(1.6 * s, PALETTE.leaf, 1);
+      g.lineBetween(x, y, x, top);
+      g.fillStyle(PALETTE.outline, 1);
+      g.fillCircle(x, top, 4.4 * s);
+      g.fillStyle(cols[sp.i % cols.length]!, 1);
+      g.fillCircle(x, top, 3.3 * s);
+      g.fillStyle(sp.i % cols.length === 1 ? 0xffffff : PALETTE.coinGold, 1);
+      g.fillCircle(x, top, 1.3 * s);
     }
   };
   const planter = bakeParts(scene, PROP.planter, [

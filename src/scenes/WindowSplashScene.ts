@@ -3,6 +3,7 @@ import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
 import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
+import { addScenery, paneTexture, wallTexture } from '../art/scenery';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import { WindowSplashModel, type WSEvent } from '../systems/fireMinigames';
 import { drawBackdrop, MinigameScene } from './minigameKit';
@@ -55,15 +56,14 @@ export class WindowSplashScene extends MinigameScene {
 
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
-    const g = this.add.graphics();
     drawBackdrop(this);
-    // The tower front.
-    g.fillStyle(0xf4f6fa, 1).fillRect(X0 - 140, 100, W * COLS + 100, GAME_H);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRect(X0 - 140, 100, W * COLS + 100, GAME_H);
+    // The tower front, then a framed window in every cell.
+    const wallW = W * COLS + 100;
+    addScenery(this, wallTexture(this, wallW, GAME_H, PALETTE.harborTeal), X0 - 140, 100);
+    const pane = paneTexture(this, 140, 110);
     for (let i = 0; i < 9; i++) {
       const c = this.cell(i);
-      g.fillStyle(PALETTE.windowBlue, 1).fillRect(c.x - 70, c.y - 55, 140, 110);
-      g.lineStyle(5, PALETTE.outline, 1).strokeRect(c.x - 70, c.y - 55, 140, 110);
+      addScenery(this, pane, c.x - 70, c.y - 55);
       this.soot.push(this.add.rectangle(c.x, c.y, 136, 106, 0x2b2d42, 0));
       const img = this.add.image(c.x, c.y + 10, iconKey('flame')).setScale(0);
       this.flames.push(img);
@@ -97,6 +97,7 @@ export class WindowSplashScene extends MinigameScene {
       for (let k = 0; k < 5; k++) {
         const d = this.add.circle(img.x, img.y, 7, 0x7ec8f2).setStrokeStyle(2, PALETTE.outline);
         this.tweens.add({
+          ease: 'Quad.easeOut',
           targets: d,
           x: img.x + (k - 2) * 26,
           y: img.y + 46 + Math.abs(k - 2) * -14,
@@ -107,6 +108,7 @@ export class WindowSplashScene extends MinigameScene {
       }
       this.tweens.killTweensOf(img);
       this.tweens.add({
+        ease: 'Back.easeIn',
         targets: img,
         scale: 0,
         angle: 90,
@@ -115,7 +117,7 @@ export class WindowSplashScene extends MinigameScene {
       });
     } else if (e.type === 'fizzle') {
       this.tweens.killTweensOf(img);
-      this.tweens.add({ targets: img, scale: 0, duration: 250 });
+      this.tweens.add({ ease: 'Back.easeIn', targets: img, scale: 0, duration: 250 });
       // It burned all the way down: the window goes sooty for a moment. Every second one costs
       // a heart (one a time was too quick an Oops for small fingers).
       const soot = this.soot[(e as { window: number }).window];

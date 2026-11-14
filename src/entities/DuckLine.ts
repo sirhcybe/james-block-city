@@ -69,6 +69,7 @@ export class DuckLine {
         ease: 'Quad.easeOut',
       });
       this.scene.tweens.add({
+        ease: 'Quad.easeOut',
         targets: img,
         y: s.y - 20,
         delay: i * 120 + 500,

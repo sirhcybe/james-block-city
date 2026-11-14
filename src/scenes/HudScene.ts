@@ -140,6 +140,7 @@ export class HudScene extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setVisible(false);
     this.tweens.add({
+      ease: 'Sine.easeInOut',
       targets: this.arrow,
       scale: { from: 1 / RS, to: 1.15 / RS },
       duration: 380,
@@ -281,7 +282,13 @@ export class HudScene extends Phaser.Scene {
   }
 
   private press(img: Phaser.GameObjects.Image): void {
-    this.tweens.add({ targets: img, scale: 0.88 / RS, duration: 70, yoyo: true });
+    this.tweens.add({
+      ease: 'Quad.easeOut',
+      targets: img,
+      scale: 0.88 / RS,
+      duration: 70,
+      yoyo: true,
+    });
   }
 
   /** Coins fly to the counter one by one; the counter ticks up with a rising ding. */
@@ -315,7 +322,13 @@ export class HudScene extends Phaser.Scene {
           this.shownCoins =
             i === n - 1 ? total : Math.min(total, this.shownCoins + Math.ceil(delta / n));
           this.coinText.setText(`${this.shownCoins}`);
-          this.tweens.add({ targets: this.coinIcon, scale: 1.25 / RS, duration: 80, yoyo: true });
+          this.tweens.add({
+            ease: 'Quad.easeOut',
+            targets: this.coinIcon,
+            scale: 1.25 / RS,
+            duration: 80,
+            yoyo: true,
+          });
         },
       });
     }
@@ -428,7 +441,13 @@ export class HudScene extends Phaser.Scene {
                   : HUD.actionIdle,
       );
       if (info.action !== 'none')
-        this.tweens.add({ targets: this.action, scale: 1.12 / RS, duration: 140, yoyo: true });
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: this.action,
+          scale: 1.12 / RS,
+          duration: 140,
+          yoyo: true,
+        });
     }
     // Siren while driving; on foot the same button blows a police whistle.
     this.siren.setVisible(true);

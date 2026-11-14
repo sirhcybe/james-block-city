@@ -79,7 +79,14 @@ export class InteriorScene extends Phaser.Scene {
         .zone(p.x, p.y, FLAME_HIT, FLAME_HIT)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.spray(f));
-      this.tweens.add({ targets: img, scaleY: 1 / RS, duration: 260, yoyo: true, repeat: -1 });
+      this.tweens.add({
+        ease: 'Sine.easeInOut',
+        targets: img,
+        scaleY: 1 / RS,
+        duration: 260,
+        yoyo: true,
+        repeat: -1,
+      });
       this.flames.push(f);
     }
     this.input.keyboard?.on('keydown-SPACE', () => this.sprayNext());
@@ -100,6 +107,7 @@ export class InteriorScene extends Phaser.Scene {
     for (let i = 0; i < 8; i++) {
       const d = this.add.circle(160, 560, 8, 0x7ec8f2).setStrokeStyle(2, PALETTE.outline);
       this.tweens.add({
+        ease: 'Quad.easeOut',
         targets: d,
         x: f.x + (Math.random() - 0.5) * 30,
         y: f.y + (Math.random() - 0.5) * 30,
@@ -115,7 +123,7 @@ export class InteriorScene extends Phaser.Scene {
     }
     sfx.play('pop', 0.7);
     voice.say('pfft', { interrupt: true });
-    this.tweens.add({ targets: f.img, scale: 0, alpha: 0, duration: 300 });
+    this.tweens.add({ ease: 'Back.easeIn', targets: f.img, scale: 0, alpha: 0, duration: 300 });
     if (this.flames.every((x) => x.hp <= 0)) this.finish();
   }
 
@@ -133,7 +141,14 @@ export class InteriorScene extends Phaser.Scene {
         new Phaser.Geom.Circle(79 * RS, 79 * RS, 75 * RS),
         Phaser.Geom.Circle.Contains,
       );
-    this.tweens.add({ targets: back, scale: 1.08 / RS, duration: 500, yoyo: true, repeat: -1 });
+    this.tweens.add({
+      ease: 'Sine.easeInOut',
+      targets: back,
+      scale: 1.08 / RS,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
     const leave = () => this.leave();
     back.once('pointerup', leave);
     this.input.keyboard?.once('keydown-ENTER', leave);
