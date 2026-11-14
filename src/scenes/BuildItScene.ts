@@ -6,7 +6,8 @@ import type { IconName } from '../art/icons';
 import { iconKey } from '../art/menu';
 import { RS } from '../art/renderScale';
 import { darken, lighten } from '../art/color';
-import { GAME_W, PALETTE } from '../config';
+import { GAME_H, GAME_W, PALETTE } from '../config';
+import { bakeIcon } from '../art/ui';
 import {
   BuildJobModel,
   DEFAULT_BLUEPRINT,
@@ -27,6 +28,7 @@ const TRAY_Y = 618;
 const TOOL_X = 1090;
 const TOOL_Y = [166, 300, 434];
 const TOOL_R = 58;
+const BOARD_KEY = 'buildit-board';
 
 const MAT_COLOR: Record<Material, number> = {
   wood: 0xc98a4b,
@@ -90,24 +92,31 @@ export class BuildItScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setZoom(RS).setOrigin(0, 0);
     drawBackdrop(this, 'site');
-    const g = this.add.graphics();
-    // Blueprint paper with a grid.
-    g.fillStyle(0x000000, 0.18).fillRoundedRect(PAPER.x + 6, PAPER.y + 10, PAPER.w, PAPER.h, 22);
-    g.fillStyle(0x2f6fde, 1).fillRoundedRect(PAPER.x, PAPER.y, PAPER.w, PAPER.h, 22);
-    g.lineStyle(2, 0xffffff, 0.16);
-    for (let x = PAPER.x + 40; x < PAPER.x + PAPER.w; x += 40)
-      g.lineBetween(x, PAPER.y + 8, x, PAPER.y + PAPER.h - 8);
-    for (let y = PAPER.y + 40; y < PAPER.y + PAPER.h; y += 40)
-      g.lineBetween(PAPER.x + 8, y, PAPER.x + PAPER.w - 8, y);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(PAPER.x, PAPER.y, PAPER.w, PAPER.h, 22);
-    // Ground line the building stands on.
-    // Tray shelf.
-    g.fillStyle(0x7a5230, 1).fillRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 160, 18);
-    g.fillStyle(0x9c6b3f, 1).fillRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 146, 18);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 160, 18);
-    // Tool board.
-    g.fillStyle(0xf3e3c0, 1).fillRoundedRect(TOOL_X - 100, 90, 200, 420, 22);
-    g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(TOOL_X - 100, 90, 200, 420, 22);
+    // The paper, the tray and the tool board never change: baked once (redrawing them every
+    // frame was slow on phones with weak GPUs).
+    bakeIcon(this, BOARD_KEY, GAME_W, GAME_H, (g, s) => {
+      g.scaleCanvas(s, s);
+      // Blueprint paper with a grid.
+      g.fillStyle(0x000000, 0.18).fillRoundedRect(PAPER.x + 6, PAPER.y + 10, PAPER.w, PAPER.h, 22);
+      g.fillStyle(0x2f6fde, 1).fillRoundedRect(PAPER.x, PAPER.y, PAPER.w, PAPER.h, 22);
+      g.lineStyle(2, 0xffffff, 0.16);
+      for (let x = PAPER.x + 40; x < PAPER.x + PAPER.w; x += 40)
+        g.lineBetween(x, PAPER.y + 8, x, PAPER.y + PAPER.h - 8);
+      for (let y = PAPER.y + 40; y < PAPER.y + PAPER.h; y += 40)
+        g.lineBetween(PAPER.x + 8, y, PAPER.x + PAPER.w - 8, y);
+      g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(PAPER.x, PAPER.y, PAPER.w, PAPER.h, 22);
+      // Tray shelf.
+      g.fillStyle(0x7a5230, 1).fillRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 160, 18);
+      g.fillStyle(0x9c6b3f, 1).fillRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 146, 18);
+      g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(140, TRAY_Y - 78, GAME_W - 160, 160, 18);
+      // Tool board.
+      g.fillStyle(0xf3e3c0, 1).fillRoundedRect(TOOL_X - 100, 90, 200, 420, 22);
+      g.lineStyle(6, PALETTE.outline, 1).strokeRoundedRect(TOOL_X - 100, 90, 200, 420, 22);
+    });
+    this.add
+      .image(0, 0, BOARD_KEY)
+      .setOrigin(0, 0)
+      .setScale(1 / RS);
 
     // Centre the picture on the paper.
     const ps = this.model.pieces;
