@@ -4,7 +4,7 @@ import { voice } from '../audio/voice';
 import { maskFor, solidAt } from '../art/alphaMask';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
-import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook } from '../art/characters';
+import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook, walkFrame } from '../art/characters';
 import { groundChunkKey } from '../art/ground';
 import type { IconName } from '../art/icons';
 import { iconKey } from '../art/menu';
@@ -244,8 +244,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private playerImg!: Phaser.GameObjects.Image;
   private props: Prop[] = [];
   private target!: Phaser.GameObjects.Image;
-  private bobTimer = 0;
-  private bobFrame: 0 | 1 = 0;
+  /** Seconds the player has been walking without a stop (drives the walk cycle). */
+  private walkT = 0;
   private autoEnter: VehicleId | null = null;
   /** Where you stand to play / open things, and whether you're on one now. */
   private spots: {
@@ -1875,18 +1875,14 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
 
     const p = gridToScreen(this.player.pos.x, this.player.pos.y);
     this.playerImg.setPosition(p.x, p.y);
-    if (this.player.moving) {
-      this.bobTimer += dt;
-      if (this.bobTimer > 0.14) {
-        this.bobTimer = 0;
-        this.bobFrame = this.bobFrame === 0 ? 1 : 0;
-      }
-    } else {
-      this.bobFrame = 0;
-      this.bobTimer = 0;
-    }
+    // Walk cycle: step, stand, other step, stand, for as long as the player keeps moving.
+    this.walkT = this.player.moving ? this.walkT + dt : 0;
     this.playerImg.setTexture(
-      characterFrameKey(this.playerLook(), this.player.facing, this.bobFrame),
+      characterFrameKey(
+        this.playerLook(),
+        this.player.facing,
+        this.player.moving ? walkFrame(this.walkT) : 0,
+      ),
     );
   }
 

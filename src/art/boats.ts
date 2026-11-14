@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import { PALETTE } from '../config';
+import { bakeGraphics } from './bake';
 import { darken, lighten } from './color';
 import {
   bakeParts,
@@ -285,7 +286,7 @@ export function bakeSeaArt(scene: Phaser.Scene): void {
     ];
     for (const [x, y, w] of spots) mark(x, y, w, light, 0.7);
     for (const [x, y, w] of spots) mark((x + 110) % size, (y + 60) % size, w * 0.8, dark, 0.35);
-    g.generateTexture(SEA.waves, size, size);
+    bakeGraphics(scene, g, SEA.waves, size, size);
     g.destroy();
   }
 }

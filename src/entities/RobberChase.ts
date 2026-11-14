@@ -2,7 +2,7 @@ import type Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
-import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
+import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, walkFrame } from '../art/characters';
 import { WT } from '../art/renderScale';
 import {
   GETAWAY_CAR,
@@ -317,6 +317,8 @@ export class RobberChase {
           y: vs.y - 6,
           duration: 1500,
           ease: 'Linear',
+          onUpdate: (tw) =>
+            robber.setTexture(characterFrameKey(this.name, facing, walkFrame(tw.progress * 1.5))),
           onComplete: () => {
             sfx.play('pop');
             scene.tweens.add({

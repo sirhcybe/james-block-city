@@ -63,7 +63,7 @@ export class GalleryScene extends Phaser.Scene {
     }
 
     FACINGS.forEach((f, i) => {
-      for (const fr of [0, 1] as const) {
+      for (const fr of [0, 1, 2] as const) {
         this.add
           .image(1100 + fr * 60, 60 + i * 90, characterFrameKey('player', f, fr))
           .setOrigin(0.5, 0)

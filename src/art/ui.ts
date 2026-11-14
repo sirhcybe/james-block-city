@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import { JOYSTICK_RADIUS, PALETTE } from '../config';
+import { bakeGraphics } from './bake';
 import { darken, lighten } from './color';
 import { RS, WT } from './renderScale';
 
@@ -24,7 +25,7 @@ export function bakeIcon(
   if (scene.textures.exists(key)) return;
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
   draw(g, scale);
-  g.generateTexture(key, Math.ceil(w * scale), Math.ceil(h * scale));
+  bakeGraphics(scene, g, key, Math.ceil(w * scale), Math.ceil(h * scale));
   g.destroy();
 }
 

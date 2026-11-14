@@ -12,6 +12,7 @@ import {
   type OrientedBox,
   type OrientedFace,
 } from './isoShapes';
+import { bakeGraphics, type Ctx } from './bake';
 import { WT } from './renderScale';
 
 export interface BlockStyle {
@@ -262,6 +263,12 @@ export type Part =
       type: 'custom';
       bounds: Vec2[];
       draw: (g: Phaser.GameObjects.Graphics, ox: number, oy: number, s: number) => void;
+    }
+  | {
+      /** Drawn straight onto the 2D context (curves, clipping), in order with the other parts. */
+      type: 'canvas';
+      bounds: Vec2[];
+      draw: (ctx: Ctx, ox: number, oy: number, s: number) => void;
     };
 
 function partBounds(p: Part, s: number): Vec2[] {
@@ -287,14 +294,32 @@ export function bakeParts(scene: Phaser.Scene, key: string, parts: Part[], s = W
   const height = Math.ceil(bb.maxY - bb.minY + pad * 2);
 
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  const tex = bakeGraphics(scene, g, key, width, height);
+  const ctx = tex.getContext();
+  let pending = false;
+  // Graphics commands are drawn when flushed, so flush before each canvas part to keep the order.
+  const flush = () => {
+    if (!pending) return;
+    g.generateTexture(key, width, height);
+    g.clear();
+    pending = false;
+  };
   for (const p of parts) {
+    if (p.type === 'canvas') {
+      flush();
+      ctx.save();
+      p.draw(ctx, ox, oy, s);
+      ctx.restore();
+      continue;
+    }
+    pending = true;
     if (p.type === 'block') drawIsoBlock(g, p, ox, oy, s);
     else if (p.type === 'window')
       drawWindow(g, p.block, p.face, p.u0, p.u1, p.z0, p.z1, ox, oy, p.color, s);
     else p.draw(g, ox, oy, s);
   }
-  if (scene.textures.exists(key)) scene.textures.remove(key);
-  g.generateTexture(key, width, height);
+  flush();
+  tex.refresh();
   g.destroy();
 
   const meta: BakedMeta = { key, originX: ox / width, originY: oy / height, width, height };
