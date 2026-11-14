@@ -5,6 +5,7 @@ import { HUD } from '../art/hud';
 import type { IconName } from '../art/icons';
 import { iconKey, MENU } from '../art/menu';
 import { RS } from '../art/renderScale';
+import { bakeIcon } from '../art/ui';
 import { GAME_H, GAME_W, PALETTE } from '../config';
 import type { GameState } from '../systems/GameState';
 import { Hearts, heartsFor, levelFor, starMeter, Streak } from '../systems/round';
@@ -36,26 +37,44 @@ export type Backdrop = 'sky' | 'site';
  * Scenes draw their own stage on top.
  */
 export function drawBackdrop(scene: Phaser.Scene, kind: Backdrop = 'sky'): void {
-  const g = scene.add.graphics().setDepth(-20);
-  const bands = [0x8fd3ff, 0x9fdcff, 0xb3e4ff, 0xc9edff];
-  bands.forEach((c, i) => g.fillStyle(c, 1).fillRect(0, (GAME_H * i) / 4, GAME_W, GAME_H / 4 + 1));
-  // Sun.
-  g.fillStyle(0xfff3a0, 0.5).fillCircle(1150, 120, 78);
-  g.fillStyle(0xffe066, 1).fillCircle(1150, 120, 52);
-  // Hills.
-  const far = kind === 'site' ? 0xd9b97a : 0x9be07c;
-  const near = kind === 'site' ? 0xc9a060 : 0x7bd35a;
-  g.fillStyle(far, 1)
-    .fillEllipse(300, GAME_H + 40, 900, 420)
-    .fillEllipse(1050, GAME_H + 60, 800, 380);
-  g.fillStyle(near, 1).fillEllipse(680, GAME_H + 130, 1700, 420);
+  // Baked once into textures (redrawing big vector shapes every frame halved the frame rate on
+  // slow GPUs). The sky is soft, so it is baked at logical size; the cloud at full resolution.
+  const key = `mg-backdrop-${kind}`;
+  bakeIcon(
+    scene,
+    key,
+    GAME_W,
+    GAME_H,
+    (g) => {
+      const bands = [0x8fd3ff, 0x9fdcff, 0xb3e4ff, 0xc9edff];
+      bands.forEach((c, i) =>
+        g.fillStyle(c, 1).fillRect(0, (GAME_H * i) / 4, GAME_W, GAME_H / 4 + 1),
+      );
+      g.fillStyle(0xfff3a0, 0.5).fillCircle(1150, 120, 78);
+      g.fillStyle(0xffe066, 1).fillCircle(1150, 120, 52);
+      const far = kind === 'site' ? 0xd9b97a : 0x9be07c;
+      const near = kind === 'site' ? 0xc9a060 : 0x7bd35a;
+      g.fillStyle(far, 1)
+        .fillEllipse(300, GAME_H + 40, 900, 420)
+        .fillEllipse(1050, GAME_H + 60, 800, 380);
+      g.fillStyle(near, 1).fillEllipse(680, GAME_H + 130, 1700, 420);
+    },
+    1,
+  );
+  scene.add.image(0, 0, key).setOrigin(0, 0).setDepth(-20);
+  bakeIcon(scene, MG_CLOUD, 200, 90, (g, s) => {
+    g.fillStyle(0xffffff, 0.95);
+    g.fillEllipse(100 * s, 56 * s, 150 * s, 46 * s)
+      .fillEllipse(64 * s, 38 * s, 80 * s, 46 * s)
+      .fillEllipse(130 * s, 32 * s, 96 * s, 56 * s);
+  });
   // Clouds that drift across and come round again.
   for (let i = 0; i < 4; i++) {
-    const c = scene.add.graphics().setDepth(-19);
-    c.fillStyle(0xffffff, 0.95);
-    c.fillEllipse(0, 0, 150, 46).fillEllipse(-36, -18, 80, 46).fillEllipse(30, -24, 96, 56);
     const y = 130 + i * 58 + (i % 2) * 20;
-    c.setPosition(-200 + i * 380, y).setScale(0.7 + (i % 3) * 0.2);
+    const c = scene.add
+      .image(-200 + i * 380, y, MG_CLOUD)
+      .setScale((0.7 + (i % 3) * 0.2) / RS)
+      .setDepth(-19);
     scene.tweens.add({
       targets: c,
       x: GAME_W + 220,
@@ -72,6 +91,9 @@ export function drawBackdrop(scene: Phaser.Scene, kind: Backdrop = 'sky'): void 
     });
   }
 }
+
+const MG_CLOUD = 'mg-cloud';
+const MG_TOPBAR = 'mg-topbar';
 
 /**
  * Shared bones of every minigame scene (spec 003+, top bar and hearts from spec 008): launched
@@ -153,9 +175,51 @@ export abstract class MinigameScene extends Phaser.Scene {
   /** Draw the shared top bar. Call once from create(), after the scene's own background. */
   protected addTopBar(icon: IconName): void {
     const D = 30;
-    const g = this.add.graphics().setDepth(D);
-    // A soft plate behind the score so it reads on any background.
-    g.fillStyle(0x2b2d42, 0.28).fillRoundedRect(14, 12, 216, 68, 34);
+    // The plate, the bar frames and the clock never change: one baked texture.
+    bakeIcon(this, MG_TOPBAR, GAME_W, 96, (g, s) => {
+      g.fillStyle(0x2b2d42, 0.28).fillRoundedRect(14 * s, 12 * s, 216 * s, 68 * s, 34 * s);
+      const m = BAR.meter;
+      g.fillStyle(0x2b2d42, 1).fillRoundedRect(
+        (m.x - 5) * s,
+        (m.y - m.h / 2 - 5) * s,
+        (m.w + 10) * s,
+        (m.h + 10) * s,
+        18 * s,
+      );
+      g.fillStyle(0xffffff, 0.92).fillRoundedRect(
+        m.x * s,
+        (m.y - m.h / 2) * s,
+        m.w * s,
+        m.h * s,
+        13 * s,
+      );
+      const t = BAR.time;
+      g.fillStyle(0x2b2d42, 1).fillRoundedRect(
+        (t.x - 5) * s,
+        (t.y - t.h / 2 - 5) * s,
+        (t.w + 10) * s,
+        (t.h + 10) * s,
+        14 * s,
+      );
+      g.fillStyle(0xffffff, 0.92).fillRoundedRect(
+        t.x * s,
+        (t.y - t.h / 2) * s,
+        t.w * s,
+        t.h * s,
+        9 * s,
+      );
+      const cx = (t.x - 30) * s;
+      const cy = t.y * s;
+      g.fillStyle(0xffffff, 1).fillCircle(cx, cy, 17 * s);
+      g.lineStyle(4 * s, PALETTE.outline, 1).strokeCircle(cx, cy, 17 * s);
+      g.lineBetween(cx, cy, cx, cy - 10 * s);
+      g.lineBetween(cx, cy, cx + 8 * s, cy + 3 * s);
+    });
+    this.add
+      .image(0, 0, MG_TOPBAR)
+      .setOrigin(0, 0)
+      .setScale(1 / RS)
+      .setDepth(D);
     this.add
       .image(BAR.icon.x, BAR.icon.y, iconKey(icon))
       .setScale(0.48 / RS)
@@ -168,8 +232,6 @@ export abstract class MinigameScene extends Phaser.Scene {
     // Star meter: fills toward the 3-star score; the stars light up as it passes them.
     const m = BAR.meter;
     const marks = starMeter(0, this.def.tiers);
-    g.fillStyle(0x2b2d42, 1).fillRoundedRect(m.x - 5, m.y - m.h / 2 - 5, m.w + 10, m.h + 10, 18);
-    g.fillStyle(0xffffff, 0.92).fillRoundedRect(m.x, m.y - m.h / 2, m.w, m.h, 13);
     this.meterFill = this.add
       .rectangle(m.x, m.y, 1, m.h, PALETTE.coinGold)
       .setOrigin(0, 0.5)
@@ -183,17 +245,10 @@ export abstract class MinigameScene extends Phaser.Scene {
 
     // Time bar with a little clock: it empties as the round runs out.
     const t = BAR.time;
-    g.fillStyle(0x2b2d42, 1).fillRoundedRect(t.x - 5, t.y - t.h / 2 - 5, t.w + 10, t.h + 10, 14);
-    g.fillStyle(0xffffff, 0.92).fillRoundedRect(t.x, t.y - t.h / 2, t.w, t.h, 9);
     this.timeFill = this.add
       .rectangle(t.x, t.y, t.w, t.h, PALETTE.harborTeal)
       .setOrigin(0, 0.5)
       .setDepth(D + 1);
-    const cx = t.x - 30;
-    g.fillStyle(0xffffff, 1).fillCircle(cx, t.y, 17);
-    g.lineStyle(4, PALETTE.outline, 1).strokeCircle(cx, t.y, 17);
-    g.lineBetween(cx, t.y, cx, t.y - 10);
-    g.lineBetween(cx, t.y, cx + 8, t.y + 3);
 
     // Hearts (only in games that have them).
     for (let i = 0; i < this.hearts.max; i++) {

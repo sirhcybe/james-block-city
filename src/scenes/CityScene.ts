@@ -158,6 +158,18 @@ const ERRAND_LINES: Record<string, string> = {
   'deliver-pizza': 'errand-pizza',
 };
 
+/** Whether the browser draws without a GPU (SwiftShader, llvmpipe, or the Canvas renderer). */
+function softwareRendering(game: Phaser.Game): boolean {
+  const r = game.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
+  const gl = (r as { gl?: WebGLRenderingContext }).gl;
+  if (!gl) return true;
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const name = String(
+    info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+  );
+  return /swiftshader|llvmpipe|software/i.test(name);
+}
+
 /** Robber looks by who and what he drives. */
 function robberLooks(spec: RobberSpec, bumps: number): RobberLooks {
   if (spec.vehicle === 'heli')
@@ -202,6 +214,9 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private seaGrid!: WalkGrid;
   private waves: Phaser.GameObjects.TileSprite | null = null;
   private guide = new ObjectiveGuide();
+  /** Things that never move (street furniture, bushes, lights): drawn only when near the camera. */
+  private decor: { img: Phaser.GameObjects.Image; bounds: Phaser.Geom.Rectangle }[] = [];
+  private cullT = 0;
   private stationImgs: Phaser.GameObjects.Image[] = [];
   /** Builder build spots by id (spec 005). */
   readonly sites = new Map<string, BuildSite>();
@@ -625,6 +640,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.blastCooldown = BUILD.cooldownSec;
     sfx.play('thunk');
     this.pauseForOverlay();
+    this.hideUnder();
     this.scene.launch('BuildIt', { site: id, giant: this.state.owns('giant-drum') });
   }
 
@@ -749,6 +765,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.registry.set(INPUT_KEY, this.input2);
     this.registry.set(OPEN_JOBS_KEY, () => this.openMenu('JobCenter'));
     this.props = [];
+    this.decor = [];
     this.pickups.length = 0;
     this.bumpables.length = 0;
     this.walkers.length = 0;
@@ -777,19 +794,25 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const cam = this.cameras.main;
     cam.setZoom(RS * WORLD_ZOOM).setBackgroundColor(PALETTE.water);
 
-    // The sea: one tile of wave marks that follows the camera and drifts (cheap, any map size).
-    this.waves = this.add
-      .tileSprite(0, 0, 64, 64, SEA.waves)
-      .setOrigin(0, 0)
-      .setDepth(-1_000_001)
-      .setTileScale(0.5);
+    // The sea: one tile of wave marks that follows the camera and drifts (cheap on a real GPU, any
+    // map size). Skipped when the browser draws in software (no GPU): there a full-screen layer
+    // costs a big share of every frame.
+    this.waves = softwareRendering(this.game)
+      ? null
+      : this.add
+          .tileSprite(0, 0, 64, 64, SEA.waves)
+          .setOrigin(0, 0)
+          .setDepth(-1_000_001)
+          .setTileScale(0.5);
 
     // Ground chunks (all-sea chunks have no texture).
     for (let cy = 0; cy < this.map.height; cy += 16) {
       for (let cx = 0; cx < this.map.width; cx += 16) {
         const key = groundChunkKey(this.map, cx, cy);
         if (!this.textures.exists(key)) continue;
-        addBakedImage(this, getBaked(key), 0, 0).setDepth(-1_000_000);
+        // Ground chunks are big: draw only the ones near the camera (see cull()).
+        const img = addBakedImage(this, getBaked(key), 0, 0).setDepth(-1_000_000);
+        this.decor.push({ img, bounds: img.getBounds() });
       }
     }
 
@@ -821,22 +844,30 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     }
 
     // Small props: cones and cans tumble; lights, bushes and the board just stand there.
+    const still = (img: Phaser.GameObjects.Image) =>
+      this.decor.push({ img, bounds: img.getBounds() });
     for (const p of this.map.props) {
       const s = gridToScreen(p.gx, p.gy);
       if (p.kind === 'trafficLight') {
-        addBakedImage(this, getBaked(PROP.trafficLight), s.x, s.y).setDepth(
-          depthOf(p.gx, p.gy) + 30,
+        still(
+          addBakedImage(this, getBaked(PROP.trafficLight), s.x, s.y).setDepth(
+            depthOf(p.gx, p.gy) + 30,
+          ),
         );
       } else if (p.kind === 'bush') {
-        addBakedImage(this, getBaked(MPROP.bush), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20);
+        still(
+          addBakedImage(this, getBaked(MPROP.bush), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20),
+        );
       } else if (p.kind === 'grill') {
         addBakedImage(this, getBaked(MPROP.grill), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
       } else if (p.kind === 'board') {
         addBakedImage(this, getBaked(MPROP.board), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
       } else if (p.kind === 'flowers') {
-        addBakedImage(this, getBaked(PROP.flowers), s.x, s.y).setDepth(-999_995);
+        still(addBakedImage(this, getBaked(PROP.flowers), s.x, s.y).setDepth(-999_995));
       } else if (p.kind === 'bench' || p.kind === 'lamp' || p.kind === 'planter') {
-        addBakedImage(this, getBaked(PROP[p.kind]), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20);
+        still(
+          addBakedImage(this, getBaked(PROP[p.kind]), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20),
+        );
       } else if (p.kind === 'buoy') {
         // Buoys bob on the swell.
         const img = addBakedImage(this, getBaked(PROP.buoy), s.x, s.y).setDepth(
@@ -1157,6 +1188,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     // Let go of everything on the way out and on the way back.
     for (const ev of [Phaser.Scenes.Events.PAUSE, Phaser.Scenes.Events.RESUME]) {
       this.events.on(ev, () => {
+        if (ev === Phaser.Scenes.Events.RESUME) this.scene.setVisible(true);
         this.input2.reset();
         uiDown.clear();
       });
@@ -1423,11 +1455,21 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.scene.sleep('Hud');
   }
 
+  /**
+   * A full-screen game is going over the city: stop drawing the city underneath (nobody can see
+   * it, and drawing the whole map every frame slowed minigames down on weak phones). It shows
+   * again when the city resumes.
+   */
+  private hideUnder(): void {
+    this.scene.setVisible(false);
+  }
+
   startMinigame(id = 'traffic-helper'): void {
     const mg = MINIGAMES[id];
     if (!mg) return;
     this.onSpot = id;
     this.pauseForOverlay();
+    this.hideUnder();
     this.scene.launch(mg.scene, { id, plays: this.state.plays(id) });
   }
 
@@ -1690,7 +1732,22 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.updateGuide(dt);
 
     this.updateDepths();
+    this.cull(dt);
     this.publishHud();
+  }
+
+  /**
+   * Don't draw buildings and street furniture that are well off camera (spec 008: the bigger map
+   * has twice the things in it). Checked a few times a second; buildings keep their fade.
+   */
+  private cull(dt: number): void {
+    this.cullT -= dt;
+    if (this.cullT > 0) return;
+    this.cullT = 0.15;
+    const v = this.cameras.main.worldView;
+    const view = new Phaser.Geom.Rectangle(v.x - 160, v.y - 220, v.width + 320, v.height + 440);
+    for (const d of this.decor) d.img.setVisible(Phaser.Geom.Rectangle.Overlaps(view, d.bounds));
+    for (const p of this.props) p.image.setVisible(Phaser.Geom.Rectangle.Overlaps(view, p.bounds));
   }
 
   /** The moving sea: the wave tile sits under the camera and slides slowly. */
