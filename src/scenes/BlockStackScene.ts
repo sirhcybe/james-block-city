@@ -97,7 +97,7 @@ export class BlockStackScene extends MinigameScene {
           this.good(x, y - 40);
           // Scroll the tower down so the top stays in view.
           const want = Math.max(0, (e.height - 6) * BLOCK_H);
-          this.tweens.add({ targets: this.stack, y: want, duration: 300 });
+          this.tweens.add({ ease: 'Quad.easeOut', targets: this.stack, y: want, duration: 300 });
         },
       });
       voice.say('bs-stack', { minGapMs: 2500 });

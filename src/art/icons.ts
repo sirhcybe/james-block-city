@@ -430,10 +430,12 @@ function badge(p: Pen, color: number = PALETTE.coinGold): void {
   drawStar(p.g, p.x, p.y, p.r * 0.5, lighten(color, 0.45), p.ow * 0.7);
 }
 
-function flame(p: Pen, face: boolean): void {
+function flame(p: Pen, face: boolean, flick = false): void {
+  // Two shapes for the flicker: the tips lean one way, then the other.
+  const k = flick ? -1 : 1;
   p.poly(
     [
-      [0.05, -1],
+      [0.05 * k, -1 + (flick ? 0.06 : 0)],
       [0.3, -0.55],
       [0.56, -0.2],
       [0.7, 0.2],
@@ -443,7 +445,7 @@ function flame(p: Pen, face: boolean): void {
       [-0.62, 0.56],
       [-0.7, 0.2],
       [-0.62, -0.1],
-      [-0.5, -0.44],
+      [flick ? -0.56 : -0.5, flick ? -0.34 : -0.44],
       [-0.3, -0.14],
       [-0.16, -0.52],
     ],
@@ -451,7 +453,7 @@ function flame(p: Pen, face: boolean): void {
   );
   p.poly(
     [
-      [0.02, -0.3],
+      [0.02 * k, flick ? -0.24 : -0.3],
       [0.3, 0.14],
       [0.4, 0.46],
       [0.24, 0.74],
@@ -469,6 +471,11 @@ function flame(p: Pen, face: boolean): void {
     }
     p.arc(0, 0.72, 0.12, Math.PI * 1.15, Math.PI * 1.85, OL, 0.7);
   }
+}
+
+/** The grumpy flame, in either of its two flicker shapes. */
+export function drawFlame(g: G, x: number, y: number, r: number, s: number, flick: boolean): void {
+  flame(new Pen(g, x, y, r, s), true, flick);
 }
 
 function kitten(p: Pen): void {

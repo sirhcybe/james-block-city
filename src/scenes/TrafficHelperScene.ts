@@ -96,7 +96,13 @@ export class TrafficHelperScene extends MinigameScene {
       if (e.type === 'light') {
         this.light.setTexture(e.red ? MG.lightRed : MG.light);
         sfx.play('pop', e.red ? 0.8 : 1.2);
-        this.tweens.add({ targets: this.light, scale: 0.98 / RS, duration: 80, yoyo: true });
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: this.light,
+          scale: 0.98 / RS,
+          duration: 80,
+          yoyo: true,
+        });
       } else if (e.type === 'score') {
         sfx.play('quack', 1.1);
         const img = this.walkerImgs.get(e.walker);
@@ -104,6 +110,7 @@ export class TrafficHelperScene extends MinigameScene {
         if (img) {
           this.walkerImgs.delete(e.walker);
           this.tweens.add({
+            ease: 'Quad.easeIn',
             targets: img,
             x: img.x + 260,
             y: img.y - 30,
@@ -121,8 +128,16 @@ export class TrafficHelperScene extends MinigameScene {
         const img = this.walkerImgs.get(e.walker);
         if (img) {
           img.y = WAIT_Y;
-          this.tweens.add({ targets: img, y: WAIT_Y - 46, duration: 130, yoyo: true, repeat: 1 });
           this.tweens.add({
+            ease: 'Quad.easeOut',
+            targets: img,
+            y: WAIT_Y - 46,
+            duration: 130,
+            yoyo: true,
+            repeat: 1,
+          });
+          this.tweens.add({
+            ease: 'Sine.easeInOut',
             targets: img,
             angle: { from: -14, to: 14 },
             duration: 70,

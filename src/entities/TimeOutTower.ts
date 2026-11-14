@@ -95,6 +95,7 @@ export class TimeOutTower {
         },
         onComplete: () => {
           this.scene.tweens.add({
+            ease: 'Quad.easeIn',
             targets: img,
             x: img.x + 60,
             y: img.y + 30,

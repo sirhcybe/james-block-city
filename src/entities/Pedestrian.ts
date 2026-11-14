@@ -6,6 +6,7 @@ import {
   walkFrame,
   type CharFrame,
 } from '../art/characters';
+import { landSquash } from '../art/anim';
 import { WT } from '../art/renderScale';
 import type { WalkerDef } from '../content/schema';
 import { gridToScreen, type Vec2 } from '../iso/projection';
@@ -58,7 +59,10 @@ export class Pedestrian {
         duration: 220,
         yoyo: true,
         ease: 'Quad.easeOut',
-        onComplete: () => (this.hopping = false),
+        onComplete: () => {
+          this.hopping = false;
+          landSquash(this.scene, this.img);
+        },
       });
     }
 

@@ -173,6 +173,54 @@ export function bakeGround(scene: Phaser.Scene, m: MapDef): BakedMeta[] {
                 }
               }
 
+              // Kerbs: where a road meets anything else, a pale kerb stone with a dark seam, so
+              // roads have a crisp edge instead of two flat colours touching.
+              const kerb = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+                g.lineStyle(3 * s, 0xf1f3f7, 1);
+                g.lineBetween(a.x, a.y, b.x, b.y);
+                g.lineStyle(Math.max(1, s), darken(PALETTE.road, 0.35), 0.9);
+                g.lineBetween(a.x, a.y, b.x, b.y);
+              };
+              const inMap = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H;
+              for (let y = cy; y < y1; y++) {
+                for (let x = cx; x < x1; x++) {
+                  if (!isRoad(x, y)) continue;
+                  if (inMap(x, y - 1) && !isRoad(x, y - 1)) kerb(P(x, y), P(x + 1, y));
+                  if (inMap(x, y + 1) && !isRoad(x, y + 1)) kerb(P(x, y + 1), P(x + 1, y + 1));
+                  if (inMap(x - 1, y) && !isRoad(x - 1, y)) kerb(P(x, y), P(x, y + 1));
+                  if (inMap(x + 1, y) && !isRoad(x + 1, y)) kerb(P(x + 1, y), P(x + 1, y + 1));
+                }
+              }
+
+              // Coastline: the outline runs round the top edge of the land wherever it meets the
+              // open sea, and down the corners of the earth sides.
+              g.lineStyle(2 * s, PALETTE.outline, 1);
+              const coast = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+                g.lineBetween(a.x, a.y, b.x, b.y);
+              const open = (x: number, y: number) => !inMap(x, y) || isSeaEdge(x, y);
+              for (let y = cy; y < y1; y++) {
+                for (let x = cx; x < x1; x++) {
+                  if (open(x, y)) continue;
+                  if (open(x, y - 1)) coast(P(x, y), P(x + 1, y));
+                  if (open(x, y + 1)) coast(P(x, y + 1), P(x + 1, y + 1));
+                  if (open(x - 1, y)) coast(P(x, y), P(x, y + 1));
+                  if (open(x + 1, y)) coast(P(x + 1, y), P(x + 1, y + 1));
+                  // Vertical edges where a run of earth side starts, ends or turns a corner.
+                  if (open(x, y + 1) && (open(x - 1, y) || !open(x - 1, y + 1)))
+                    coast(P(x, y + 1), P(x, y + 1, -SLAB_H));
+                  if (open(x + 1, y) && (open(x, y - 1) || !open(x + 1, y - 1)))
+                    coast(P(x + 1, y), P(x + 1, y, -SLAB_H));
+                  if (open(x, y + 1) || open(x + 1, y)) {
+                    if (open(x, y + 1) && open(x + 1, y))
+                      coast(P(x + 1, y + 1), P(x + 1, y + 1, -SLAB_H));
+                    else if (open(x, y + 1) && !open(x + 1, y + 1))
+                      coast(P(x + 1, y + 1), P(x + 1, y + 1, -SLAB_H));
+                    else if (open(x + 1, y) && !open(x + 1, y + 1))
+                      coast(P(x + 1, y + 1), P(x + 1, y + 1, -SLAB_H));
+                  }
+                }
+              }
+
               // Dashed centre lines between two-lane road stripes.
               g.lineStyle(2.5 * s, PALETTE.roadLine, 0.95);
               const dash = (a: { x: number; y: number }, b: { x: number; y: number }) => {

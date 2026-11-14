@@ -40,7 +40,11 @@ export function bakeUi(scene: Phaser.Scene): void {
     g.fillStyle(PALETTE.policeBlue, 1);
     g.fillCircle(c, c, r);
     g.fillStyle(lighten(PALETTE.policeBlue, 0.25), 1);
-    g.fillCircle(c, c, r * 0.82);
+    g.fillCircle(c, c - r * 0.05, r * 0.84);
+    g.lineStyle(r * 0.05, 0xffffff, 0.55);
+    g.beginPath();
+    g.arc(c, c - r * 0.05, r * 0.7, Math.PI * 1.12, Math.PI * 1.42, false);
+    g.strokePath();
     g.lineStyle(6 * s, PALETTE.outline, 1);
     g.strokeCircle(c, c, r);
     const t = r * 0.42;
@@ -83,12 +87,15 @@ export function bakeUi(scene: Phaser.Scene): void {
     36,
     (g, s) => {
       const pts = [
-        { x: 34 * s, y: 2 * s },
-        { x: 66 * s, y: 18 * s },
-        { x: 34 * s, y: 34 * s },
-        { x: 2 * s, y: 18 * s },
+        { x: 34 * s, y: 4 * s },
+        { x: 62 * s, y: 18 * s },
+        { x: 34 * s, y: 32 * s },
+        { x: 6 * s, y: 18 * s },
       ];
-      g.lineStyle(5 * s, PALETTE.coinGold, 1);
+      // Gold ring with the outline round it.
+      g.lineStyle(7 * s, PALETTE.outline, 0.9);
+      g.strokePoints(pts, true);
+      g.lineStyle(3.6 * s, PALETTE.coinGold, 1);
       g.strokePoints(pts, true);
     },
     WT,

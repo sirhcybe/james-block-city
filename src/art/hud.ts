@@ -46,35 +46,59 @@ function roundButton(
   g.fillCircle(c, c, r);
   g.fillStyle(lighten(color, 0.2), 1);
   g.fillCircle(c, c - r * 0.08, r * 0.84);
+  // A soft shine along the upper left of the face.
+  g.lineStyle(Math.max(2 * s, r * 0.05), 0xffffff, 0.55);
+  g.beginPath();
+  g.arc(c, c - r * 0.08, r * 0.7, Math.PI * 1.12, Math.PI * 1.42, false);
+  g.strokePath();
   g.lineStyle(5 * s, PALETTE.outline, 1);
   g.strokeCircle(c, c, r);
   return c;
 }
 
-/** Side-view car picture centred on (x, y). */
+/** Side-view police car picture centred on (x, y): every part outlined. */
 function carIcon(g: Phaser.GameObjects.Graphics, x: number, y: number, k: number, s: number): void {
   const u = k * s;
-  g.lineStyle(3 * s, PALETTE.outline, 1);
+  const ol = PALETTE.outline;
+  const lw = 3 * s;
+  g.lineStyle(lw, ol, 1);
+  // Light bar, cabin, body (back to front), then windows, stripe, lights and wheels.
+  for (const [lx, c] of [
+    [-7, PALETTE.fireRed],
+    [0, PALETTE.policeBlue],
+  ] as const) {
+    g.fillStyle(c, 1);
+    g.fillRoundedRect(x + lx * u, y - 31 * u, 7 * u, 8 * u, 2 * u);
+    g.strokeRoundedRect(x + lx * u, y - 31 * u, 7 * u, 8 * u, 2 * u);
+  }
+  g.fillStyle(PALETTE.policeBlue, 1);
+  g.fillRoundedRect(x - 19 * u, y - 25 * u, 36 * u, 22 * u, 7 * u);
+  g.strokeRoundedRect(x - 19 * u, y - 25 * u, 36 * u, 22 * u, 7 * u);
   g.fillStyle(PALETTE.buildingWhite, 1);
-  g.fillRoundedRect(x - 34 * u, y - 8 * u, 68 * u, 22 * u, 7 * u);
-  g.strokeRoundedRect(x - 34 * u, y - 8 * u, 68 * u, 22 * u, 7 * u);
+  g.fillRoundedRect(x - 35 * u, y - 9 * u, 70 * u, 23 * u, 8 * u);
   g.fillStyle(PALETTE.policeBlue, 1);
-  g.fillRoundedRect(x - 18 * u, y - 24 * u, 34 * u, 18 * u, 6 * u);
-  g.strokeRoundedRect(x - 18 * u, y - 24 * u, 34 * u, 18 * u, 6 * u);
+  g.fillRect(x - 33.5 * u, y + 1 * u, 67 * u, 5 * u);
+  g.lineStyle(lw, ol, 1);
+  g.strokeRoundedRect(x - 35 * u, y - 9 * u, 70 * u, 23 * u, 8 * u);
   g.fillStyle(PALETTE.windowBlue, 1);
-  g.fillRoundedRect(x - 13 * u, y - 20 * u, 24 * u, 10 * u, 3 * u);
-  g.fillStyle(PALETTE.fireRed, 1);
-  g.fillRect(x - 6 * u, y - 30 * u, 6 * u, 6 * u);
-  g.fillStyle(PALETTE.policeBlue, 1);
-  g.fillRect(x, y - 30 * u, 6 * u, 6 * u);
+  g.fillRoundedRect(x - 14 * u, y - 21 * u, 26 * u, 11 * u, 3 * u);
+  g.lineStyle(lw * 0.6, ol, 1);
+  g.strokeRoundedRect(x - 14 * u, y - 21 * u, 26 * u, 11 * u, 3 * u);
+  g.lineBetween(x - 1 * u, y - 21 * u, x - 1 * u, y - 10 * u);
+  g.fillStyle(0xfff1a8, 1);
+  g.fillCircle(x + 31 * u, y - 2 * u, 3 * u);
+  g.strokeCircle(x + 31 * u, y - 2 * u, 3 * u);
   for (const wx of [-20, 20]) {
-    g.fillStyle(PALETTE.outline, 1);
+    g.fillStyle(0x3a3d4a, 1);
     g.fillCircle(x + wx * u, y + 15 * u, 9 * u);
+    g.lineStyle(lw, ol, 1);
+    g.strokeCircle(x + wx * u, y + 15 * u, 9 * u);
     g.fillStyle(0xc9ced8, 1);
     g.fillCircle(x + wx * u, y + 15 * u, 4 * u);
   }
 }
 
+/** A little person (head and shoulders) centred on (x, y): hair, eyes, smile, all inside the head. */
 function personIcon(
   g: Phaser.GameObjects.Graphics,
   x: number,
@@ -83,16 +107,31 @@ function personIcon(
   s: number,
 ): void {
   const u = k * s;
-  g.lineStyle(3 * s, PALETTE.outline, 1);
+  const ol = PALETTE.outline;
+  g.lineStyle(3 * s, ol, 1);
   g.fillStyle(PALETTE.policeBlue, 1);
-  g.fillRoundedRect(x - 12 * u, y - 4 * u, 24 * u, 26 * u, 8 * u);
-  g.strokeRoundedRect(x - 12 * u, y - 4 * u, 24 * u, 26 * u, 8 * u);
+  g.fillRoundedRect(x - 13 * u, y - 5 * u, 26 * u, 27 * u, 9 * u);
+  g.strokeRoundedRect(x - 13 * u, y - 5 * u, 26 * u, 27 * u, 9 * u);
+  const hy = y - 17 * u;
+  const hr = 12.5 * u;
   g.fillStyle(PALETTE.skin, 1);
-  g.fillCircle(x, y - 16 * u, 12 * u);
-  g.strokeCircle(x, y - 16 * u, 12 * u);
-  g.fillStyle(PALETTE.outline, 1);
-  g.fillCircle(x - 4 * u, y - 16 * u, 2 * u);
-  g.fillCircle(x + 4 * u, y - 16 * u, 2 * u);
+  g.fillCircle(x, hy, hr);
+  // Hair: the top slice of the head circle, so it can never stick out.
+  g.fillStyle(0x6b4226, 1);
+  g.slice(x, hy, hr, Math.PI * 1.08, Math.PI * 1.92, false);
+  g.fillPath();
+  g.lineStyle(3 * s, ol, 1);
+  g.strokeCircle(x, hy, hr);
+  g.fillStyle(ol, 1);
+  g.fillCircle(x - 4.2 * u, hy + 1.5 * u, 1.9 * u);
+  g.fillCircle(x + 4.2 * u, hy + 1.5 * u, 1.9 * u);
+  g.lineStyle(2 * s, ol, 1);
+  g.beginPath();
+  g.arc(x, hy + 3.5 * u, 4.2 * u, Math.PI * 0.18, Math.PI * 0.82, false);
+  g.strokePath();
+  g.fillStyle(0xff7f8f, 0.5);
+  g.fillCircle(x - 7.2 * u, hy + 5 * u, 1.9 * u);
+  g.fillCircle(x + 7.2 * u, hy + 5 * u, 1.9 * u);
 }
 
 function arrowRight(
@@ -103,17 +142,17 @@ function arrowRight(
   s: number,
 ): void {
   const pts = [
-    { x: x - 12 * u, y: y - 6 * u },
-    { x: x + 2 * u, y: y - 6 * u },
-    { x: x + 2 * u, y: y - 14 * u },
-    { x: x + 16 * u, y },
-    { x: x + 2 * u, y: y + 14 * u },
-    { x: x + 2 * u, y: y + 6 * u },
-    { x: x - 12 * u, y: y + 6 * u },
+    { x: x - 13 * u, y: y - 6.5 * u },
+    { x: x + 1 * u, y: y - 6.5 * u },
+    { x: x + 1 * u, y: y - 15 * u },
+    { x: x + 17 * u, y },
+    { x: x + 1 * u, y: y + 15 * u },
+    { x: x + 1 * u, y: y + 6.5 * u },
+    { x: x - 13 * u, y: y + 6.5 * u },
   ];
-  g.fillStyle(PALETTE.coinGold, 1);
+  g.fillStyle(0xffffff, 1);
   g.fillPoints(pts, true);
-  g.lineStyle(3 * s, PALETTE.outline, 1);
+  g.lineStyle(3.5 * s, PALETTE.outline, 1);
   g.strokePoints(pts, true);
 }
 
@@ -152,13 +191,13 @@ export function bakeHud(scene: Phaser.Scene): void {
   const A = ACTION_SIZE + 8;
   bakeIcon(scene, HUD.actionEnter, A, A + 6, (g, s) => {
     const c = roundButton(g, ACTION_SIZE, PALETTE.grass, s);
-    carIcon(g, c + 6 * s, c + 8 * s, 1.1, s);
-    arrowRight(g, c - 46 * s, c - 4 * s, 1, s);
+    carIcon(g, c + 12 * s, c + 8 * s, 1.25, s);
+    arrowRight(g, c - 44 * s, c - 22 * s, 1.15, s);
   });
   bakeIcon(scene, HUD.actionExit, A, A + 6, (g, s) => {
     const c = roundButton(g, ACTION_SIZE, PALETTE.coinGold, s);
-    personIcon(g, c + 22 * s, c + 6 * s, 1.3, s);
-    arrowRight(g, c - 22 * s, c + 4 * s, 1, s);
+    personIcon(g, c + 20 * s, c + 8 * s, 1.55, s);
+    arrowRight(g, c - 38 * s, c + 6 * s, 1.3, s);
   });
   bakeIcon(scene, HUD.actionNet, A, A + 6, (g, s) => {
     const c = roundButton(g, ACTION_SIZE, PALETTE.coneOrange, s);
@@ -212,15 +251,26 @@ export function bakeHud(scene: Phaser.Scene): void {
       g.strokePath();
       g.fillStyle(PALETTE.outline, 1);
       g.fillRoundedRect(c - 30 * s, c + 12 * s, 60 * s, 10 * s, 3 * s);
-      g.lineStyle(4 * s, 0xffffff, 1);
-      for (const a of [-2.6, -2.1, -1.57, -1.05, -0.55]) {
-        g.lineBetween(
-          c + Math.cos(a) * 30 * s,
-          c + 8 * s + Math.sin(a) * 30 * s,
-          c + Math.cos(a) * 40 * s,
-          c + 8 * s + Math.sin(a) * 40 * s,
-        );
+      // Rays: an outline pass, then white, so each ray is a neat outlined bar.
+      for (const [w, col] of [
+        [8.5 * s, PALETTE.outline],
+        [4 * s, 0xffffff],
+      ] as const) {
+        g.lineStyle(w, col, 1);
+        for (const a of [-2.6, -2.1, -1.57, -1.05, -0.55]) {
+          g.lineBetween(
+            c + Math.cos(a) * 31 * s,
+            c + 8 * s + Math.sin(a) * 31 * s,
+            c + Math.cos(a) * 40 * s,
+            c + 8 * s + Math.sin(a) * 40 * s,
+          );
+        }
       }
+      // A glint on the dome.
+      g.lineStyle(3 * s, 0xffffff, 0.7);
+      g.beginPath();
+      g.arc(c, c + 12 * s, 17 * s, Math.PI * 1.15, Math.PI * 1.4, false);
+      g.strokePath();
     });
   }
 

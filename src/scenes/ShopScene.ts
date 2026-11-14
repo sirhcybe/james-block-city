@@ -179,6 +179,7 @@ export class ShopScene extends Phaser.Scene {
       sfx.play('sparkle');
       voice.say(id === 'own-car' ? 'car-yours' : 'shop-bought', { interrupt: true });
       this.tweens.add({
+        ease: 'Quad.easeOut',
         targets: card,
         scale: (CARD_SCALE * 1.12) / RS,
         duration: 200,
@@ -191,6 +192,7 @@ export class ShopScene extends Phaser.Scene {
     }
     if (this.state.owns(id)) return false;
     this.tweens.add({
+      ease: 'Sine.easeInOut',
       targets: card,
       angle: { from: -4, to: 4 },
       duration: 90,

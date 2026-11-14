@@ -95,6 +95,7 @@ export class JobCenterScene extends Phaser.Scene {
       const soon = !this.state.content.missions.some((m) => m.job === job);
       voice.say(soon ? 'job-soon' : 'job-locked', { interrupt: true });
       this.tweens.add({
+        ease: 'Sine.easeInOut',
         targets: card,
         angle: { from: -5, to: 5 },
         duration: 80,
@@ -106,7 +107,13 @@ export class JobCenterScene extends Phaser.Scene {
     }
     this.picked = true;
     sfx.play('sparkle');
-    this.tweens.add({ targets: card, angle: 360, scale: 1.15 / RS, duration: 600 });
+    this.tweens.add({
+      ease: 'Back.easeOut',
+      targets: card,
+      angle: 360,
+      scale: 1.15 / RS,
+      duration: 600,
+    });
     this.time.delayedCall(700, () => closeMenu(this, { job: JOBS[job].id }));
     return true;
   }

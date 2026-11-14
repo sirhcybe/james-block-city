@@ -31,6 +31,7 @@ function windowsOn(
             z0: z0,
             z1: z0 + 0.62,
             color: opts.door ?? PALETTE.coinGold,
+            door: true,
           });
           continue;
         }
@@ -249,8 +250,15 @@ function policeParts(b: BuildingDef): Part[] {
       type: 'custom',
       bounds: [],
       draw: (g, ox, oy, s) => {
-        const c = facePoint(body, 'left', b.w * 0.5, body.h - 0.55, s);
-        drawStar(g, c.x + ox, c.y + oy, 15 * s, PALETTE.coinGold, 2 * s);
+        // On a round blue plate that sits over the roof line, clear of the windows.
+        const c = facePoint(body, 'left', b.w * 0.5, body.h - 0.02, s);
+        g.fillStyle(PALETTE.policeBlue, 1);
+        g.fillCircle(c.x + ox, c.y + oy, 15 * s);
+        g.lineStyle(2 * s, PALETTE.outline, 1);
+        g.strokeCircle(c.x + ox, c.y + oy, 15 * s);
+        g.lineStyle(1.5 * s, 0xffffff, 0.7);
+        g.strokeCircle(c.x + ox, c.y + oy, 12 * s);
+        drawStar(g, c.x + ox, c.y + oy + 0.5 * s, 9.5 * s, PALETTE.coinGold, 1.6 * s);
       },
     },
   ];
@@ -378,22 +386,28 @@ function shopParts(b: BuildingDef): Part[] {
         { x: top.x + 40, y: top.y + 4 },
       ],
       draw: (g, ox, oy, sc) => {
-        // Awning stripes over the door side.
-        for (let i = 0; i < b.w * 4; i++) {
-          const u0 = i / 4;
-          const a = facePoint(body, 'left', u0, 1.0, sc);
-          const bb = facePoint(body, 'left', u0 + 0.25, 1.0, sc);
-          const c2 = facePoint(body, 'left', u0 + 0.25, 0.85, sc);
-          const d2 = facePoint(body, 'left', u0, 0.85, sc);
+        // A striped awning over the shop front: fixed to the wall along its top edge and
+        // sloping out and down, so every stripe is a neat slanted panel.
+        const hi = (u: number) => facePoint(body, 'left', u, 1.02, sc);
+        const lo = (u: number) => project(u, b.d + 0.2, 0.84, sc);
+        const n = b.w * 4;
+        for (let i = 0; i < n; i++) {
+          const u0 = 0.06 + (i / n) * (b.w - 0.12);
+          const u1 = 0.06 + ((i + 1) / n) * (b.w - 0.12);
           g.fillStyle(i % 2 ? 0xffffff : PALETTE.fireRed, 1);
           g.fillPoints(
-            [a, bb, { x: c2.x, y: c2.y + 8 * sc }, { x: d2.x, y: d2.y + 8 * sc }].map((p) => ({
-              x: p.x + ox,
-              y: p.y + oy,
-            })),
+            [hi(u0), hi(u1), lo(u1), lo(u0)].map((p) => ({ x: p.x + ox, y: p.y + oy })),
             true,
           );
         }
+        g.lineStyle(2 * sc, PALETTE.outline, 1);
+        g.strokePoints(
+          [hi(0.06), hi(b.w - 0.06), lo(b.w - 0.06), lo(0.06)].map((p) => ({
+            x: p.x + ox,
+            y: p.y + oy,
+          })),
+          true,
+        );
         const c = project(b.w / 2, b.d / 2, b.h, sc);
         g.lineStyle(4 * sc, PALETTE.outline, 1);
         g.lineBetween(c.x + ox, c.y + oy, c.x + ox, c.y + oy - 22 * sc);
@@ -485,15 +499,24 @@ function fireStationParts(b: BuildingDef): Part[] {
         g.fillCircle(c.x + ox, c.y + oy, 14 * sc);
         g.lineStyle(2 * sc, PALETTE.outline, 1);
         g.strokeCircle(c.x + ox, c.y + oy, 14 * sc);
+        g.lineStyle(1.5 * sc, 0xffffff, 0.7);
+        g.strokeCircle(c.x + ox, c.y + oy, 11 * sc);
+        const fl = [
+          [0.5, -9],
+          [3.5, -4],
+          [6, 0],
+          [5.5, 5],
+          [3, 8],
+          [-3, 8],
+          [-5.5, 5],
+          [-6, 0],
+          [-4, -3.5],
+          [-2, -0.5],
+        ].map(([dx, dy]) => ({ x: c.x + ox + dx! * sc, y: c.y + oy + dy! * sc }));
         g.fillStyle(PALETTE.fireRed, 1);
-        g.fillTriangle(
-          c.x + ox - 7 * sc,
-          c.y + oy + 7 * sc,
-          c.x + ox + 7 * sc,
-          c.y + oy + 7 * sc,
-          c.x + ox,
-          c.y + oy - 10 * sc,
-        );
+        g.fillPoints(fl, true);
+        g.lineStyle(1.5 * sc, PALETTE.outline, 1);
+        g.strokePoints(fl, true);
       },
     },
     // Bell on the roof.
@@ -798,17 +821,39 @@ function palmParts(b: BuildingDef): Part[] {
       const c = project(0.6, 0.4, 1.6, s);
       const x = c.x + ox;
       const y = c.y + oy;
+      // A frond: a curved leaf from the crown out to a drooping tip, with a rib down the middle.
       const frond = (dx: number, dy: number, color: number) => {
-        const pts = [
-          { x, y },
-          { x: x + dx * 0.45 * s, y: y + (dy - 12) * s },
-          { x: x + dx * s, y: y + dy * s },
-          { x: x + dx * 0.5 * s, y: y + (dy * 0.5 + 5) * s },
-        ];
+        const n = 8;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len;
+        const ny = dx / len;
+        const spine = (t: number) => ({
+          x: x + dx * t * s,
+          y: y + (dy * t - Math.sin(Math.PI * t) * 9 + t * t * 7) * s,
+        });
+        const edge: { x: number; y: number }[] = [];
+        for (let i = 0; i <= n; i++) {
+          const p = spine(i / n);
+          const w = Math.sin(Math.PI * Math.pow(i / n, 0.8)) * 6.5 * s;
+          edge.push({ x: p.x + nx * w, y: p.y + ny * w });
+        }
+        for (let i = n; i >= 0; i--) {
+          const p = spine(i / n);
+          const w = Math.sin(Math.PI * Math.pow(i / n, 0.8)) * 6.5 * s;
+          edge.push({ x: p.x - nx * w, y: p.y - ny * w });
+        }
         g.fillStyle(color, 1);
-        g.fillPoints(pts, true);
+        g.fillPoints(edge, true);
         g.lineStyle(2 * s, PALETTE.outline, 1);
-        g.strokePoints(pts, true);
+        g.strokePoints(edge, true);
+        g.lineStyle(1.2 * s, darken(color, 0.25), 1);
+        g.beginPath();
+        for (let i = 1; i < n; i++) {
+          const p = spine(i / n);
+          if (i === 1) g.moveTo(p.x, p.y);
+          else g.lineTo(p.x, p.y);
+        }
+        g.strokePath();
       };
       frond(-34, 4, darken(leaf, 0.12));
       frond(36, 6, darken(leaf, 0.12));
@@ -816,12 +861,18 @@ function palmParts(b: BuildingDef): Part[] {
       frond(26, -12, leaf);
       frond(0, -22, lighten(leaf, 0.12));
       frond(4, 16, lighten(leaf, 0.06));
-      g.fillStyle(0x8a5a2b, 1);
-      g.fillCircle(x - 4 * s, y + 3 * s, 4 * s);
-      g.fillCircle(x + 4 * s, y + 4 * s, 4 * s);
-      g.lineStyle(1.5 * s, PALETTE.outline, 1);
-      g.strokeCircle(x - 4 * s, y + 3 * s, 4 * s);
-      g.strokeCircle(x + 4 * s, y + 4 * s, 4 * s);
+      // Coconuts tucked under the crown.
+      for (const [cx, cy] of [
+        [-4, 4],
+        [4, 5],
+      ] as const) {
+        g.fillStyle(0x8a5a2b, 1);
+        g.fillCircle(x + cx * s, y + cy * s, 4 * s);
+        g.lineStyle(1.5 * s, PALETTE.outline, 1);
+        g.strokeCircle(x + cx * s, y + cy * s, 4 * s);
+        g.fillStyle(0xb98552, 1);
+        g.fillCircle(x + (cx - 1.2) * s, y + (cy - 1.2) * s, 1.3 * s);
+      }
     },
   });
   return parts;

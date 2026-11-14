@@ -138,12 +138,20 @@ export class WhoTookItScene extends MinigameScene {
       sfx.play('tada', 1.1, 0.7);
       voice.say('wti-right', { interrupt: true });
       this.good(c.x, FEET_Y - 250);
-      this.tweens.add({ targets: c, y: FEET_Y - 60, duration: 180, yoyo: true, repeat: 1 });
+      this.tweens.add({
+        ease: 'Quad.easeOut',
+        targets: c,
+        y: FEET_Y - 60,
+        duration: 180,
+        yoyo: true,
+        repeat: 1,
+      });
     } else if (e.type === 'wrong' && c) {
       sfx.play('shrug');
       voice.say('wti-wrong', { minGapMs: 1500 });
       this.oops();
       this.tweens.add({
+        ease: 'Sine.easeInOut',
         targets: c,
         angle: { from: -8, to: 8 },
         duration: 90,

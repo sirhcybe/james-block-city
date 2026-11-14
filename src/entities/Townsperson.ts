@@ -1,6 +1,7 @@
 import type Phaser from 'phaser';
 import { addBakedImage, type BakedMeta } from '../art/blocks';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey } from '../art/characters';
+import { landSquash } from '../art/anim';
 import { WT } from '../art/renderScale';
 import { depthOf, gridToScreen, type Vec2 } from '../iso/projection';
 
@@ -70,6 +71,7 @@ export class Townsperson {
       });
     } else {
       this.scene.tweens.add({
+        ease: 'Back.easeIn',
         targets: this.bubble,
         scale: 0,
         duration: 200,
@@ -81,6 +83,16 @@ export class Townsperson {
   /** A happy little jump (errand done). */
   cheer(): void {
     const y = this.img.y;
-    this.scene.tweens.add({ targets: this.img, y: y - 24, duration: 180, yoyo: true, repeat: 2 });
+    this.scene.tweens.add({
+      ease: 'Quad.easeOut',
+      targets: this.img,
+      y: y - 24,
+      duration: 180,
+      yoyo: true,
+      repeat: 2,
+      // Each landing squashes a little.
+      onRepeat: () => landSquash(this.scene, this.img, 0.1, 60),
+      onComplete: () => landSquash(this.scene, this.img),
+    });
   }
 }

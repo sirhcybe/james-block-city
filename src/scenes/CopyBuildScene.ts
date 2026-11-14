@@ -115,14 +115,27 @@ export class CopyBuildScene extends MinigameScene {
     const e: CBEvent | null = this.model.tap(i);
     sfx.play('pop', 1 + (this.model.grid[i] ?? 0) * 0.1);
     const cell = this.cells[i];
-    if (cell) this.tweens.add({ targets: cell, scale: 0.9, duration: 60, yoyo: true });
+    if (cell)
+      this.tweens.add({
+        ease: 'Quad.easeOut',
+        targets: cell,
+        scale: 0.9,
+        duration: 60,
+        yoyo: true,
+      });
     if (e?.type === 'matched') {
       sfx.play('tada', 1.2, 0.6);
       voice.say('cb-match', { interrupt: true });
       this.good(820, 150);
       // The finished picture flashes, then the next one comes (maybe a bigger one).
       for (const c of this.cells)
-        this.tweens.add({ targets: c, scale: 1.08, duration: 90, yoyo: true });
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: c,
+          scale: 1.08,
+          duration: 90,
+          yoyo: true,
+        });
       if (this.model.size !== this.builtSize) this.buildGrids();
     }
     this.draw();

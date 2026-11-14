@@ -317,7 +317,7 @@ export class BuildItScene extends Phaser.Scene {
     const v = this.views[i]!;
     this.tweens.killTweensOf(v.box);
     v.box.setDepth(30);
-    this.tweens.add({ targets: v.box, scale: 1.06, duration: 100 });
+    this.tweens.add({ ease: 'Quad.easeOut', targets: v.box, scale: 1.06, duration: 100 });
     sfx.play('pop', 1.2, 0.6);
   }
 
@@ -368,6 +368,7 @@ export class BuildItScene extends Phaser.Scene {
       });
       // Loose until it's fixed: it wobbles and the tools wake up.
       this.tweens.add({
+        ease: 'Sine.easeInOut',
         targets: v.box,
         angle: { from: -2.5, to: 2.5 },
         duration: 260,
@@ -379,6 +380,7 @@ export class BuildItScene extends Phaser.Scene {
       for (const t of this.tools.values()) t.setAlpha(1);
       this.toolPulse?.remove();
       this.toolPulse = this.tweens.add({
+        ease: 'Sine.easeInOut',
         targets: [...this.tools.values()],
         scale: 1.07,
         duration: 420,
@@ -412,6 +414,7 @@ export class BuildItScene extends Phaser.Scene {
       .setStrokeStyle(8, PALETTE.coinGold)
       .setDepth(11);
     this.tweens.add({
+      ease: 'Quad.easeOut',
       targets: ring,
       scale: 1.25,
       alpha: 0,
@@ -453,7 +456,13 @@ export class BuildItScene extends Phaser.Scene {
       this.time.delayedCall(240 + k * 150, () => {
         sfx.play(tool === 'brick' ? 'pop' : 'thunk', 1 + k * 0.15, 0.8);
         this.tweens.add({ targets: img, angle: -38, y: c.y - 20, duration: 60, yoyo: true });
-        this.tweens.add({ targets: v.box, scaleY: 0.93, duration: 60, yoyo: true });
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: v.box,
+          scaleY: 0.93,
+          duration: 60,
+          yoyo: true,
+        });
       });
     }
     this.time.delayedCall(760, () => {
@@ -466,6 +475,7 @@ export class BuildItScene extends Phaser.Scene {
           .setScale(0.22 / RS)
           .setDepth(41);
         this.tweens.add({
+          ease: 'Quad.easeOut',
           targets: st,
           x: c.x + Math.cos(a) * 80,
           y: c.y + Math.sin(a) * 60,
@@ -477,7 +487,13 @@ export class BuildItScene extends Phaser.Scene {
       const pip = this.pips[this.model.fixedCount - 1];
       if (pip) {
         pip.setFillStyle(PALETTE.coinGold, 1);
-        this.tweens.add({ targets: pip, scale: 1.5, duration: 120, yoyo: true });
+        this.tweens.add({
+          ease: 'Quad.easeOut',
+          targets: pip,
+          scale: 1.5,
+          duration: 120,
+          yoyo: true,
+        });
       }
       for (const o of this.views) if (o.box.input?.enabled) o.box.setAlpha(1);
       this.busy = false;
@@ -493,7 +509,14 @@ export class BuildItScene extends Phaser.Scene {
     voice.say('bi-done', { interrupt: true });
     // The whole picture jumps for joy, then back to the city where the real thing pops up.
     for (const v of this.views)
-      this.tweens.add({ targets: v.box, y: v.box.y - 26, duration: 180, yoyo: true, repeat: 1 });
+      this.tweens.add({
+        ease: 'Quad.easeOut',
+        targets: v.box,
+        y: v.box.y - 26,
+        duration: 180,
+        yoyo: true,
+        repeat: 1,
+      });
     const big = this.add
       .image(PAPER.x + PAPER.w / 2, PAPER.y + PAPER.h / 2, HUD.check)
       .setScale(0)

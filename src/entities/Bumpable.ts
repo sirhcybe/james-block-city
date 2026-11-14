@@ -54,6 +54,7 @@ export class Bumpable {
       ease: 'Quad.easeOut',
     });
     this.scene.tweens.add({
+      ease: 'Cubic.easeOut',
       targets: img,
       angle: 360 + 90 * Math.sign(away.x - away.y || 1),
       duration: 500,

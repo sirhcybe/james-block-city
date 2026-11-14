@@ -97,6 +97,7 @@ export class WindowSplashScene extends MinigameScene {
       for (let k = 0; k < 5; k++) {
         const d = this.add.circle(img.x, img.y, 7, 0x7ec8f2).setStrokeStyle(2, PALETTE.outline);
         this.tweens.add({
+          ease: 'Quad.easeOut',
           targets: d,
           x: img.x + (k - 2) * 26,
           y: img.y + 46 + Math.abs(k - 2) * -14,
@@ -107,6 +108,7 @@ export class WindowSplashScene extends MinigameScene {
       }
       this.tweens.killTweensOf(img);
       this.tweens.add({
+        ease: 'Back.easeIn',
         targets: img,
         scale: 0,
         angle: 90,
@@ -115,7 +117,7 @@ export class WindowSplashScene extends MinigameScene {
       });
     } else if (e.type === 'fizzle') {
       this.tweens.killTweensOf(img);
-      this.tweens.add({ targets: img, scale: 0, duration: 250 });
+      this.tweens.add({ ease: 'Back.easeIn', targets: img, scale: 0, duration: 250 });
       // It burned all the way down: the window goes sooty for a moment. Every second one costs
       // a heart (one a time was too quick an Oops for small fingers).
       const soot = this.soot[(e as { window: number }).window];

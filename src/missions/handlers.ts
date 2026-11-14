@@ -314,7 +314,13 @@ export class CheckpointsHandler extends GoalHandler {
     }
     img.setTexture(MPROP.flagDone);
     voice.say('flag', { interrupt: true });
-    this.w.stage.tweens.add({ targets: img, y: img.y - 16, duration: 140, yoyo: true });
+    this.w.stage.tweens.add({
+      ease: 'Quad.easeOut',
+      targets: img,
+      y: img.y - 16,
+      duration: 140,
+      yoyo: true,
+    });
   }
 
   private dropBeam(id: string): void {
@@ -631,7 +637,14 @@ export class RescueHandler extends GoalHandler {
     const key = this.goal.pet === 'parrot' ? MPROP.parrot : MPROP.kitten;
     const pet = addBakedImage(this.w.stage, getBaked(key), s.x, s.y - p.z * 32);
     pet.setDepth(depthOf(p.x, p.y) + 220);
-    this.w.stage.tweens.add({ targets: pet, y: pet.y - 6, duration: 400, yoyo: true, repeat: -1 });
+    this.w.stage.tweens.add({
+      ease: 'Sine.easeInOut',
+      targets: pet,
+      y: pet.y - 6,
+      duration: 400,
+      yoyo: true,
+      repeat: -1,
+    });
     this.pet = pet;
   }
 
@@ -731,6 +744,7 @@ export class InsideHandler extends GoalHandler {
     const s = gridToScreen(m.x, m.y);
     const door = addBakedImage(this.w.stage, getBaked(MPROP.door), s.x, s.y).setDepth(-999_985);
     this.w.stage.tweens.add({
+      ease: 'Sine.easeInOut',
       targets: door,
       scaleY: door.scaleY * 1.1,
       duration: 500,
