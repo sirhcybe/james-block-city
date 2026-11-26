@@ -32,19 +32,54 @@ Asked for by Chris on 2026-11-26: "Make the city 50% bigger by adding a new neig
 - Changes to the boat rescues (they are all on the east side).
 
 ## Acceptance criteria
-- [ ] AC1 The city has at least 50% more land than before (counted in tiles, Parkside on vs off).
-- [ ] AC2 Every road, old and new, is one network; Parkside joins the old streets in at least four
+- [x] AC1 The city has at least 50% more land than before (counted in tiles, Parkside on vs off).
+  *(unit `parkside.test.ts` "AC1": 2222 → 3364 land tiles, +51%. The land as a plain 55 × 21
+  rectangle came to +49%, because the old count includes a pond and the lighthouse island, so
+  Parkside got a beach.)*
+- [x] AC2 Every road, old and new, is one network; Parkside joins the old streets in at least four
   places; roads stay two tiles wide.
-- [ ] AC3 Every Parkside townsperson, errand spot and stroller path can be walked to from the
+  *(unit "AC2" ×2: eight joins, every Parkside lane node reachable from the police car, traffic
+  7 and 8 start on lane nodes; spec 008's "roads still two tiles wide" and "all roads are one
+  network" tests still pass over the bigger map. e2e "AC2 a car drives from the old streets down
+  into Parkside", desktop and Pixel 7.)*
+- [x] AC3 Every Parkside townsperson, errand spot and stroller path can be walked to from the
   spawn; strollers stay on walkable ground.
-- [ ] AC4 Parkside's landmarks (homes, school, ice cream shop, pet shop, library, playground,
+  *(unit "AC3" ×2; `roads.test.ts` "every walker route stays on sidewalk / plaza / grass tiles".)*
+- [x] AC4 Parkside's landmarks (homes, school, ice cream shop, pet shop, library, playground,
   garden, pond) are drawn to `docs/art-style.md`, checked by eye in the gallery and in the city.
-- [ ] AC5 The three new errands can be played start to finish, by foot and from a vehicle.
-- [ ] AC6 The boat can still sail from the dock to every rescue, and around to the new south
+  *(unit "AC4": every landmark kind present, nothing on a road or in the water, nothing old left
+  on Parkside's ground. By eye 2026-11-26: contact sheet of the new textures at render scale 2,
+  and city screenshots of the homes, the shop street, the school, the park and the beach.)*
+- [x] AC5 The three new errands can be played start to finish, by foot and from a vehicle.
+  *(unit "AC5": valid, pictures, voice lines, people and spots in Parkside, items used by no
+  other errand. e2e, desktop and Pixel 7: the ball on foot; the kite picked up from the car on
+  the coast road and handed over from the car; the carrots handed over on foot and delivered
+  from the car. The school kid and the ball's garden are walk-only, like the other find spots.)*
+- [x] AC6 The boat can still sail from the dock to every rescue, and around to the new south
   coast; nothing in the sea overlaps the new land.
-- [ ] AC7 Frame rate holds (measured old against new); boot time and texture memory growth are
+  *(unit "AC6": paths from the boat's mooring to all six rescue spots, off the beach and the far
+  south-west corner; the south islands sit off the new coast, on sand.)*
+- [x] AC7 Frame rate holds (measured old against new); boot time and texture memory growth are
   measured and recorded.
+  *(2026-11-26, `main` against this branch side by side, Pixel 7 emulation, software rendering,
+  render scale 1.5: walking 29 → 29 fps and driving 12 → 12 fps in the old city; at matched old
+  spots 6.6–10.7 fps on both, and 7–7.4 fps in Parkside; boot 4.6 s → 4.4 s (noise). Texture
+  memory 368 → 422 MB of canvas pixels (+15%), ground 141 → 183 MB. Recorded in ADR-013 with a
+  follow-up for the ground textures. **Still to do on a real phone:** `scripts/perf.mjs`.)*
 - [ ] AC8 `npm run build`, `npm test`, `npm run lint` pass; the e2e suite passes.
+
+## Decisions made while building
+- **Theme:** homes with gardens, a shop street (ice cream, pet shop, library), a school, and a
+  park with a pond, a playground and a community garden. Chosen here; easy to swap.
+- **A beach** along the south coast, to clear +50% land (see AC1). The boat can land there.
+- **Errands are offered from the start** (no mission gate), so the new neighborhood has a reason
+  to visit straight away.
+- **Fixed for every Deliver errand:** the giver now says "Can you take this to...", as you come up
+  or as they hand it over. Before, that line was said when you reached the receiver.
+- **New faces:** a school kid, a kid in the park, a gardener in a straw hat (new hat), a pet shop
+  keeper. Not in the Shop: the straw hat is the gardener's.
+- **Moved:** the two small islands south of the old coast and three buoys; deleted: five trees and
+  eight flower beds that stood on the old south edge, now Parkside's pavements.
 
 ## Open questions
 - None. The neighborhood's theme (homes, school, park) was chosen here; Chris can swap any of it.
