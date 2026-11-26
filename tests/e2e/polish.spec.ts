@@ -199,3 +199,35 @@ test('Ladder Rescue: one quick tap sends the ladder up', async ({ page }, info) 
     { timeout: 20_000 },
   );
 });
+
+test("Who Took It?: tapping a suspect's legs or right side picks him", async ({ page }, info) => {
+  // Playtest 2026-11-26: the tap box sat up and left of each suspect, so the legs and the right
+  // side did nothing.
+  await boot(page);
+  await page.evaluate(() => window.__jbc!.startMinigame('who-took-it'));
+  await running(page, 'WhoTookIt');
+  const score = () =>
+    page.evaluate<number>(`window.__jbc.game.scene.getScene('WhoTookIt').model.score`);
+  // Feet at y = 600; the suspects stand 210 px apart round the middle (640).
+  for (const [dx, dy] of [
+    [0, -40], // shins
+    [55, -150], // right side of the body
+  ] as const) {
+    await page.waitForFunction(
+      `(() => { const s = window.__jbc.game.scene.getScene('WhoTookIt');
+        return window.__jbc.culprit() >= 0 && s.model.betweenLeft === 0 && s.suspects.length === 5 &&
+          s.suspects.every((c) => Math.abs(c.y - 600) < 1 && !s.tweens.isTweening(c)); })()`,
+      null,
+      { timeout: 30_000 },
+    );
+    const i = await page.evaluate(() => window.__jbc!.culprit());
+    const before = await score();
+    const c = await page.evaluate(
+      ([x, y]) => window.__jbc!.logicalToClient(x!, y!),
+      [640 + (i - 2) * 210 + dx, 600 + dy],
+    );
+    if (info.project.name === 'pixel-7') await page.touchscreen.tap(c.x, c.y);
+    else await page.mouse.click(c.x, c.y);
+    await expect.poll(score).toBe(before + 1);
+  }
+});

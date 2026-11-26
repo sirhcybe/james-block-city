@@ -10,6 +10,11 @@ import { MinigameScene } from './minigameKit';
 
 const FEET_Y = 600;
 const SPACING = 210;
+/**
+ * Each suspect's tap box around his feet (logical px): the drawn body is about 144 × 264 above
+ * the feet. Nearly as wide as the gap between suspects, so a near miss still counts.
+ */
+const HIT = { left: -100, right: 100, top: -290, bottom: 40, w: 200, h: 330 };
 const CLUE_ICON: Record<Clue, 'donut' | 'feather' | 'sock'> = {
   frosting: 'donut',
   feather: 'feather',
@@ -95,9 +100,18 @@ export class WhoTookItScene extends MinigameScene {
         .setScale(3 / (WT * BIG_CHAR_SCALE));
       c.add(body);
       if (i === r.culprit) c.add(this.clue(r.clue));
-      c.setSize(150, 260);
+      // Tap target: the whole suspect from hat to shoes, plus a margin. A container's hit area
+      // is measured from its top-left corner (size / 2 up and left of its position), not from
+      // its position: the old box sat up and left of the suspect, so taps on the legs and the
+      // right side missed (playtest 2026-11-26: "the hitbox is too small").
+      c.setSize(HIT.w, HIT.h);
       c.setInteractive(
-        new Phaser.Geom.Rectangle(-75, -230, 150, 250),
+        new Phaser.Geom.Rectangle(
+          HIT.w / 2 + HIT.left,
+          HIT.h / 2 + HIT.top,
+          HIT.right - HIT.left,
+          HIT.bottom - HIT.top,
+        ),
         Phaser.Geom.Rectangle.Contains,
       );
       c.on('pointerdown', () => this.handle(this.model.tap(this.suspects.indexOf(c))));
