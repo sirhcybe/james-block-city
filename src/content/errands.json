@@ -201,5 +201,35 @@
     "reward": 10,
     "voice": "errand-shell",
     "after": "bridge-to-the-island"
+  },
+  {
+    "id": "find-ball",
+    "kind": "find",
+    "giver": "school-kid",
+    "icon": "ball",
+    "item": "ball",
+    "spot": "ball-spot",
+    "reward": 10,
+    "voice": "errand-ball"
+  },
+  {
+    "id": "find-kite",
+    "kind": "find",
+    "giver": "kite-kid",
+    "icon": "kite",
+    "item": "kite",
+    "spot": "kite-spot",
+    "reward": 10,
+    "voice": "errand-kite"
+  },
+  {
+    "id": "deliver-carrots",
+    "kind": "deliver",
+    "giver": "gardener",
+    "icon": "carrot",
+    "item": "carrot",
+    "destination": "pet-shop",
+    "reward": 10,
+    "voice": "errand-carrots"
   }
 ]

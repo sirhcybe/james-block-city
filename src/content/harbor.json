@@ -263,16 +263,6 @@
       "color": "leaf"
     },
     {
-      "id": "hb-tree-5",
-      "kind": "tree",
-      "gx": 5,
-      "gy": 39,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "leaf"
-    },
-    {
       "id": "hb-tree-6",
       "kind": "tree",
       "gx": 15,
@@ -497,18 +487,6 @@
       "kind": "lamp",
       "gx": 9.5,
       "gy": 36.5
-    },
-    {
-      "id": "harbor-flowers-31",
-      "kind": "flowers",
-      "gx": 0.5,
-      "gy": 39.5
-    },
-    {
-      "id": "harbor-flowers-32",
-      "kind": "flowers",
-      "gx": 11.5,
-      "gy": 39.5
     }
   ],
   "walkers": [

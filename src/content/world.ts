@@ -3,6 +3,7 @@ import { buildLaneGraph, type LaneGraph } from '../iso/roads';
 import downtownRaw from './downtown.json';
 import harborRaw from './harbor.json';
 import heightsRaw from './heights.json';
+import parksideRaw from './parkside.json';
 import plazaRaw from './plaza.json';
 import seaRaw from './sea.json';
 import { mergeMaps, parseMap, tileAt, type MapDef, type TileKind } from './schema';
@@ -60,9 +61,11 @@ export function buildSeaGrid(m: MapDef, built: ReadonlySet<string> = new Set()):
 }
 
 /**
- * The playable world (ADR-005, stretched and given open sea in spec 008): the sea is the
- * background piece; over it lie Downtown (west), the City Plaza, Skyscraper Heights (under the
- * Plaza) and the Harbor (east). Offsets come from `scripts/stretch-map.mjs`.
+ * The playable world (ADR-005, stretched and given open sea in spec 008, Parkside added in spec
+ * 010): the sea is the background piece; over it lie Downtown (west), the City Plaza, Skyscraper
+ * Heights (under the Plaza), the Harbor (east) and Parkside along the south coast. Parkside
+ * starts on the old south grass edge (row 39) and is laid over it. Offsets of the first four come
+ * from `scripts/stretch-map.mjs`; see ADR-013 for Parkside.
  */
 export function loadWorld(): MapDef {
   return mergeMaps(
@@ -73,6 +76,7 @@ export function loadWorld(): MapDef {
       { map: parseMap(plazaRaw), ox: 21, oy: 0 },
       { map: parseMap(heightsRaw), ox: 21, oy: 21 },
       { map: parseMap(harborRaw), ox: 42, oy: 0 },
+      { map: parseMap(parksideRaw), ox: 0, oy: 39 },
     ],
     1,
   );

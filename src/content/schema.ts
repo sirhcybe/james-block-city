@@ -30,6 +30,14 @@ export const BuildingKind = z.enum([
   'barge',
   'rock',
   'palm',
+  // Parkside (spec 010).
+  'home',
+  'school',
+  'playground',
+  'icecream',
+  'petshop',
+  'library',
+  'garden',
 ]);
 export type BuildingKind = z.infer<typeof BuildingKind>;
 
@@ -61,6 +69,7 @@ export const PropKind = z.enum([
   'planter',
   'flowers',
   'buoy',
+  'mailbox',
 ]);
 export type PropKind = z.infer<typeof PropKind>;
 

@@ -20,6 +20,7 @@ export const PROP = {
   planter: 'prop-planter',
   flowers: 'prop-flowers',
   buoy: 'prop-buoy',
+  mailbox: 'prop-mailbox',
 } as const;
 
 export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedMeta> {
@@ -355,7 +356,50 @@ export function bakeProps(scene: Phaser.Scene): Record<keyof typeof PROP, BakedM
     },
   ]);
 
+  // A mailbox on a post by the garden gate (spec 010), with its little red flag up.
+  const mailbox = bakeParts(scene, PROP.mailbox, [
+    { type: 'block', gx: -0.04, gy: -0.04, w: 0.08, d: 0.08, h: 0.55, color: 0x5a5f6b, bevel: 1 },
+    {
+      type: 'block',
+      gx: -0.12,
+      gy: -0.17,
+      gz: 0.55,
+      w: 0.24,
+      d: 0.34,
+      h: 0.22,
+      color: PALETTE.policeBlue,
+      bevel: 3,
+    },
+    {
+      type: 'custom',
+      bounds: [
+        { x: -14, y: -40 },
+        { x: 18, y: 4 },
+      ],
+      draw: (g, ox, oy, s) => {
+        // Flag on the side we can see: a short stick and a red flag.
+        const a = project(0.12, 0.08, 0.62, s);
+        const b = project(0.12, 0.08, 0.95, s);
+        g.lineStyle(3.4 * s, PALETTE.outline, 1);
+        g.lineBetween(a.x + ox, a.y + oy, b.x + ox, b.y + oy);
+        g.lineStyle(1.6 * s, 0xe4e7ee, 1);
+        g.lineBetween(a.x + ox, a.y + oy, b.x + ox, b.y + oy);
+        const f = [
+          { x: b.x + ox, y: b.y + oy },
+          { x: b.x + ox + 8 * s, y: b.y + oy + 1 * s },
+          { x: b.x + ox + 8 * s, y: b.y + oy + 6 * s },
+          { x: b.x + ox, y: b.y + oy + 5 * s },
+        ];
+        g.fillStyle(PALETTE.fireRed, 1);
+        g.fillPoints(f, true);
+        g.lineStyle(1.5 * s, PALETTE.outline, 1);
+        g.strokePoints(f, true);
+      },
+    },
+  ]);
+
   return {
+    mailbox,
     cone,
     trashcan,
     trafficLight,

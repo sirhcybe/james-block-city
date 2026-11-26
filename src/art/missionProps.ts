@@ -342,6 +342,8 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
     'shell',
     'kitten',
     'feather',
+    'ball',
+    'kite',
   ] as IconName[]) {
     bakeParts(scene, `pickup-${item}`, [
       custom([-18, -40, 18, 8], (g, ox, oy, s) => {
@@ -396,6 +398,9 @@ export function bakeMissionProps(scene: Phaser.Scene): void {
     'apple',
     'shell',
     'feather',
+    'ball',
+    'kite',
+    'carrot',
   ] as IconName[])
     bakeBubble(scene, b);
   const pads: IconName[] = [

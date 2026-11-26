@@ -81,7 +81,10 @@ export type IconName =
   | 'gear'
   | 'hammer'
   | 'trowel'
-  | 'retry';
+  | 'retry'
+  | 'ball'
+  | 'kite'
+  | 'carrot';
 
 type G = Phaser.GameObjects.Graphics;
 type Pt = readonly [number, number];
@@ -1469,6 +1472,101 @@ export function drawIcon(g: G, name: IconName, x: number, y: number, r: number, 
         STEEL,
       );
       p.ellipse(0.16, -0.2, 0.34, 0.26, 0x8a8fa0, 0);
+      return;
+    }
+    case 'ball': {
+      // A beach ball: six coloured panels round a white button, and a shine.
+      const cols = [
+        PALETTE.fireRed,
+        0xffffff,
+        PALETTE.policeBlue,
+        0xffffff,
+        PALETTE.coinGold,
+        0xffffff,
+      ];
+      const R = 0.84;
+      p.circle(0, 0, R, 0xffffff);
+      for (let i = 0; i < 6; i++) {
+        const a0 = -Math.PI / 2 + (i * Math.PI) / 3;
+        p.poly(
+          [[0, 0], ...ellipseArc(0, 0, R - p.pad, R - p.pad, a0, a0 + Math.PI / 3, 6)],
+          cols[i]!,
+          0,
+        );
+      }
+      g.lineStyle(p.ow * 0.6, OL, 1);
+      for (let i = 0; i < 6; i++) {
+        const a = -Math.PI / 2 + (i * Math.PI) / 3;
+        g.lineBetween(x, y, p.X(Math.cos(a) * R), p.Y(Math.sin(a) * R));
+      }
+      g.lineStyle(p.ow, OL, 1);
+      g.strokeCircle(x, y, R * r);
+      p.circle(0, 0, 0.17, 0xffffff, 0.6);
+      g.fillStyle(0xffffff, 0.6);
+      g.fillEllipse(p.X(-0.36), p.Y(-0.42), 0.34 * r, 0.2 * r);
+      return;
+    }
+    case 'kite': {
+      // A diamond kite in two colours with crossed sticks, and a tail of bows behind it.
+      const tail: Pt[] = [
+        [0.04, 0.6],
+        [0.24, 0.74],
+        [0.18, 0.9],
+        [0.42, 1.0],
+      ];
+      g.lineStyle(p.ow * 0.6, OL, 1);
+      g.beginPath();
+      tail.forEach(([tx, ty], i) => (i ? g.lineTo(p.X(tx), p.Y(ty)) : g.moveTo(p.X(tx), p.Y(ty))));
+      g.strokePath();
+      for (const [bx, by] of [
+        [0.24, 0.74],
+        [0.32, 0.97],
+      ] as const) {
+        for (const sx of [-1, 1])
+          p.poly(
+            [
+              [bx, by],
+              [bx + sx * 0.2, by - 0.1],
+              [bx + sx * 0.17, by + 0.12],
+            ],
+            PALETTE.harborTeal,
+            0.45,
+          );
+        p.dot(bx, by, 0.045);
+      }
+      const top: Pt = [0.04, -0.96];
+      const right: Pt = [0.62, -0.26];
+      const bottom: Pt = [0.04, 0.6];
+      const left: Pt = [-0.56, -0.3];
+      p.poly([top, left, bottom], PALETTE.fireRed, 0);
+      p.poly([top, right, bottom], PALETTE.coinGold, 0);
+      p.poly([top, left, [-0.08, -0.28]], lighten(PALETTE.fireRed, 0.3), 0);
+      p.seg(top[0], top[1] + 0.1, bottom[0], bottom[1] - 0.08, 0.05);
+      p.seg(left[0] + 0.1, left[1], right[0] - 0.1, right[1], 0.05);
+      g.lineStyle(p.ow, OL, 1);
+      g.strokePoints(
+        [top, right, bottom, left].map(([dx, dy]) => ({ x: p.X(dx), y: p.Y(dy) })),
+        true,
+      );
+      return;
+    }
+    case 'carrot': {
+      // Leafy top, then a tapered orange root with a few ridges.
+      p.poly(leaf(-0.2, -0.72, 0.56, 0.24, -Math.PI / 2 - 0.5), PALETTE.leaf, 0.8);
+      p.poly(leaf(0.2, -0.72, 0.56, 0.24, -Math.PI / 2 + 0.5), PALETTE.leaf, 0.8);
+      p.poly(leaf(0, -0.8, 0.66, 0.26, -Math.PI / 2), lighten(PALETTE.leaf, 0.15), 0.8);
+      p.poly(
+        [...ellipseArc(0, -0.46, 0.36, 0.12, Math.PI, Math.PI * 2, 8), [0.1, 0.92], [-0.1, 0.92]],
+        PALETTE.coneOrange,
+      );
+      for (const [ry, w] of [
+        [-0.18, 0.2],
+        [0.16, 0.14],
+        [0.5, 0.09],
+      ] as const)
+        p.seg(-w, ry, w * 0.2, ry + 0.04, 0.05, darken(PALETTE.coneOrange, 0.25));
+      g.fillStyle(0xffffff, 0.55);
+      g.fillEllipse(p.X(-0.16), p.Y(-0.24), 0.1 * r, 0.32 * r);
       return;
     }
     case 'retry': {

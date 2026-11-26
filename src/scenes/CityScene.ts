@@ -144,6 +144,11 @@ const TOWNSPEOPLE: Record<string, string> = {
   grandpa: 'grandpa',
   keeper: 'mayor',
   lifeguard: 'lifeguard',
+  // Parkside (spec 010).
+  'school-kid': 'schoolKid',
+  'kite-kid': 'parkKid',
+  gardener: 'gardener',
+  'pet-shop': 'petKeeper',
 };
 
 /** What each errand's giver says when it is offered. */
@@ -872,7 +877,12 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
         addBakedImage(this, getBaked(MPROP.board), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
       } else if (p.kind === 'flowers') {
         still(addBakedImage(this, getBaked(PROP.flowers), s.x, s.y).setDepth(-999_995));
-      } else if (p.kind === 'bench' || p.kind === 'lamp' || p.kind === 'planter') {
+      } else if (
+        p.kind === 'bench' ||
+        p.kind === 'lamp' ||
+        p.kind === 'planter' ||
+        p.kind === 'mailbox'
+      ) {
         still(
           addBakedImage(this, getBaked(PROP[p.kind]), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20),
         );
@@ -991,8 +1001,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       this.fireTruck.img.setName('fire-truck');
     }
 
-    // Town traffic.
-    for (let i = 1; i <= 6; i++) {
+    // Town traffic (7 and 8 drive round Parkside, spec 010).
+    for (let i = 1; i <= 8; i++) {
       const id = `traffic-${i}`;
       if (!this.hasMarker(id)) continue;
       const node = this.nodeNear(this.carGraph, this.marker(id));
@@ -1382,14 +1392,22 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       const carrying = (inv[e.item] ?? 0) > 0;
       const receiver = book.receiver(e.id);
       const giver = this.people.get(e.giver);
-      // Deliver: the giver hands the item over when you come by.
+      // Deliver: the giver asks as you come up, then hands the item over. The line is the
+      // giver's ("Can you take this to..."), so it is said here, not at the receiver (spec 010).
       if (e.kind === 'deliver' && !carrying && giver) {
         showing.set(e.giver, e.icon as IconName);
-        if (Math.hypot(f.x - giver.pos.x, f.y - giver.pos.y) < near) {
+        const line = e.voice ?? ERRAND_LINES[e.id] ?? 'hint-errand';
+        const dg = Math.hypot(f.x - giver.pos.x, f.y - giver.pos.y);
+        if (dg < near) {
           this.state.pickUp(e.item);
           sfx.play('pop', 1.2);
-          voice.say('got-it', { interrupt: true });
+          // Came up fast: the hand-over is the only chance to hear where it goes.
+          voice.say(this.errandAsked.has(e.id) ? 'got-it' : line, { interrupt: true });
+          this.errandAsked.add(e.id);
           giver.cheer();
+        } else if (dg < near + 1.8 && !this.errandAsked.has(e.id)) {
+          this.errandAsked.add(e.id);
+          voice.say(line);
         }
         continue;
       }

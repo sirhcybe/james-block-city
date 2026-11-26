@@ -245,8 +245,9 @@ export function bakeGround(scene: Phaser.Scene, m: MapDef): BakedMeta[] {
                     line(P(x, y + 1), P(x, y + 1, -SLAB_H));
                   if (right && (open(x, y - 1) || !open(x + 1, y - 1)))
                     line(P(x + 1, y), P(x + 1, y, -SLAB_H));
-                  if ((front && right) || ((front || right) && !open(x + 1, y + 1)))
-                    line(P(x + 1, y + 1), P(x + 1, y + 1, -SLAB_H));
+                  // The front corner, where the two sides meet. Where a side runs into land in
+                  // front of it, that land's top hides the corner, so no line there.
+                  if (front && right) line(P(x + 1, y + 1), P(x + 1, y + 1, -SLAB_H));
                 }
               }
 

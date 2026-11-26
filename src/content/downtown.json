@@ -418,26 +418,6 @@
       "d": 1,
       "h": 2,
       "color": "leaf"
-    },
-    {
-      "id": "dt-tree-s7",
-      "kind": "tree",
-      "gx": 5,
-      "gy": 39,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "leaf"
-    },
-    {
-      "id": "dt-tree-s8",
-      "kind": "tree",
-      "gx": 13,
-      "gy": 39,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "leaf"
     }
   ],
   "props": [
@@ -836,30 +816,6 @@
       "kind": "flowers",
       "gx": 0.5,
       "gy": 37.5
-    },
-    {
-      "id": "downtown-flowers-53",
-      "kind": "flowers",
-      "gx": 8.5,
-      "gy": 39.5
-    },
-    {
-      "id": "downtown-flowers-54",
-      "kind": "flowers",
-      "gx": 10.5,
-      "gy": 39.5
-    },
-    {
-      "id": "downtown-flowers-55",
-      "kind": "flowers",
-      "gx": 16.5,
-      "gy": 39.5
-    },
-    {
-      "id": "downtown-flowers-56",
-      "kind": "flowers",
-      "gx": 19.5,
-      "gy": 39.5
     }
   ],
   "walkers": [

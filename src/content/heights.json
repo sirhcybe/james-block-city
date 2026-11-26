@@ -343,26 +343,6 @@
       "d": 1,
       "h": 2,
       "color": "leaf"
-    },
-    {
-      "id": "h-tree-11",
-      "kind": "tree",
-      "gx": 5,
-      "gy": 18,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "leaf"
-    },
-    {
-      "id": "h-tree-12",
-      "kind": "tree",
-      "gx": 14,
-      "gy": 18,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "leaf"
     }
   ],
   "props": [
@@ -515,18 +495,6 @@
       "kind": "lamp",
       "gx": 16.5,
       "gy": 15.5
-    },
-    {
-      "id": "heights-flowers-21",
-      "kind": "flowers",
-      "gx": 0.5,
-      "gy": 18.5
-    },
-    {
-      "id": "heights-flowers-22",
-      "kind": "flowers",
-      "gx": 7.5,
-      "gy": 18.5
     }
   ],
   "walkers": [
