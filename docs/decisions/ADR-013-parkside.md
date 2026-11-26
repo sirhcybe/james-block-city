@@ -37,13 +37,19 @@ coordinates.
   script is kept: nothing old was transformed, apart from deleting the trees and flowers on the
   old south edge, which now stood on Parkside's pavements.
 
+- **The ground is baked as screen-aligned textures** (1024 × 512 world px, edge to edge) instead
+  of 16 × 16-tile chunks. A chunk was a diamond inside a rectangle, half transparent, so most of
+  the screen had ground drawn twice, and Parkside put more of it in view: on CI's software
+  renderer the first push of this spec failed 11 e2e tests that wait on game time (the badge
+  ceremony 4.2 s after a mission, rescue cooldowns, the walk cycle). Each pixel of ground is now
+  drawn once, and ground textures are culled against the camera with no margin.
+
 ## Consequences
-- Measured against `main` in the agent's sandbox (software rendering, Pixel 7 emulation, render
-  scale 1.5): frame rate the same at the same spots in the old city (spawn 24 fps, elsewhere
-  7–11 fps on both), and Parkside runs at the same 7 fps as comparable old spots. Boot time not
-  slower (4.6 s → 4.4 s, noise). Texture memory 368 → 422 MB of canvas pixels (+15%), of which
-  ground 141 → 183 MB.
-- Follow-up worth doing if a phone struggles: the ground is baked as whole 16 × 16-tile chunks,
-  each a big rectangle that is half transparent, and every chunk stays in memory. Baking chunks
-  near the camera on demand (and dropping far ones), or culling chunks by their diamond rather
-  than their box, would cut memory and overdraw for the whole city, not just Parkside.
+- Measured against `main` in the agent's sandbox (software rendering, render scale 1.5 on Pixel 7
+  emulation unless noted): start-up 3.5 s → 3.3 s; texture memory 368 → 371 MB of canvas pixels
+  (ground 141 → 132 MB, 13 textures instead of 20 chunks), so the city is half as big again at
+  about the same memory. Walking 31 → 31 fps and driving 14.5 → 15.5 fps in the old city; at the
+  old city's south end (desktop, CPU slowed 6×) 9–10 → 10–11 fps, with 2–4 ground textures on
+  screen instead of 6–11. Parkside itself: about 12 fps, like the old city around it.
+- Further saving if a phone still struggles: bake ground textures near the camera on demand and
+  drop far ones.

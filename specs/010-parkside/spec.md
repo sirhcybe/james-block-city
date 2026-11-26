@@ -61,11 +61,12 @@ Asked for by Chris on 2026-11-26: "Make the city 50% bigger by adding a new neig
   south-west corner; the south islands sit off the new coast, on sand.)*
 - [x] AC7 Frame rate holds (measured old against new); boot time and texture memory growth are
   measured and recorded.
-  *(2026-11-26, `main` against this branch side by side, Pixel 7 emulation, software rendering,
-  render scale 1.5: walking 29 → 29 fps and driving 12 → 12 fps in the old city; at matched old
-  spots 6.6–10.7 fps on both, and 7–7.4 fps in Parkside; boot 4.6 s → 4.4 s (noise). Texture
-  memory 368 → 422 MB of canvas pixels (+15%), ground 141 → 183 MB. Recorded in ADR-013 with a
-  follow-up for the ground textures. **Still to do on a real phone:** `scripts/perf.mjs`.)*
+  *(2026-11-26, `main` against this branch side by side in the sandbox's software renderer. The
+  first CI run failed 11 timing-sensitive e2e tests: more ground on screen in the old city's south
+  end. Fixed by baking the ground as screen-aligned textures (ADR-013). Now: start-up 3.5 s →
+  3.3 s; texture memory 368 → 371 MB (ground 141 → 132 MB); walking 31 → 31 fps and driving
+  14.5 → 15.5 fps; at the old city's south end 9–10 → 10–11 fps; Parkside about 12 fps.
+  **Still to do on a real phone:** `scripts/perf.mjs`.)*
 - [x] AC8 `npm run build`, `npm test`, `npm run lint` pass; the e2e suite passes.
   *(2026-11-26: build, lint, 237 unit tests. Full e2e run on the final code, desktop and Pixel 7
   emulation in one go: 139 passed, 7 skipped (the suite's own per-project skips), none failed.)*
@@ -80,6 +81,8 @@ Asked for by Chris on 2026-11-26: "Make the city 50% bigger by adding a new neig
   or as they hand it over. Before, that line was said when you reached the receiver.
 - **New faces:** a school kid, a kid in the park, a gardener in a straw hat (new hat), a pet shop
   keeper. Not in the Shop: the straw hat is the gardener's.
+- **Ground textures** are now screen-aligned rectangles, not 16 × 16-tile chunks (ADR-013): each
+  pixel of ground is drawn once, which is what made CI's slow renderer pass again.
 - **Moved:** the two small islands south of the old coast and three buoys; deleted: five trees and
   eight flower beds that stood on the old south edge, now Parkside's pavements.
 

@@ -5,7 +5,7 @@ import { maskFor, solidAt } from '../art/alphaMask';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook, walkFrame } from '../art/characters';
-import { groundChunkKey } from '../art/ground';
+import { groundTiles } from '../art/ground';
 import type { IconName } from '../art/icons';
 import { iconKey } from '../art/menu';
 import { bubbleKey, MPROP, padKey } from '../art/missionProps';
@@ -221,6 +221,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private guide = new ObjectiveGuide();
   /** Things that never move (street furniture, bushes, lights): drawn only when near the camera. */
   private decor: { img: Phaser.GameObjects.Image; bounds: Phaser.Geom.Rectangle }[] = [];
+  /** The baked ground textures, culled against the camera with no margin. */
+  private ground: Phaser.GameObjects.Image[] = [];
   private cullT = 0;
   private stationImgs: Phaser.GameObjects.Image[] = [];
   /** Builder build spots by id (spec 005). */
@@ -779,6 +781,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.registry.set(OPEN_JOBS_KEY, () => this.openMenu('JobCenter'));
     this.props = [];
     this.decor = [];
+    this.ground = [];
     this.pickups.length = 0;
     this.bumpables.length = 0;
     this.walkers.length = 0;
@@ -818,15 +821,15 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
           .setDepth(-1_000_001)
           .setTileScale(0.5);
 
-    // Ground chunks (all-sea chunks have no texture).
-    for (let cy = 0; cy < this.map.height; cy += 16) {
-      for (let cx = 0; cx < this.map.width; cx += 16) {
-        const key = groundChunkKey(this.map, cx, cy);
-        if (!this.textures.exists(key)) continue;
-        // Ground chunks are big: draw only the ones near the camera (see cull()).
-        const img = addBakedImage(this, getBaked(key), 0, 0).setDepth(-1_000_000);
-        this.decor.push({ img, bounds: img.getBounds() });
-      }
+    // Ground: screen-aligned textures that sit edge to edge (all-sea ones are not baked). Each is
+    // big, so only the ones on camera are drawn (see cull()).
+    for (const t of groundTiles(this.map)) {
+      const img = this.add
+        .image(t.x, t.y, t.key)
+        .setOrigin(0, 0)
+        .setScale(1 / WT)
+        .setDepth(-1_000_000);
+      this.ground.push(img);
     }
 
     // Buildings, trees, fountain, Time-Out Tower.
@@ -1777,6 +1780,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const v = this.cameras.main.worldView;
     const view = new Phaser.Geom.Rectangle(v.x - 160, v.y - 220, v.width + 320, v.height + 440);
     for (const d of this.decor) d.img.setVisible(Phaser.Geom.Rectangle.Overlaps(view, d.bounds));
+    // Ground textures have no margin: what is off camera is not needed.
+    for (const img of this.ground) {
+      const inX = img.x < v.right && img.x + img.displayWidth > v.x;
+      img.setVisible(inX && img.y < v.bottom && img.y + img.displayHeight > v.y);
+    }
     for (const p of this.props) p.image.setVisible(Phaser.Geom.Rectangle.Overlaps(view, p.bounds));
   }
 
