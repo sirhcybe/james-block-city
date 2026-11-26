@@ -48,6 +48,14 @@ These keep the art tight. Check new art against them in the gallery (`?gallery=a
   and wobbles use `Sine.easeInOut`; things pop in with `Back.easeOut` and out with `Back.easeIn`.
   A move with no easing looks mechanical: only fades, drifting clouds and fast shakes are linear.
 
+## Parkside (spec 010)
+- Family homes: two floors, a door with a porch roof and a step, window boxes, a roof that
+  overhangs on every side, a brick chimney. Roofs in every accent colour.
+- Pink blossom trees (the tree kind in `donutPink`) mixed with the green ones; mailboxes by the
+  garden gates.
+- Shops have a striped awning and a sign on the roof (a giant cone, a puppy, a book); the library
+  has a porch of white columns; the school has a rainbow band and a bell tower with a clock.
+
 ## Geometry
 - Tile: 64 × 32 px (2:1). One block unit = one tile footprint; block height unit = 32 px on screen.
 - Render at device pixel ratio up to 2. Game logical size 1280 × 720, `Scale.FIT`, landscape.

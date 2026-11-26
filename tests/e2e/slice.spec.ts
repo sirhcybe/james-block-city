@@ -200,7 +200,9 @@ test('AC9: idle 20 s → arrow + voice hint to the current goal', async ({ page 
   await expect
     .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), LONG)
     .toContain('hint-car');
-  // Any input clears it.
-  await page.keyboard.press('ArrowLeft');
+  // Any input clears it. Hold the key until the game has seen it: input is read once a frame,
+  // and on a slow software renderer a quick press can fall between two frames.
+  await page.keyboard.down('ArrowLeft');
   await expect.poll(async () => (await st(page)).hintShowing, LONG).toBe(false);
+  await page.keyboard.up('ArrowLeft');
 });

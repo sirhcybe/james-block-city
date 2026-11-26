@@ -163,21 +163,25 @@ test('Window Splash: a tap anywhere on a burning window splashes it', async ({ p
   const score = () =>
     page.evaluate<number>(`window.__jbc.game.scene.getScene('WindowSplash').model.score`);
   for (let k = 0; k < 3; k++) {
-    const w = await page.waitForFunction(
-      `(() => { const s = window.__jbc.game.scene.getScene('WindowSplash');
-        const i = s.model.up.findIndex((u) => u > 0); return i >= 0 ? i : false; })()`,
-      null,
-      { timeout: 20_000 },
-    );
-    const i = (await w.jsonValue()) as number;
-    // Near a corner of the window, away from the flame itself.
-    const x = 640 - 190 + (i % 3) * 190 + 60;
-    const y = 210 + Math.floor(i / 3) * 150 - 45;
     const before = await score();
-    const c = await page.evaluate(([lx, ly]) => window.__jbc!.logicalToClient(lx!, ly!), [x, y]);
-    if (info.project.name === 'pixel-7') await page.touchscreen.tap(c.x, c.y);
-    else await page.mouse.click(c.x, c.y);
-    await expect.poll(score).toBeGreaterThan(before);
+    // On a slow renderer a flame can fizzle out between finding it and the tap landing, so pick
+    // a burning window and tap again until a splash counts.
+    await expect(async () => {
+      const w = await page.waitForFunction(
+        `(() => { const s = window.__jbc.game.scene.getScene('WindowSplash');
+          const i = s.model.up.findIndex((u) => u > 0); return i >= 0 ? i : false; })()`,
+        null,
+        { timeout: 20_000 },
+      );
+      const i = (await w.jsonValue()) as number;
+      // Near a corner of the window, away from the flame itself.
+      const x = 640 - 190 + (i % 3) * 190 + 60;
+      const y = 210 + Math.floor(i / 3) * 150 - 45;
+      const c = await page.evaluate(([lx, ly]) => window.__jbc!.logicalToClient(lx!, ly!), [x, y]);
+      if (info.project.name === 'pixel-7') await page.touchscreen.tap(c.x, c.y);
+      else await page.mouse.click(c.x, c.y);
+      await expect.poll(score, { timeout: 3_000 }).toBeGreaterThan(before);
+    }).toPass({ timeout: 30_000 });
   }
 });
 

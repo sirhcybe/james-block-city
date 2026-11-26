@@ -4,14 +4,17 @@ An isometric, blocky, comic-action city game for a 6-year-old (James) and kids a
 Pick a job (Cop, Firefighter, Builder), drive loud vehicles, catch goofy robbers, and earn
 coins through minigames and errands. Runs in Chrome on laptops and Android phones.
 
-**Status:** every spec on the roadmap is built (001–008):
+**Status:** every spec on the roadmap is built (001–010):
 - three jobs (Cop, Firefighter, Builder) with 6 missions each, and 7 minigames;
-- the Job Center, the Shop, your apartment, and 19 errands;
-- four districts, the Golden Block Heist finale and parade;
+- the Job Center, the Shop, your apartment, and 22 errands;
+- five districts (Parkside, spec 010, along the south coast), the Golden Block Heist finale and
+  parade;
 - installable as an app, and playable offline;
 - a grown-up corner (hold the gear on the title for 2 seconds);
 - playtest round 3 (spec 008): a 50% bigger city with open sea, a rescue boat and four boat
-  rescues, objective arrows, the Build It! minigame, and minigames with levels and hearts.
+  rescues, objective arrows, the Build It! minigame, and minigames with levels and hearts;
+- tighter art and animation (spec 009), and Parkside (spec 010), which makes the city half as big
+  again.
 
 Next: playtest with James on a real Android phone, plus a timed playthrough
 (`docs/playthrough.md`). Each spec's "Decisions made while building" section lists choices to

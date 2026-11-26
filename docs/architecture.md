@@ -68,11 +68,14 @@ interface GameActions {
 `screenDirToGrid(move)` rotates the screen vector by the iso transform so "up" moves up the screen.
 Touch: floating joystick on the left half (appears where the thumb lands); buttons ≥ 64 CSS px.
 
-### World map (spec 008)
-Five JSON pieces merged by `content/world.ts`: `sea.json` (72 × 48 background: open water, islands,
-sea markers) with the four districts laid over it. The district files were widened by
-`scripts/stretch-map.mjs` (a one-off migration; it documents the rule). Tile kind `sand` is
-walkable beach.
+### World map (spec 008, Parkside in spec 010)
+Six JSON pieces merged by `content/world.ts`: `sea.json` (72 × 68 background: open water, islands,
+sea markers) with the four districts laid over it, and `parkside.json` (55 × 23 at row 39) laid
+last, over the old south grass edge. The first four district files were widened by
+`scripts/stretch-map.mjs` (a one-off migration; it documents the rule); Parkside is hand-editable
+JSON like them (ADR-013). Tile kind `sand` is walkable beach. The ground is baked once into
+screen-aligned 1024 × 512 textures that sit edge to edge (`art/ground.ts`); only those on camera
+are drawn.
 
 ### Movement
 - On foot: free movement on walkable tiles, collision with buildings.

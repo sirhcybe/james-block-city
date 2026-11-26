@@ -12,6 +12,7 @@
 | 8 | Finale + polish + PWA + grown-up corner + timed playthrough | `specs/007-finale-polish` | Built; awaiting playtest + timed playthrough |
 | 9 | Playtest round 3: stuck mission, minigame hearts/levels, bigger map + arrows, boat + rescues, Build It!, home screen | `specs/008-playtest-3` | Built; awaiting playtest |
 | 10 | Art polish: tighter sprites and animation (faces fit, hats fit, wheels, icons, minigame scenery, easing) | `specs/009-art-polish` | Built; awaiting playtest |
+| 11 | Parkside: a new neighborhood, the city 50% bigger (homes, school, park, shop street, beach, three errands) | `specs/010-parkside` | Built; awaiting playtest |
 
 Rule: don't write spec N+1 until spec N is done and (for 002 onward) James has playtested it.
 Playtest findings go into `docs/playtests/YYYY-MM-DD.md` and feed the next spec.

@@ -63,9 +63,18 @@ const game = new Phaser.Game({
     roundPixels: false,
     powerPreference: 'high-performance',
   },
-  fps: { target: 60 },
+  // Frame time: Phaser treats any frame over 1000 / min ms as a glitch and counts it as an earlier
+  // "sane" frame, and the first panicMax frames after a start or a tab switch as 1/60 s. On a
+  // machine that draws in software (CI) that meant timers and tweens ran ~20× slow below 5 fps
+  // (a 4 s timer took 70 s). Accept frames up to 1 s and skip the slow start: at 30–60 fps nothing
+  // changes, and game logic caps its own step at 50 ms per frame.
+  fps: { target: 60, min: 1, panicMax: 0 },
   scene: scenes,
 });
+
+// A window that loses focus but is still on screen (another window on top, the address bar) keeps
+// its clock at full speed; Phaser would count every frame as 1/60 s. Hidden tabs still pause.
+game.loop.blur = () => {};
 
 if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_HOOK === '1') installDebugHook(game);
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('drive'))

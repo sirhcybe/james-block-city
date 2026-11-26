@@ -198,5 +198,8 @@
   "bi-wrong-tool": "Not that one. Try another tool!",
   "bi-wrong-slot": "That piece goes somewhere else. Look for the same colour!",
   "bi-fixed": "Nice and tight!",
-  "bi-done": "You built it! Great job!"
+  "bi-done": "You built it! Great job!",
+  "errand-ball": "Our ball bounced away! Can you find it?",
+  "errand-kite": "Oh no, the wind took my kite! Can you find it?",
+  "errand-carrots": "Can you take these carrots to the pet shop? The bunny is hungry!"
 }

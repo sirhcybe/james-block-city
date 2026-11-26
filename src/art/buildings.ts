@@ -6,6 +6,15 @@ import { bakeParts, type BakedMeta, type Part } from './blocks';
 import type { BlockGeom } from './isoShapes';
 import { facePoint, project } from './isoShapes';
 import { drawIcon } from './icons';
+import {
+  gardenParts,
+  homeParts,
+  iceCreamParts,
+  libraryParts,
+  petShopParts,
+  playgroundParts,
+  schoolParts,
+} from './parkside';
 import { drawCoin, drawDonut, drawStar } from './shapes2d';
 
 function windowsOn(
@@ -1005,6 +1014,20 @@ export function buildingParts(b: BuildingDef): Part[] {
       return rockParts(b);
     case 'barge':
       return bargeParts(b);
+    case 'home':
+      return homeParts(b);
+    case 'school':
+      return schoolParts(b);
+    case 'playground':
+      return playgroundParts(b);
+    case 'icecream':
+      return iceCreamParts(b);
+    case 'petshop':
+      return petShopParts(b);
+    case 'library':
+      return libraryParts(b);
+    case 'garden':
+      return gardenParts(b);
   }
 }
 

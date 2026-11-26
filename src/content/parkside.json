@@ -1,0 +1,1097 @@
+{
+  "id": "parkside",
+  "width": 55,
+  "height": 23,
+  "legend": {
+    "g": "grass",
+    "r": "road",
+    "s": "sidewalk",
+    "p": "plaza",
+    "k": "path",
+    "w": "water",
+    "d": "sand"
+  },
+  "tiles": [
+    "grrssssssrrssssssrrgggrrssssssrrssssssrrgggrrsssssssrrp",
+    "grrsggggsrrsggggsrrgggrrsggggsrrsggggsrrgggrrsgggggsrrp",
+    "grrsggggsrrsggggsrrgggrrsggggsrrsggggsrrgggrrsgggggsrrp",
+    "grrsggggsrrsggggsrrgggrrsggggsrrsggggsrrgggrrsgggggsrrp",
+    "grrsggggsrrsggggsrrgggrrsggggsrrsggggsrrgggrrsgggggsrrp",
+    "grrsggggsrrsggggsrrgggrrssssssrrssssssrrgggrrsgggggsrrp",
+    "grrsggggsrrsggggsrrgggrrssssssrrssssssrrgggrrsgggggsrrp",
+    "grrssssssrrssssssrrgggrrssssssrrssssssrrgggrrsssssssrrp",
+    "grrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrp",
+    "grrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrp",
+    "grrssssssssssssssrrgggrrsssssskkssssssrrgggrrsssssssrrp",
+    "grrsggggggggggggsrrgggrrsgwwwgkkgggggsrrgggrrsgggggsrrp",
+    "grrsggggggggggggsrrgggrrsgwwwgkkgggggsrrgggrrsgggggsrrp",
+    "grrsggggggggggggsrrgggrrsgggggkkgggggsrrgggrrsgggggsrrp",
+    "grrspppppppppppgsrrgggrrskkkkkkkkkkkksrrgggrrsgggggsrrp",
+    "grrspppppppppppgsrrgggrrsgggggkkgggggsrrgggrrsgggggsrrp",
+    "grrspppppppppppgsrrgggrrsgggggkkgggggsrrgggrrsgggggsrrp",
+    "grrssssssssssssssrrgggrrsssssskkssssssrrgggrrsssssssrrp",
+    "grrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrp",
+    "grrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrp",
+    "ggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+    "wwwwwwwwwwwwwwwwwwwdddddddddddddddddddddddddddwwwwwwwww",
+    "wwwwwwwwwwwwwwwwwwwwwwdddddddddddddddddddddwwwwwwwwwwww"
+  ],
+  "spawn": {
+    "gx": 30.5,
+    "gy": 8.5
+  },
+  "buildings": [
+    {
+      "id": "ps-home-1",
+      "kind": "home",
+      "gx": 4,
+      "gy": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2.2,
+      "color": "fireRed"
+    },
+    {
+      "id": "ps-home-2",
+      "kind": "home",
+      "gx": 6,
+      "gy": 4,
+      "w": 2,
+      "d": 2,
+      "h": 2.2,
+      "color": "harborTeal"
+    },
+    {
+      "id": "ps-home-3",
+      "kind": "home",
+      "gx": 14,
+      "gy": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2.2,
+      "color": "builderYellow"
+    },
+    {
+      "id": "ps-home-4",
+      "kind": "home",
+      "gx": 12,
+      "gy": 4,
+      "w": 2,
+      "d": 2,
+      "h": 2.2,
+      "color": "getawayPurple"
+    },
+    {
+      "id": "ps-home-5",
+      "kind": "home",
+      "gx": 46,
+      "gy": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2.2,
+      "color": "policeBlue"
+    },
+    {
+      "id": "ps-home-6",
+      "kind": "home",
+      "gx": 48,
+      "gy": 4,
+      "w": 3,
+      "d": 2,
+      "h": 2.2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-home-7",
+      "kind": "home",
+      "gx": 46,
+      "gy": 11,
+      "w": 3,
+      "d": 2,
+      "h": 2.2,
+      "color": "coneOrange"
+    },
+    {
+      "id": "ps-home-8",
+      "kind": "home",
+      "gx": 49,
+      "gy": 14,
+      "w": 2,
+      "d": 2,
+      "h": 2.2,
+      "color": "grass"
+    },
+    {
+      "id": "ice-cream-shop",
+      "kind": "icecream",
+      "gx": 25,
+      "gy": 3,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-home-9",
+      "kind": "home",
+      "gx": 27,
+      "gy": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2.2,
+      "color": "harborTeal"
+    },
+    {
+      "id": "pet-shop",
+      "kind": "petshop",
+      "gx": 33,
+      "gy": 3,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "grass"
+    },
+    {
+      "id": "library",
+      "kind": "library",
+      "gx": 35,
+      "gy": 1,
+      "w": 2,
+      "d": 3,
+      "h": 2.4,
+      "color": "policeBlue"
+    },
+    {
+      "id": "school",
+      "kind": "school",
+      "gx": 4,
+      "gy": 11,
+      "w": 6,
+      "d": 3,
+      "h": 2.6,
+      "color": "fireRed"
+    },
+    {
+      "id": "playground",
+      "kind": "playground",
+      "gx": 33,
+      "gy": 15,
+      "w": 3,
+      "d": 2,
+      "h": 1.4,
+      "color": "builderYellow"
+    },
+    {
+      "id": "garden",
+      "kind": "garden",
+      "gx": 33,
+      "gy": 11,
+      "w": 3,
+      "d": 2,
+      "h": 0.5,
+      "color": "grass"
+    },
+    {
+      "id": "ps-palm-1",
+      "kind": "palm",
+      "gx": 24,
+      "gy": 21,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-palm-2",
+      "kind": "palm",
+      "gx": 41,
+      "gy": 21,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-1",
+      "kind": "tree",
+      "gx": 7,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-2",
+      "kind": "tree",
+      "gx": 4,
+      "gy": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-3",
+      "kind": "tree",
+      "gx": 13,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-4",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-5",
+      "kind": "tree",
+      "gx": 25,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-6",
+      "kind": "tree",
+      "gx": 34,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-7",
+      "kind": "tree",
+      "gx": 49,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-8",
+      "kind": "tree",
+      "gx": 46,
+      "gy": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-9",
+      "kind": "tree",
+      "gx": 49,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-10",
+      "kind": "tree",
+      "gx": 46,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-11",
+      "kind": "tree",
+      "gx": 12,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-12",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-13",
+      "kind": "tree",
+      "gx": 15,
+      "gy": 13,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-14",
+      "kind": "tree",
+      "gx": 25,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-15",
+      "kind": "tree",
+      "gx": 29,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-16",
+      "kind": "tree",
+      "gx": 26,
+      "gy": 16,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-17",
+      "kind": "tree",
+      "gx": 28,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-18",
+      "kind": "tree",
+      "gx": 36,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-19",
+      "kind": "tree",
+      "gx": 36,
+      "gy": 15,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-20",
+      "kind": "tree",
+      "gx": 20,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-21",
+      "kind": "tree",
+      "gx": 20,
+      "gy": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-22",
+      "kind": "tree",
+      "gx": 20,
+      "gy": 6,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-23",
+      "kind": "tree",
+      "gx": 20,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-24",
+      "kind": "tree",
+      "gx": 20,
+      "gy": 14,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-25",
+      "kind": "tree",
+      "gx": 20,
+      "gy": 16,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-26",
+      "kind": "tree",
+      "gx": 41,
+      "gy": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-27",
+      "kind": "tree",
+      "gx": 41,
+      "gy": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-28",
+      "kind": "tree",
+      "gx": 41,
+      "gy": 6,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-29",
+      "kind": "tree",
+      "gx": 41,
+      "gy": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-30",
+      "kind": "tree",
+      "gx": 41,
+      "gy": 14,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-31",
+      "kind": "tree",
+      "gx": 41,
+      "gy": 16,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-32",
+      "kind": "tree",
+      "gx": 5,
+      "gy": 20,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-33",
+      "kind": "tree",
+      "gx": 13,
+      "gy": 20,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-34",
+      "kind": "tree",
+      "gx": 26,
+      "gy": 20,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    },
+    {
+      "id": "ps-tree-35",
+      "kind": "tree",
+      "gx": 35,
+      "gy": 20,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "donutPink"
+    },
+    {
+      "id": "ps-tree-36",
+      "kind": "tree",
+      "gx": 47,
+      "gy": 20,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "leaf"
+    }
+  ],
+  "markers": {
+    "parkside": {
+      "gx": 30.5,
+      "gy": 8.5
+    },
+    "school-kid": {
+      "gx": 9.5,
+      "gy": 14.6
+    },
+    "kite-kid": {
+      "gx": 29.4,
+      "gy": 16.5
+    },
+    "gardener": {
+      "gx": 32.5,
+      "gy": 11.4
+    },
+    "pet-shop": {
+      "gx": 33.6,
+      "gy": 5.5
+    },
+    "ball-spot": {
+      "gx": 50.5,
+      "gy": 17.1
+    },
+    "kite-spot": {
+      "gx": 10,
+      "gy": 20.15
+    },
+    "traffic-7": {
+      "gx": 18,
+      "gy": 13
+    },
+    "traffic-8": {
+      "gx": 44,
+      "gy": 13
+    }
+  },
+  "props": [
+    {
+      "id": "ps-mailbox-1",
+      "kind": "mailbox",
+      "gx": 5.5,
+      "gy": 3.5
+    },
+    {
+      "id": "ps-mailbox-2",
+      "kind": "mailbox",
+      "gx": 7.5,
+      "gy": 6.5
+    },
+    {
+      "id": "ps-mailbox-3",
+      "kind": "mailbox",
+      "gx": 15.5,
+      "gy": 3.5
+    },
+    {
+      "id": "ps-mailbox-4",
+      "kind": "mailbox",
+      "gx": 13.5,
+      "gy": 6.5
+    },
+    {
+      "id": "ps-mailbox-5",
+      "kind": "mailbox",
+      "gx": 47.5,
+      "gy": 3.5
+    },
+    {
+      "id": "ps-mailbox-6",
+      "kind": "mailbox",
+      "gx": 50.5,
+      "gy": 6.5
+    },
+    {
+      "id": "ps-mailbox-7",
+      "kind": "mailbox",
+      "gx": 48.5,
+      "gy": 13.5
+    },
+    {
+      "id": "ps-mailbox-8",
+      "kind": "mailbox",
+      "gx": 50.5,
+      "gy": 16.5
+    },
+    {
+      "id": "ps-mailbox-9",
+      "kind": "mailbox",
+      "gx": 28.5,
+      "gy": 3.6
+    },
+    {
+      "id": "ps-lamp-1",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 0.5
+    },
+    {
+      "id": "ps-lamp-2",
+      "kind": "lamp",
+      "gx": 8.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-lamp-3",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 0.5
+    },
+    {
+      "id": "ps-lamp-4",
+      "kind": "lamp",
+      "gx": 11.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-lamp-5",
+      "kind": "lamp",
+      "gx": 24.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-lamp-6",
+      "kind": "lamp",
+      "gx": 29.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-lamp-7",
+      "kind": "lamp",
+      "gx": 32.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-lamp-8",
+      "kind": "lamp",
+      "gx": 37.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-lamp-9",
+      "kind": "lamp",
+      "gx": 45.5,
+      "gy": 0.5
+    },
+    {
+      "id": "ps-lamp-10",
+      "kind": "lamp",
+      "gx": 51.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-lamp-11",
+      "kind": "lamp",
+      "gx": 3.5,
+      "gy": 17.5
+    },
+    {
+      "id": "ps-lamp-12",
+      "kind": "lamp",
+      "gx": 16.5,
+      "gy": 10.5
+    },
+    {
+      "id": "ps-lamp-13",
+      "kind": "lamp",
+      "gx": 24.5,
+      "gy": 10.5
+    },
+    {
+      "id": "ps-lamp-14",
+      "kind": "lamp",
+      "gx": 37.5,
+      "gy": 17.5
+    },
+    {
+      "id": "ps-lamp-15",
+      "kind": "lamp",
+      "gx": 45.5,
+      "gy": 17.5
+    },
+    {
+      "id": "ps-lamp-16",
+      "kind": "lamp",
+      "gx": 51.5,
+      "gy": 10.5
+    },
+    {
+      "id": "ps-bench-1",
+      "kind": "bench",
+      "gx": 26.2,
+      "gy": 6.2
+    },
+    {
+      "id": "ps-bench-2",
+      "kind": "bench",
+      "gx": 27.8,
+      "gy": 6.2
+    },
+    {
+      "id": "ps-bench-3",
+      "kind": "bench",
+      "gx": 34.2,
+      "gy": 6.3
+    },
+    {
+      "id": "ps-bench-4",
+      "kind": "bench",
+      "gx": 35.8,
+      "gy": 6.3
+    },
+    {
+      "id": "ps-bench-5",
+      "kind": "bench",
+      "gx": 25.6,
+      "gy": 13.3
+    },
+    {
+      "id": "ps-bench-6",
+      "kind": "bench",
+      "gx": 28.6,
+      "gy": 13.3
+    },
+    {
+      "id": "ps-bench-7",
+      "kind": "bench",
+      "gx": 33.5,
+      "gy": 13.6
+    },
+    {
+      "id": "ps-bench-8",
+      "kind": "bench",
+      "gx": 36.3,
+      "gy": 16.6
+    },
+    {
+      "id": "ps-bench-9",
+      "kind": "bench",
+      "gx": 6.5,
+      "gy": 16.5
+    },
+    {
+      "id": "ps-bench-10",
+      "kind": "bench",
+      "gx": 11.5,
+      "gy": 16.5
+    },
+    {
+      "id": "ps-planter-1",
+      "kind": "planter",
+      "gx": 24.6,
+      "gy": 5.6
+    },
+    {
+      "id": "ps-planter-2",
+      "kind": "planter",
+      "gx": 29.4,
+      "gy": 5.6
+    },
+    {
+      "id": "ps-planter-3",
+      "kind": "planter",
+      "gx": 32.6,
+      "gy": 5.6
+    },
+    {
+      "id": "ps-planter-4",
+      "kind": "planter",
+      "gx": 37.4,
+      "gy": 5.6
+    },
+    {
+      "id": "ps-planter-5",
+      "kind": "planter",
+      "gx": 16.4,
+      "gy": 14.5
+    },
+    {
+      "id": "ps-flowers-1",
+      "kind": "flowers",
+      "gx": 5,
+      "gy": 2.2
+    },
+    {
+      "id": "ps-flowers-2",
+      "kind": "flowers",
+      "gx": 6.3,
+      "gy": 1.6
+    },
+    {
+      "id": "ps-flowers-3",
+      "kind": "flowers",
+      "gx": 12.8,
+      "gy": 2.2
+    },
+    {
+      "id": "ps-flowers-4",
+      "kind": "flowers",
+      "gx": 14.7,
+      "gy": 5.8
+    },
+    {
+      "id": "ps-flowers-5",
+      "kind": "flowers",
+      "gx": 46.8,
+      "gy": 2.4
+    },
+    {
+      "id": "ps-flowers-6",
+      "kind": "flowers",
+      "gx": 50.4,
+      "gy": 2.2
+    },
+    {
+      "id": "ps-flowers-7",
+      "kind": "flowers",
+      "gx": 47.6,
+      "gy": 15.7
+    },
+    {
+      "id": "ps-flowers-8",
+      "kind": "flowers",
+      "gx": 26.8,
+      "gy": 10.8
+    },
+    {
+      "id": "ps-flowers-9",
+      "kind": "flowers",
+      "gx": 35,
+      "gy": 13.4
+    },
+    {
+      "id": "ps-flowers-10",
+      "kind": "flowers",
+      "gx": 31.9,
+      "gy": 16.2
+    },
+    {
+      "id": "ps-flowers-11",
+      "kind": "flowers",
+      "gx": 24.9,
+      "gy": 16.3
+    },
+    {
+      "id": "ps-flowers-12",
+      "kind": "flowers",
+      "gx": 10,
+      "gy": 20.4
+    },
+    {
+      "id": "ps-flowers-13",
+      "kind": "flowers",
+      "gx": 19,
+      "gy": 20.4
+    },
+    {
+      "id": "ps-flowers-14",
+      "kind": "flowers",
+      "gx": 31,
+      "gy": 20.4
+    },
+    {
+      "id": "ps-flowers-15",
+      "kind": "flowers",
+      "gx": 44,
+      "gy": 20.4
+    },
+    {
+      "id": "ps-flowers-16",
+      "kind": "flowers",
+      "gx": 4.6,
+      "gy": 20.7
+    },
+    {
+      "id": "ps-trashcan-1",
+      "kind": "trashcan",
+      "gx": 4.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-trashcan-2",
+      "kind": "trashcan",
+      "gx": 13,
+      "gy": 10.5
+    },
+    {
+      "id": "ps-trashcan-3",
+      "kind": "trashcan",
+      "gx": 29.5,
+      "gy": 10.5
+    },
+    {
+      "id": "ps-trashcan-4",
+      "kind": "trashcan",
+      "gx": 45.5,
+      "gy": 7.5
+    },
+    {
+      "id": "ps-trafficLight-1",
+      "kind": "trafficLight",
+      "gx": 16.6,
+      "gy": 7.6
+    },
+    {
+      "id": "ps-trafficLight-2",
+      "kind": "trafficLight",
+      "gx": 22.4,
+      "gy": 7.6
+    },
+    {
+      "id": "ps-trafficLight-3",
+      "kind": "trafficLight",
+      "gx": 38.4,
+      "gy": 7.6
+    },
+    {
+      "id": "ps-trafficLight-4",
+      "kind": "trafficLight",
+      "gx": 43.4,
+      "gy": 7.6
+    },
+    {
+      "id": "ps-bush-1",
+      "kind": "bush",
+      "gx": 8.6,
+      "gy": 4.2
+    },
+    {
+      "id": "ps-bush-2",
+      "kind": "bush",
+      "gx": 11.4,
+      "gy": 2.6
+    },
+    {
+      "id": "ps-bush-3",
+      "kind": "bush",
+      "gx": 45.4,
+      "gy": 12.8
+    },
+    {
+      "id": "ps-bush-4",
+      "kind": "bush",
+      "gx": 51.4,
+      "gy": 3.8
+    }
+  ],
+  "walkers": [
+    {
+      "id": "ps-walker-1",
+      "look": "grandpa",
+      "from": {
+        "gx": 3.5,
+        "gy": 0.5
+      },
+      "to": {
+        "gx": 8.5,
+        "gy": 0.5
+      }
+    },
+    {
+      "id": "ps-walker-2",
+      "look": "walkerPurple",
+      "from": {
+        "gx": 24.5,
+        "gy": 6.5
+      },
+      "to": {
+        "gx": 29.5,
+        "gy": 6.5
+      }
+    },
+    {
+      "id": "ps-walker-3",
+      "look": "walkerBlue",
+      "from": {
+        "gx": 25.5,
+        "gy": 14.5
+      },
+      "to": {
+        "gx": 29.5,
+        "gy": 14.5
+      }
+    },
+    {
+      "id": "ps-walker-4",
+      "look": "schoolKid",
+      "from": {
+        "gx": 5.5,
+        "gy": 15.5
+      },
+      "to": {
+        "gx": 12.5,
+        "gy": 15.5
+      }
+    },
+    {
+      "id": "ps-walker-5",
+      "look": "walkerRed",
+      "from": {
+        "gx": 45.5,
+        "gy": 10.5
+      },
+      "to": {
+        "gx": 45.5,
+        "gy": 17.5
+      }
+    },
+    {
+      "id": "ps-walker-6",
+      "look": "grandma",
+      "from": {
+        "gx": 32.5,
+        "gy": 14.5
+      },
+      "to": {
+        "gx": 36.5,
+        "gy": 14.5
+      }
+    }
+  ]
+}

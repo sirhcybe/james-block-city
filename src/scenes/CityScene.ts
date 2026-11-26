@@ -5,7 +5,7 @@ import { maskFor, solidAt } from '../art/alphaMask';
 import { addBakedImage, getBaked, type BakedMeta } from '../art/blocks';
 import { buildingTextureKey } from '../art/buildings';
 import { CHAR_FOOT_Y, CHAR_H, characterFrameKey, ensureLook, walkFrame } from '../art/characters';
-import { groundChunkKey } from '../art/ground';
+import { groundTiles } from '../art/ground';
 import type { IconName } from '../art/icons';
 import { iconKey } from '../art/menu';
 import { bubbleKey, MPROP, padKey } from '../art/missionProps';
@@ -144,6 +144,11 @@ const TOWNSPEOPLE: Record<string, string> = {
   grandpa: 'grandpa',
   keeper: 'mayor',
   lifeguard: 'lifeguard',
+  // Parkside (spec 010).
+  'school-kid': 'schoolKid',
+  'kite-kid': 'parkKid',
+  gardener: 'gardener',
+  'pet-shop': 'petKeeper',
 };
 
 /** What each errand's giver says when it is offered. */
@@ -216,6 +221,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
   private guide = new ObjectiveGuide();
   /** Things that never move (street furniture, bushes, lights): drawn only when near the camera. */
   private decor: { img: Phaser.GameObjects.Image; bounds: Phaser.Geom.Rectangle }[] = [];
+  /** The baked ground textures, culled against the camera with no margin. */
+  private ground: Phaser.GameObjects.Image[] = [];
   private cullT = 0;
   private stationImgs: Phaser.GameObjects.Image[] = [];
   /** Builder build spots by id (spec 005). */
@@ -774,6 +781,7 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     this.registry.set(OPEN_JOBS_KEY, () => this.openMenu('JobCenter'));
     this.props = [];
     this.decor = [];
+    this.ground = [];
     this.pickups.length = 0;
     this.bumpables.length = 0;
     this.walkers.length = 0;
@@ -813,15 +821,15 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
           .setDepth(-1_000_001)
           .setTileScale(0.5);
 
-    // Ground chunks (all-sea chunks have no texture).
-    for (let cy = 0; cy < this.map.height; cy += 16) {
-      for (let cx = 0; cx < this.map.width; cx += 16) {
-        const key = groundChunkKey(this.map, cx, cy);
-        if (!this.textures.exists(key)) continue;
-        // Ground chunks are big: draw only the ones near the camera (see cull()).
-        const img = addBakedImage(this, getBaked(key), 0, 0).setDepth(-1_000_000);
-        this.decor.push({ img, bounds: img.getBounds() });
-      }
+    // Ground: screen-aligned textures that sit edge to edge (all-sea ones are not baked). Each is
+    // big, so only the ones on camera are drawn (see cull()).
+    for (const t of groundTiles(this.map)) {
+      const img = this.add
+        .image(t.x, t.y, t.key)
+        .setOrigin(0, 0)
+        .setScale(1 / WT)
+        .setDepth(-1_000_000);
+      this.ground.push(img);
     }
 
     // Buildings, trees, fountain, Time-Out Tower.
@@ -872,7 +880,12 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
         addBakedImage(this, getBaked(MPROP.board), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 30);
       } else if (p.kind === 'flowers') {
         still(addBakedImage(this, getBaked(PROP.flowers), s.x, s.y).setDepth(-999_995));
-      } else if (p.kind === 'bench' || p.kind === 'lamp' || p.kind === 'planter') {
+      } else if (
+        p.kind === 'bench' ||
+        p.kind === 'lamp' ||
+        p.kind === 'planter' ||
+        p.kind === 'mailbox'
+      ) {
         still(
           addBakedImage(this, getBaked(PROP[p.kind]), s.x, s.y).setDepth(depthOf(p.gx, p.gy) + 20),
         );
@@ -991,8 +1004,8 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       this.fireTruck.img.setName('fire-truck');
     }
 
-    // Town traffic.
-    for (let i = 1; i <= 6; i++) {
+    // Town traffic (7 and 8 drive round Parkside, spec 010).
+    for (let i = 1; i <= 8; i++) {
       const id = `traffic-${i}`;
       if (!this.hasMarker(id)) continue;
       const node = this.nodeNear(this.carGraph, this.marker(id));
@@ -1382,14 +1395,22 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
       const carrying = (inv[e.item] ?? 0) > 0;
       const receiver = book.receiver(e.id);
       const giver = this.people.get(e.giver);
-      // Deliver: the giver hands the item over when you come by.
+      // Deliver: the giver asks as you come up, then hands the item over. The line is the
+      // giver's ("Can you take this to..."), so it is said here, not at the receiver (spec 010).
       if (e.kind === 'deliver' && !carrying && giver) {
         showing.set(e.giver, e.icon as IconName);
-        if (Math.hypot(f.x - giver.pos.x, f.y - giver.pos.y) < near) {
+        const line = e.voice ?? ERRAND_LINES[e.id] ?? 'hint-errand';
+        const dg = Math.hypot(f.x - giver.pos.x, f.y - giver.pos.y);
+        if (dg < near) {
           this.state.pickUp(e.item);
           sfx.play('pop', 1.2);
-          voice.say('got-it', { interrupt: true });
+          // Came up fast: the hand-over is the only chance to hear where it goes.
+          voice.say(this.errandAsked.has(e.id) ? 'got-it' : line, { interrupt: true });
+          this.errandAsked.add(e.id);
           giver.cheer();
+        } else if (dg < near + 1.8 && !this.errandAsked.has(e.id)) {
+          this.errandAsked.add(e.id);
+          voice.say(line);
         }
         continue;
       }
@@ -1759,6 +1780,11 @@ export class CityScene extends Phaser.Scene implements MissionWorld {
     const v = this.cameras.main.worldView;
     const view = new Phaser.Geom.Rectangle(v.x - 160, v.y - 220, v.width + 320, v.height + 440);
     for (const d of this.decor) d.img.setVisible(Phaser.Geom.Rectangle.Overlaps(view, d.bounds));
+    // Ground textures have no margin: what is off camera is not needed.
+    for (const img of this.ground) {
+      const inX = img.x < v.right && img.x + img.displayWidth > v.x;
+      img.setVisible(inX && img.y < v.bottom && img.y + img.displayHeight > v.y);
+    }
     for (const p of this.props) p.image.setVisible(Phaser.Geom.Rectangle.Overlaps(view, p.bounds));
   }
 

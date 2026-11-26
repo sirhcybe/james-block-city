@@ -38,7 +38,7 @@ export function walkFrame(t: number): CharFrame {
   return WALK_CYCLE[i]!;
 }
 
-export type HatName = 'cop' | 'chef' | 'fire' | 'hardhat' | 'pirate' | 'duck';
+export type HatName = 'cop' | 'chef' | 'fire' | 'hardhat' | 'pirate' | 'duck' | 'sunhat';
 
 export interface CharacterLook {
   shirt: number;
@@ -200,6 +200,31 @@ export const LOOKS: Record<string, CharacterLook> = {
     hair: 0xa0522d,
     skin: 0xf2c9a0,
     detail: 'buttons',
+  },
+  // Parkside (spec 010).
+  schoolKid: {
+    shirt: PALETTE.coneOrange,
+    pants: 0x3a3d52,
+    hair: 0x2b1d14,
+    skin: 0xc68a5e,
+    hairStyle: 'long',
+  },
+  parkKid: { shirt: 0xb48cf0, pants: PALETTE.harborTeal, hair: 0xf0c75e, skin: PALETTE.skin },
+  gardener: {
+    shirt: 0x5fa83f,
+    pants: 0x6b4a2f,
+    hair: 0x3b2a1a,
+    skin: 0xe0ac7e,
+    hat: 'sunhat',
+    detail: 'apron',
+  },
+  petKeeper: {
+    shirt: PALETTE.harborTeal,
+    pants: 0x3a3d52,
+    hair: 0xa0522d,
+    skin: 0xf2c9a0,
+    hairStyle: 'bun',
+    detail: 'apron',
   },
 };
 
@@ -720,6 +745,29 @@ function drawHat(ctx: Ctx, hat: HatName, p: Pose, hx: number, hy: number): void 
         circlePath(ctx, hx + side * 1.5, rim - 8.6, 2.5);
         paint(ctx, 0xffffff, null);
       }
+      return;
+    }
+    case 'sunhat': {
+      // A gardener's straw hat: a wide brim and a round crown with a green band.
+      const straw = 0xf0d27a;
+      ellipsePath(ctx, hx, rim + 0.5, 19, 5.2);
+      paint(ctx, straw, OL, LW);
+      const crown = () => {
+        ctx.beginPath();
+        ctx.moveTo(hx - 10.5, rim + 0.5);
+        ctx.bezierCurveTo(hx - 11, rim - 13, hx + 11, rim - 13, hx + 10.5, rim + 0.5);
+        ctx.closePath();
+      };
+      crown();
+      paint(ctx, straw, null);
+      clipped(ctx, () => {
+        ctx.fillStyle = css(darken(straw, 0.12));
+        ctx.fillRect(hx + 4, rim - 14, 10, 15);
+        ctx.fillStyle = css(PALETTE.grass);
+        ctx.fillRect(hx - 12, rim - 3.5, 24, 3.4);
+      });
+      crown();
+      paint(ctx, null, OL, LW);
       return;
     }
     case 'duck': {
