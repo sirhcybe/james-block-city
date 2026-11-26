@@ -54,6 +54,11 @@ export const JOB_ORDER: JobId[] = ['cop', 'fire', 'builder'];
  * 2026-11-12: the fire chief asked for a police bike, so buying the ladder never felt like the
  * objective).
  */
+/** The voice line for earning a job's badge. */
+export function badgeLine(job: string): string {
+  return `badge-${job}`;
+}
+
 export const NEED_UPGRADE_LINE: Record<JobId, string> = {
   cop: 'chief-need-bike',
   fire: 'chief-need-ladder',

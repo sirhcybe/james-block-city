@@ -119,6 +119,9 @@ test('Dock It and Mixer Mayhem: dock, cement to three places, Cement Pour, Build
   await page.keyboard.press('Space');
   await expect.poll(async () => (await st(page)).mission === null, LONG).toBe(true);
   await expect.poll(async () => (await st(page)).badges, LONG).toEqual(['cop', 'builder']);
+  await expect
+    .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), LONG)
+    .toContain('badge-builder');
   expect(errors).toEqual([]);
 });
 

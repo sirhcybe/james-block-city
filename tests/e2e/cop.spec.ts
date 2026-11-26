@@ -131,7 +131,7 @@ test('Duck Crossing: ducks follow you to the pond, and the Cop badge ceremony pl
   await expect.poll(async () => (await st(page)).badges, LONG).toEqual(['cop']);
   await expect
     .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), LONG)
-    .toEqual(expect.arrayContaining(['ducks-follow', 'done-duck-crossing', 'badge']));
+    .toEqual(expect.arrayContaining(['ducks-follow', 'done-duck-crossing', 'badge-cop']));
   // The badge is saved.
   const saved = (await page.evaluate(() => window.__jbc!.saved())) as { badges: string[] };
   expect(saved.badges).toEqual(['cop']);

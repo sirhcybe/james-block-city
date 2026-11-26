@@ -154,7 +154,10 @@ test('Toaster Trouble: walk into the kitchen, put out 3 flames, come back out (A
   await expect.poll(async () => (await st(page)).mission, LONG).toBeNull();
   // Third Rookie mission: the Fire badge (AC7).
   await expect.poll(async () => (await st(page)).badges, LONG).toEqual(['cop', 'fire']);
-  await expect.poll(() => page.evaluate(() => window.__jbc!.voiceLog()), LONG).toContain('badge');
+  await expect
+    .poll(() => page.evaluate(() => window.__jbc!.voiceLog()), LONG)
+    .toContain('badge-fire');
+  expect(await page.evaluate(() => window.__jbc!.voiceLog())).not.toContain('badge-cop');
   expect(errors).toEqual([]);
 });
 

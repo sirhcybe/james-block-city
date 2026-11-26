@@ -16,7 +16,7 @@ import {
   type MissionRun,
 } from '../systems/missions';
 import { EV } from '../scenes/keys';
-import { JOBS, NEED_UPGRADE_LINE } from '../systems/jobs';
+import { badgeLine, JOBS, NEED_UPGRADE_LINE } from '../systems/jobs';
 import { isJobMission } from '../systems/missions';
 import { makeHandler, type GoalHandler, type Hint } from './handlers';
 import { DRIVE_REACH, type MissionWorld, type VehicleId } from './world';
@@ -151,7 +151,8 @@ export class MissionDirector {
     if (res.badge) {
       const badge = res.badge;
       scene.time.delayedCall(4200, () => {
-        voice.say('badge', { interrupt: true });
+        // Each job has its own line (playtest: the fire and builder badges said "police").
+        voice.say(badgeLine(badge), { interrupt: true });
         scene.game.events.emit(EV.badge, badge);
       });
     }

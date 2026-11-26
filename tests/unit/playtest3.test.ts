@@ -6,7 +6,7 @@ import { PathFinder } from '../../src/iso/path';
 import { BOAT, BoatModel } from '../../src/systems/boat';
 import { BuildJobModel, TOOL_FOR } from '../../src/systems/buildJob';
 import { arrowPlace, GUIDE, ObjectiveGuide } from '../../src/systems/guide';
-import { NEED_UPGRADE_LINE } from '../../src/systems/jobs';
+import { badgeLine, NEED_UPGRADE_LINE } from '../../src/systems/jobs';
 import { TH, TrafficHelperModel } from '../../src/systems/minigames';
 import { isJobMission, rescueOffer, rescuesOpen } from '../../src/systems/missions';
 import { Hearts, heartsFor, levelFor, ROUND, starMeter, Streak } from '../../src/systems/round';
@@ -15,6 +15,17 @@ import { WindowSplashModel } from '../../src/systems/fireMinigames';
 
 const world = loadWorld();
 const content = loadContent();
+
+describe('badge voice lines name the right job', () => {
+  it('each job has its own badge line, and only the police one says police', () => {
+    const words = { cop: /police/i, fire: /firefighter/i, builder: /builder/i };
+    for (const [job, word] of Object.entries(words)) {
+      const line = content.voice[badgeLine(job)];
+      expect(line, job).toMatch(word);
+      if (job !== 'cop') expect(line, job).not.toMatch(/police/i);
+    }
+  });
+});
 
 describe('spec 008 AC1: the boss names the right upgrade', () => {
   it('has a different need line per job, and each line exists', () => {
