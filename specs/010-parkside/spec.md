@@ -66,7 +66,9 @@ Asked for by Chris on 2026-11-26: "Make the city 50% bigger by adding a new neig
   spots 6.6–10.7 fps on both, and 7–7.4 fps in Parkside; boot 4.6 s → 4.4 s (noise). Texture
   memory 368 → 422 MB of canvas pixels (+15%), ground 141 → 183 MB. Recorded in ADR-013 with a
   follow-up for the ground textures. **Still to do on a real phone:** `scripts/perf.mjs`.)*
-- [ ] AC8 `npm run build`, `npm test`, `npm run lint` pass; the e2e suite passes.
+- [x] AC8 `npm run build`, `npm test`, `npm run lint` pass; the e2e suite passes.
+  *(2026-11-26: build, lint, 237 unit tests. Full e2e run on the final code, desktop and Pixel 7
+  emulation in one go: 139 passed, 7 skipped (the suite's own per-project skips), none failed.)*
 
 ## Decisions made while building
 - **Theme:** homes with gardens, a shop street (ice cream, pet shop, library), a school, and a
