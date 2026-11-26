@@ -47,7 +47,9 @@ unlock the next mission or job.**
 - **Boat rescues (3–5 min):** once the dock is built, the lifeguard there has rescues for
   firefighters and police officers. They pay like Pro missions and can be played again.
 - **Errands (1–3 min):** townspeople show a picture bubble (kitten, pizza, balloon). Types: Find,
-  Deliver, Return (loot robbers dropped). ~20 across the city; new ones appear after each mission.
+  Deliver, Return (loot robbers dropped). 22 across the city; new ones appear after each mission.
+  Parkside has three from the start: the school kid's lost ball, the park kid's kite, and the
+  gardener's carrots for the pet shop bunny. A Deliver giver says where it goes as they hand it over.
 - **Missions (5–8 min):** story missions pay the most and unlock places, vehicles, next missions.
 
 ### Villains: the Bandit Brothers
@@ -57,9 +59,10 @@ which becomes Return errands. The player can never play as them.
 
 ## 3. World
 
-One isometric map, 72 × 48 tiles (the city is 60 × 40; the rest is open sea with small islands),
-four districts around a central plaza. Everything open from start. Blocks are six tiles wide with
-room round every building (playtest 2026-11-12: the first map was cramped).
+One isometric map, 72 × 68 tiles (the city is 55 × 60 on land; the rest is open sea with small
+islands): four districts around a central plaza, and Parkside along the south coast (spec 010:
+"make the city 50% bigger by adding a new neighborhood"). Everything open from start. Blocks are
+six tiles wide with room round every building (playtest 2026-11-12: the first map was cramped).
 
 | District | Where | Landmarks | Home of |
 | --- | --- | --- | --- |
@@ -67,6 +70,7 @@ room round every building (playtest 2026-11-12: the first map was cramped).
 | Downtown | NW | Police station, bank, donut shop, Time-Out Tower (jail), traffic lights | Cop |
 | Skyscraper Heights | NE | Fire station, towers of 10/15/20 floors, rooftop helipad | Firefighter |
 | Harbor | S | Construction site, dock, lighthouse, boat shop, bridge to tiny island | Builder |
+| Parkside | SW coast | Family homes with gardens, school and schoolyard, park with pond, playground and community garden, ice cream shop, pet shop, library, beach | Errands, strolling |
 
 - Roads: a simple loop plus a cross through the middle. Road assist keeps vehicles in lane and rounds corners.
 - A bus stop in each district = one-tap fast travel.
